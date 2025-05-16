@@ -11,7 +11,7 @@ def get_mcp_schema():
             {
                 "name": "echo",
                 "description": "Echo back the input message",
-                "input_schema": {
+                "inputSchema": {
                     "type": "object",
                     "properties": {
                         "message": {
@@ -25,7 +25,7 @@ def get_mcp_schema():
             {
                 "name": "list_events",
                 "description": "List upcoming events from Google Calendar",
-                "input_schema": {
+                "inputSchema": {
                     "type": "object",
                     "properties": {
                         "max_results": {
@@ -39,7 +39,7 @@ def get_mcp_schema():
             {
                 "name": "add_event",
                 "description": "Add a new event to Google Calendar",
-                "input_schema": {
+                "inputSchema": {
                     "type": "object",
                     "properties": {
                         "summary": {
@@ -69,7 +69,7 @@ def get_mcp_schema():
             {
                 "name": "remove_event",
                 "description": "Remove an event from Google Calendar",
-                "input_schema": {
+                "inputSchema": {
                     "type": "object",
                     "properties": {
                         "event_id": {
