@@ -1,51 +1,64 @@
+import os.path
 import json
+import pickle
 from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from googleapiclient.discovery import build
 
+# Escopo necessário para acessar o Google Calendar
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
-def load_credentials(path):
+def load_credentials(credentials_path: str) -> dict:
     """
-    Carrega as credenciais OAuth2 do arquivo JSON.
+    Load client credentials from a JSON file.
     
     Args:
-        path (str): Caminho para o arquivo de credenciais
-
+        credentials_path: Path to the client credentials JSON file
+        
     Returns:
-        dict: Credenciais carregadas do arquivo
-
-    Raises:
-        FileNotFoundError: Se o arquivo não for encontrado
-        ValueError: Se o arquivo JSON for inválido
+        dict: Client credentials
     """
     try:
-        with open(path, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        raise FileNotFoundError(f'Arquivo de credenciais não encontrado: {path}')
-    except json.JSONDecodeError:
-        raise ValueError(f'Arquivo de credenciais inválido: {path}')
-
-def get_token(path):
-    """
-    Obtém um token de acesso OAuth2 para o Google Calendar.
-    
-    Args:
-        path (str): Caminho para o arquivo de credenciais
-
-    Returns:
-        str: Token de acesso em formato JSON
-
-    Raises:
-        FileNotFoundError: Se o arquivo de credenciais não for encontrado
-        ValueError: Se o arquivo de credenciais for inválido
-        Exception: Se houver erro no fluxo de autenticação
-    """
-    try:
-        creds = load_credentials(path)
-        flow = InstalledAppFlow.from_client_secrets_file(path, SCOPES)
-        creds = flow.run_local_server(port=0)
-        return creds.to_json()
-    except (FileNotFoundError, ValueError) as e:
-        raise e
+        with open(credentials_path, 'r') as file:
+            return json.load(file)
     except Exception as e:
-        raise Exception(f'Erro ao obter token: {str(e)}') 
+        raise Exception(f"Failed to load credentials: {str(e)}")
+
+def get_credentials(credentials_path: str) -> object:
+    """
+    Get valid user credentials from storage.
+    
+    Args:
+        credentials_path: Path to the client credentials file
+        
+    Returns:
+        object: Valid credentials object
+    """
+    creds = None
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
+            creds = pickle.load(token)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                credentials_path, SCOPES)
+            creds = flow.run_local_server(port=0)
+            
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+
+    return creds
+
+def get_calendar_service():
+    """
+    Get an authorized Google Calendar service instance.
+    
+    Returns:
+        object: Authorized Google Calendar service
+    """
+    creds = get_credentials('credentials.json')
+    service = build('calendar', 'v3', credentials=creds)
+    return service 
