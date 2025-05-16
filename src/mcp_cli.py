@@ -3,7 +3,7 @@ import argparse
 import os
 import json
 from pathlib import Path
-from .mcp_server import run_server
+from .mcp.mcp_server import run_server
 
 def setup_mcp_config(port):
     """Setup MCP configuration in user's Cursor directory"""

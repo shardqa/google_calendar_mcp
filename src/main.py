@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from src.auth import get_calendar_service
-from src.calendar_ops import CalendarOperations
-from src.cli import CLI
+from .auth import get_calendar_service
+from .calendar_ops import CalendarOperations
+from .cli import CLI
 
 def main():
     try:

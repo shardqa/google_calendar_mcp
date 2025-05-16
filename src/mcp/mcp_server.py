@@ -1,10 +1,8 @@
-import src.mcp.mcp_server as nested
-
-ThreadingHTTPServer = nested.ThreadingHTTPServer
-threading = nested.threading
-time = nested.time
-socket = nested.socket
-CalendarMCPHandler = nested.CalendarMCPHandler
+from http.server import ThreadingHTTPServer
+import threading
+import time
+import socket
+from .mcp_handler import CalendarMCPHandler
 
 class CalendarMCPServer:
     def __init__(self, host="localhost", port=3000):
@@ -45,4 +43,7 @@ def run_server(host="localhost", port=3000):
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        server.stop() 
+        server.stop()
+
+if __name__ == "__main__":
+    run_server() 
