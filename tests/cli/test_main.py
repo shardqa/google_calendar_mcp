@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock, patch
-from src.main import main
+from src.commands.main import main
 
 @pytest.fixture
 def mock_service():

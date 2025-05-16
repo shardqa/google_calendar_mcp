@@ -1,7 +1,7 @@
 import sys
 import requests
 import json
-import src.cancel_utils as cancel_utils
+import src.core.cancel_utils as cancel_utils
 
 def test_sse_initialization(url=None, timeout=10):
     try:

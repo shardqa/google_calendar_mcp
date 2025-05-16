@@ -64,6 +64,6 @@ else
   else
     # Run the MCP server
     echo "Starting Google Calendar MCP server at http://localhost:$PORT/"
-    python -m src.mcp_cli --port $PORT
+    python -m src.commands.mcp_cli --port $PORT
   fi
 fi 

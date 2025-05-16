@@ -2,7 +2,7 @@ import sys
 import time
 import json
 import requests
-import src.cancel_utils as cancel_utils
+import src.core.cancel_utils as cancel_utils
 
 def test_sse_stream_read(url=None, timeout=10, event_timeout=20):
     try:

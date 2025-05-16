@@ -1,5 +1,5 @@
 import pytest
-import src.test_server as server
+import src.scripts.test_server as server
 
 class DummySock:
     def __init__(self, result):

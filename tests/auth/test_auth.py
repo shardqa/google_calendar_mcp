@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import Mock, MagicMock, mock_open, patch
-from src import auth
+import src.auth as auth
 
 
 def test_load_credentials_success():

@@ -1,6 +1,6 @@
 import sys
 import requests
-import src.cancel_utils as cancel_utils
+import src.core.cancel_utils as cancel_utils
 
 def test_sse_open_connection(url=None, timeout=10):
     try:

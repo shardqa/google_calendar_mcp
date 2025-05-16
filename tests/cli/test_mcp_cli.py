@@ -1,7 +1,7 @@
 import sys
 import json
 from pathlib import Path
-import src.mcp_cli as mcp_cli
+import src.commands.mcp_cli as mcp_cli
 
 def test_setup_mcp_config(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv('HOME', str(tmp_path))

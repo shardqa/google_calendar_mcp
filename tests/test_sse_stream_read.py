@@ -1,5 +1,5 @@
 import pytest
-import src.test_sse_stream as sse_module
+import src.scripts.test_sse_stream as sse_module
 
 class DummyResponse:
     def __init__(self, status_code, lines):
