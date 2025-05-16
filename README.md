@@ -1,6 +1,7 @@
 # Google Calendar MCP
 
 Módulo de linha de comando para gerenciar eventos no Google Calendar de forma simples e eficiente.
+Agora com suporte para integração como servidor MCP para Cursor AI e outras ferramentas.
 
 ## Documentação
 
@@ -11,6 +12,28 @@ Módulo de linha de comando para gerenciar eventos no Google Calendar de forma s
 - [Resolução de Problemas](doc/troubleshooting.md)
 - [Desenvolvimento Futuro](doc/future.md)
 - [Índice Completo](doc/README.md)
+
+## Uso como Servidor MCP
+
+O módulo agora suporta execução como um servidor MCP (Model Context Protocol) para integração com o Cursor AI.
+
+Para iniciar o servidor MCP:
+```bash
+python -m src.mcp_cli
+```
+
+Opções disponíveis:
+- `--port PORT`: Porta para executar o servidor (padrão: 3000)
+- `--host HOST`: Host para o servidor (padrão: localhost)
+- `--setup-only`: Apenas configurar o arquivo MCP sem iniciar o servidor
+
+O comando irá automaticamente configurar o arquivo `.cursor/mcp.json` com as informações do servidor.
+
+### Endpoints disponíveis via MCP:
+
+- `list_events`: Listar eventos do calendário
+- `add_event`: Adicionar um novo evento
+- `remove_event`: Remover um evento existente
 
 ## Contribuindo
 

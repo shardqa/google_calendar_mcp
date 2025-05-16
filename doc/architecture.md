@@ -11,7 +11,10 @@ google_calendar_mcp/
 │   ├── auth.py           # Gerenciamento de autenticação
 │   ├── calendar_ops.py   # Operações do calendário
 │   ├── cli.py            # Interface de linha de comando
-│   └── main.py           # Ponto de entrada da aplicação
+│   ├── main.py           # Ponto de entrada da aplicação
+│   ├── mcp_cli.py        # CLI para o servidor MCP
+│   ├── mcp_schema.py     # Definição do schema MCP
+│   └── mcp_server.py     # Implementação do servidor MCP
 ├── tests/                # Testes automatizados
 │   ├── test_auth.py
 │   ├── test_calendar_ops.py
@@ -52,6 +55,25 @@ google_calendar_mcp/
 - Ponto de entrada da aplicação
 - Integração entre os componentes
 - Fluxo de execução principal
+
+### Servidor MCP
+
+#### Schema MCP (`mcp_schema.py`)
+- Define a estrutura dos endpoints disponíveis
+- Documenta parâmetros e valores de retorno
+- Fornece metadados para integração com Cursor
+
+#### Servidor MCP (`mcp_server.py`)
+- Implementa servidor HTTP para o protocolo MCP
+- Expõe as operações de calendário como endpoints
+- Processa requisições JSON-RPC
+- Gerencia erros e respostas
+
+#### CLI do Servidor MCP (`mcp_cli.py`)
+- Interface de linha de comando para o servidor MCP
+- Configura automaticamente o arquivo `.cursor/mcp.json`
+- Gerencia argumentos de linha de comando
+- Controla inicialização e execução do servidor
 
 ---
 Para visão geral, veja [Visão Geral](overview.md).
