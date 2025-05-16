@@ -22,26 +22,9 @@ class DummyHandler:
                 self.outer.wrote += data
         return W(self)
 
-
 def parse_json(handler):
     assert handler.status == 200
     return json.loads(handler.wrote.decode())
-
-def test_tools_call_echo():
-    handler = DummyHandler()
-    request = {"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"tool":"echo","args":{"message":"hi"}}}
-    response = {}
-    mod.handle_post_sse(handler, request, response)
-    body = parse_json(handler)
-    assert body["result"] == {"echo":"hi"}
-
-def test_tools_call_unknown_tool():
-    handler = DummyHandler()
-    request = {"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"tool":"unknown","args":{}}}
-    response = {}
-    mod.handle_post_sse(handler, request, response)
-    body = parse_json(handler)
-    assert body["error"]["code"] == -32601
 
 def test_tools_call_list_events(monkeypatch):
     handler = DummyHandler()
@@ -87,30 +70,4 @@ def test_tools_call_add_event_success(monkeypatch):
     mod.handle_post_sse(handler, request, response)
     body = parse_json(handler)
     assert body["result"] == {"ok":True}
-    assert "start" in called["data"] and "end" in called["data"]
-
-def test_tools_call_remove_event_missing():
-    handler = DummyHandler()
-    request = {"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"tool":"remove_event","args":{}}}
-    response = {}
-    mod.handle_post_sse(handler, request, response)
-    body = parse_json(handler)
-    assert body["error"]["code"] == -32602
-
-def test_tools_call_remove_event_success(monkeypatch):
-    handler = DummyHandler()
-    called = {}
-    class Fake:
-        def __init__(self, svc):
-            called["service"] = svc
-        def remove_event(self, eid):
-            called["eid"] = eid
-            return False
-    monkeypatch.setattr(mod.auth, "get_calendar_service", lambda: "svc")
-    monkeypatch.setattr(mod.calendar_ops, "CalendarOperations", Fake)
-    request = {"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"tool":"remove_event","args":{"event_id":"e1"}}}
-    response = {}
-    mod.handle_post_sse(handler, request, response)
-    body = parse_json(handler)
-    assert body["result"] == {"success":False}
-    assert called["eid"] == "e1" 
+    assert "start" in called["data"] and "end" in called["data"] 
