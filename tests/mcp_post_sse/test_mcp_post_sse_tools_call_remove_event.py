@@ -1,6 +1,7 @@
 import json
 import pytest
 import src.mcp.mcp_post_sse_handler as mod
+from unittest.mock import patch
 
 class DummyHandler:
     def __init__(self):
@@ -26,7 +27,9 @@ def parse_json(handler):
     assert handler.status == 200
     return json.loads(handler.wrote.decode())
 
-def test_tools_call_remove_event_missing():
+@patch('src.mcp.mcp_post_sse_handler.auth.get_calendar_service')
+@patch('src.mcp.mcp_post_sse_handler.calendar_ops.CalendarOperations')
+def test_tools_call_remove_event_missing(MockCalendarOperations, MockGetCalendarService):
     handler = DummyHandler()
     request = {"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"tool":"remove_event","args":{}}}
     response = {}
