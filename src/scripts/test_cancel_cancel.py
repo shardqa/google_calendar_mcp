@@ -26,8 +26,8 @@ def test_cancel_request(url=None, timeout=10):
             print(f"Error: Cancel request failed with status code {response.status_code}")
             print(response.text)
             return
-        print(f"Cancel response: {response.json()}")
         result = response.json()
+        print(f"Cancel response: {result}")
         if "result" in result and "cancelled" in result["result"] and result["result"]["cancelled"] == True:
             print("✅ Success: Server correctly responded to cancellation request")
         else:

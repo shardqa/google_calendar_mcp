@@ -1,6 +1,6 @@
 import json
 import pytest
-import src.mcp_post_sse_handler as mod
+import src.mcp.mcp_post_sse_handler as mod
 
 class DummyHandler:
     def __init__(self):
