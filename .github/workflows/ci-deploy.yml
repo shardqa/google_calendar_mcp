@@ -1,0 +1,56 @@
+name: CI and Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      id: setup-python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+        
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-python-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-python-${{ steps.setup-python.outputs.python-version }}-
+          ${{ runner.os }}-python-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run tests with coverage
+      run: |
+        coverage run -m pytest
+        coverage report --fail-under=80
+        
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: richard
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd ***REMOVED***/git/google_calendar_mcp
+          git pull origin main
+          
+          source .venv/bin/activate # Assuming .venv is the virtual environment directory
+          pip install -r requirements.txt
+          
+          sudo systemctl restart google-calendar-mcp.service 
