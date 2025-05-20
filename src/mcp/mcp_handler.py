@@ -37,5 +37,5 @@ class CalendarMCPHandler(BaseHTTPRequestHandler):
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header('Connection', 'close')
             self.end_headers()
-            error = {"jsonrpc": "2.0", "error": {"code": -32000, "message": str(e)}, "id": None}
+            error = {"jsonrpc": "2.0", "error": {"code": -32000, "message": str(e)}, "id": request.get("id")}
             self.wfile.write(json.dumps(error).encode()) 

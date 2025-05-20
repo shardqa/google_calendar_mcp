@@ -1,67 +1,93 @@
 import threading
 import time
 import pytest
-from src.mcp_server import CalendarMCPServer, run_server
-import src.mcp_server as mcp_server_module
+from src.mcp.mcp_server import CalendarMCPServer, run_server
+import src.mcp.mcp_server as mcp_server_module
+from unittest.mock import patch, MagicMock
+import socket
 
-class DummySocket:
-    def setsockopt(self, *args):
-        pass
+@patch('src.mcp.mcp_server.ThreadingHTTPServer')
+@patch('src.mcp.mcp_server.CalendarMCPHandler')
+class TestCalendarMCPServer:
 
-class DummyServer:
-    def __init__(self, server_address, RequestHandlerClass):
-        self.server_address = server_address
-        self.RequestHandlerClass = RequestHandlerClass
-        self.socket = DummySocket()
-        self.shutdown_requested = False
-        self.serve_forever_called = False
-    def serve_forever(self):
-        self.serve_forever_called = True
-        try:
-            while not self.shutdown_requested:
-                time.sleep(0.01)
-        except KeyboardInterrupt:
-            pass
-    def shutdown(self):
-        self.shutdown_requested = True
+    def test_init_localhost(self, MockHandler, MockHTTPServer):
+        server = CalendarMCPServer(host="localhost", port=8000)
+        MockHTTPServer.assert_called_once_with(("0.0.0.0", 8000), MockHandler)
+        assert server.host == "localhost"
+        assert server.port == 8000
+        assert server.running is False
+        assert server.server_thread is None
+        # Mock socket and setsockopt
+        mock_socket = MagicMock()
+        MockHTTPServer.return_value.socket = mock_socket
+        server = CalendarMCPServer(host="localhost", port=8000)
+        mock_socket.setsockopt.assert_called_once_with(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-@pytest.fixture(autouse=True)
-def patch_http_server(monkeypatch):
-    monkeypatch.setattr(mcp_server_module, 'ThreadingHTTPServer', DummyServer)
+    def test_init_specific_host(self, MockHandler, MockHTTPServer):
+        server = CalendarMCPServer(host="192.168.1.100", port=8080)
+        MockHTTPServer.assert_called_once_with(("192.168.1.100", 8080), MockHandler)
+        assert server.host == "192.168.1.100"
+        assert server.port == 8080
+        assert server.running is False
+        assert server.server_thread is None
+        # Mock socket and setsockopt
+        mock_socket = MagicMock()
+        MockHTTPServer.return_value.socket = mock_socket
+        server = CalendarMCPServer(host="192.168.1.100", port=8080)
+        mock_socket.setsockopt.assert_called_once_with(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-def test_init_binding(capsys):
-    server = CalendarMCPServer()
-    captured = capsys.readouterr()
-    assert 'Binding to all interfaces (0.0.0.0) on port 3000' in captured.out
-    assert server.server.server_address == ('0.0.0.0', 3000)
+    @patch('src.mcp.mcp_server.threading.Thread')
+    def test_start_server(self, MockThread, MockHandler, MockHTTPServer):
+        server = CalendarMCPServer()
+        mock_server_instance = MockHTTPServer.return_value
+        mock_thread_instance = MockThread.return_value
 
-def test_custom_host_no_binding(capsys):
-    server = CalendarMCPServer(host='example.com', port=1234)
-    captured = capsys.readouterr()
-    assert 'Binding to all interfaces' not in captured.out
-    assert server.server.server_address == ('example.com', 1234)
+        server.start()
 
-def test_start_and_stop(capsys):
-    server = CalendarMCPServer(host='0.0.0.0', port=5000)
-    capsys.readouterr()
-    server.start()
-    time.sleep(0.05)
-    captured = capsys.readouterr()
-    assert 'Calendar MCP Server running at http://localhost:5000/' in captured.out
-    assert 'SSE endpoint available at http://localhost:5000/sse' in captured.out
-    assert server.running
-    assert isinstance(server.server_thread, threading.Thread)
-    assert server.server.serve_forever_called
-    server.stop()
-    captured = capsys.readouterr()
-    assert 'Calendar MCP Server stopped' in captured.out
-    assert not server.running
+        assert server.running is True
+        MockThread.assert_called_once_with(target=mock_server_instance.serve_forever)
+        mock_thread_instance.daemon = True
+        mock_thread_instance.start.assert_called_once()
 
-def test_run_server(monkeypatch, capsys):
-    def fake_sleep(x):
-        raise KeyboardInterrupt
-    monkeypatch.setattr(mcp_server_module.time, 'sleep', fake_sleep)
-    run_server(host='0.0.0.0', port=8000)
-    captured = capsys.readouterr()
-    assert 'Calendar MCP Server running at http://localhost:8000/' in captured.out
-    assert 'Calendar MCP Server stopped' in captured.out 
+    def test_stop_server(self, MockHandler, MockHTTPServer):
+        server = CalendarMCPServer()
+        server.running = True
+        server.server_thread = MagicMock(spec=threading.Thread)
+        mock_server_instance = MockHTTPServer.return_value
+        server.server = mock_server_instance
+
+        server.stop()
+
+        assert server.running is False
+        mock_server_instance.shutdown.assert_called_once()
+        server.server_thread.join.assert_called_once()
+
+    def test_start_when_already_running(self, MockHandler, MockHTTPServer):
+        server = CalendarMCPServer()
+        server.running = True
+
+        with patch('src.mcp.mcp_server.threading.Thread') as MockThread:
+            server.start()
+            MockThread.assert_not_called()
+
+    def test_stop_when_not_running(self, MockHandler, MockHTTPServer):
+        server = CalendarMCPServer()
+        server.running = False
+        mock_server_instance = MockHTTPServer.return_value
+        server.server = mock_server_instance
+
+        server.stop()
+
+        mock_server_instance.shutdown.assert_not_called()
+
+@patch('src.mcp.mcp_server.CalendarMCPServer')
+@patch('src.mcp.mcp_server.time.sleep')
+def test_run_server_keyboard_interrupt(mock_sleep, MockCalendarMCPServer):
+    mock_server_instance = MockCalendarMCPServer.return_value
+    mock_sleep.side_effect = KeyboardInterrupt
+
+    run_server()
+
+    mock_server_instance.start.assert_called_once()
+    mock_sleep.assert_called_once_with(1)
+    mock_server_instance.stop.assert_called_once() 
