@@ -7,8 +7,10 @@ class CalendarOperations:
         self._events = None
 
     def list_events(self, max_results: Optional[int] = None) -> List[Dict]:
+        now = datetime.now(timezone.utc).isoformat()
         events_result = self.service.events().list(
             calendarId='primary',
+            timeMin=now,
             maxResults=max_results,
             singleEvents=True,
             orderBy='startTime'
