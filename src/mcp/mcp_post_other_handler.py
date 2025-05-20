@@ -21,7 +21,7 @@ def handle_post_other(handler, request, response):
         elif tool_name == "list_events":
             service = auth.get_calendar_service()
             max_results = tool_args.get("max_results", 10)
-            response["result"] = calendar_ops.CalendarOperations(service).list_events(max_results)
+            response["result"] = {"content": calendar_ops.CalendarOperations(service).list_events(max_results)}
         elif tool_name == "add_event":
             service = auth.get_calendar_service()
             summary = tool_args.get("summary")

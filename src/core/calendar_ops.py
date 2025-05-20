@@ -13,7 +13,12 @@ class CalendarOperations:
             singleEvents=True,
             orderBy='startTime'
         ).execute()
-        return events_result.get('items', [])
+        events = events_result.get('items', [])
+        formatted_events = []
+        for event in events:
+            summary = event.get('summary', 'No Summary')
+            formatted_events.append({"type": "text", "text": summary})
+        return formatted_events
 
     def add_event(self, event_data: Dict) -> Dict:
         try:
