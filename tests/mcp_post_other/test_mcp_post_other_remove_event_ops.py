@@ -1,6 +1,7 @@
 import json
 import pytest
 import src.mcp_post_other_handler as mod
+from unittest.mock import Mock
 
 class DummyHandler:
     def __init__(self):
@@ -26,7 +27,12 @@ def parse_response(handler):
     assert handler.status == 200
     return json.loads(handler.wrote.decode())
 
-def test_remove_event_missing():
+def test_remove_event_missing(monkeypatch):
+    # Mock the calendar service to prevent file access
+    mock_service = Mock()
+    mock_service.events.return_value.delete.return_value.execute.return_value = None # Mock successful deletion
+    monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: mock_service)
+
     handler = DummyHandler()
     request = {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"tool": "remove_event", "args": {}}}
     response = {"jsonrpc": "2.0", "id": 6}

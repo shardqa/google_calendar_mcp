@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "google_calendar": {
-      "command": "/home/***REMOVED***/git/google_calendar_mcp/run_mcp.sh",
-      "enabled": true,
-      "description": "Google Calendar Integration via Script"
-    }
-  }
-} 

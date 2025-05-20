@@ -35,8 +35,9 @@ def get_credentials(credentials_path: str) -> object:
         object: Valid credentials object
     """
     creds = None
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
+    token_path = 'config/token.pickle'
+    if os.path.exists(token_path):
+        with open(token_path, 'rb') as token:
             creds = pickle.load(token)
 
     if not creds or not creds.valid:
@@ -47,7 +48,7 @@ def get_credentials(credentials_path: str) -> object:
                 credentials_path, SCOPES)
             creds = flow.run_local_server(port=0)
             
-        with open('token.pickle', 'wb') as token:
+        with open(token_path, 'wb') as token:
             pickle.dump(creds, token)
 
     return creds
@@ -59,6 +60,6 @@ def get_calendar_service():
     Returns:
         object: Authorized Google Calendar service
     """
-    creds = get_credentials('credentials.json')
+    creds = get_credentials('config/credentials.json')
     service = build('calendar', 'v3', credentials=creds)
     return service 

@@ -57,7 +57,12 @@ def test_tools_call_list_events(monkeypatch):
     assert called["service"] == "svc"
     assert called["max_results"] == 3
 
-def test_tools_call_add_event_missing():
+def test_tools_call_add_event_missing(monkeypatch):
+    # Mock the calendar service to prevent file access
+    mock_service = Mock()
+    mock_service.events.return_value.insert.return_value.execute.return_value = {'status': 'confirmed', 'event': {'id': 'mocked_event_id'}}
+    monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: mock_service)
+
     handler = DummyHandler()
     request = {"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"tool":"add_event","args":{"start_time":"s","end_time":"e"}}}
     response = {}
