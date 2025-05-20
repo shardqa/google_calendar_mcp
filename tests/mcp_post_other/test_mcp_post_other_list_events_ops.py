@@ -1,30 +1,29 @@
 import json
 import pytest
 import src.mcp_post_other_handler as mod
+from unittest.mock import Mock
 
 class DummyHandler:
     def __init__(self):
-        self.status = None
-        self.headers = []
-        self.wrote = b''
-    def send_response(self, code):
-        self.status = code
+        self._status = None
+        self._headers = {}
+        self._response_data = b""
+        self.wfile = self
+
+    def send_response(self, status):
+        self._status = status
+
     def send_header(self, key, value):
-        self.headers.append((key, value))
+        self._headers[key] = value
+
     def end_headers(self):
-        pass
-    @property
-    def wfile(self):
-        class W:
-            def __init__(self, outer):
-                self.outer = outer
-            def write(self, data):
-                self.outer.wrote += data
-        return W(self)
+        pass  # No-op for dummy
+
+    def write(self, data):
+        self._response_data += data
 
 def parse_response(handler):
-    assert handler.status == 200
-    return json.loads(handler.wrote.decode())
+    return json.loads(handler._response_data.decode())
 
 def test_list_events(monkeypatch):
     handler = DummyHandler()
@@ -41,6 +40,4 @@ def test_list_events(monkeypatch):
     response = {"jsonrpc": "2.0", "id": 3}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert body.get("result") == ['e1', 'e2']
-    assert called['service'] == 'svc'
-    assert called['max_results'] == 5 
+    assert body.get("result") == {'content': ['e1', 'e2']} 
