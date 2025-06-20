@@ -1,8 +1,8 @@
 #!/bin/bash
 # Script to run the Google Calendar MCP server
 
-# Change to the project directory
-cd "$(dirname "$0")"
+# Change to the project root directory
+cd "$(dirname "$(dirname "$0")")"
 
 # Default port
 PORT=3001

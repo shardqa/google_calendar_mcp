@@ -3,6 +3,7 @@
 ## Executando a Aplicação
 
 Execute o programa a partir da raiz do projeto:
+
 ```bash
 python -m src.main
 ```
@@ -18,4 +19,4 @@ Na primeira execução, você será redirecionado para o navegador para autoriza
 ---
 Em caso de problemas, consulte [Resolução de Problemas](troubleshooting.md).
 Para melhorias planejadas, consulte [Desenvolvimento Futuro](future.md).
-Voltar para o [Sumário](README.md). 
+Voltar para o [Sumário](README.md).

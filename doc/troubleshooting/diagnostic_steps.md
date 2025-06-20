@@ -1,9 +1,11 @@
 # Passos de Diagnóstico
 
 1. Teste de conexão SSE:
+
    ```bash
    curl http://localhost:3001/sse -N
    ```
+
    - Verificou-se que o evento `mcp/hello` vinha com `tools: {}` vazio.
 
 2. Inspeção do código em `src/mcp_server.py`:
@@ -11,6 +13,7 @@
    - Handler `do_POST` para `initialize` também retornava `"tools": {}` vazio.
 
 3. Teste de chamada JSON-RPC direta:
+
    ```bash
    curl -X POST http://localhost:3001/sse \
      -H 'Content-Type: application/json' \
@@ -21,6 +24,7 @@
        "id": 1
      }'
    ```
+
    - Retornou corretamente os próximos 2 eventos.
 
 ## Documentação Relacionada
@@ -29,4 +33,4 @@
 - [Problemas Iniciais](initial_problems.md)
 - [Correções Aplicadas](applied_corrections.md)
 - [Visão Geral](../../overview.md)
-- [Arquitetura](../../architecture.md) 
+- [Arquitetura](../../architecture.md)

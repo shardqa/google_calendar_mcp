@@ -16,4 +16,4 @@ Para arquitetura, veja [Arquitetura](architecture.md).
 Para uso, veja [Uso](usage.md).
 Para resolução de problemas, veja [Resolução de Problemas](troubleshooting.md).
 Para desenvolvimento futuro, veja [Desenvolvimento Futuro](future.md).
-Voltar para o [Sumário](README.md). 
+Voltar para o [Sumário](README.md).

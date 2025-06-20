@@ -13,4 +13,4 @@
 - [Correções Aplicadas](applied_corrections.md)
 - [Testes Realizados](tests_performed.md)
 - [Visão Geral](../../overview.md)
-- [Arquitetura](../../architecture.md) 
+- [Arquitetura](../../architecture.md)

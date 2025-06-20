@@ -9,4 +9,4 @@
 ---
 Para instruções de uso, veja [Uso](usage.md).
 Para melhorias planejadas, veja [Desenvolvimento Futuro](future.md).
-Voltar para o [Sumário](README.md). 
+Voltar para o [Sumário](README.md).

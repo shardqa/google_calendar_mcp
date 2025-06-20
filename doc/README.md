@@ -13,4 +13,4 @@ Bem-vindo à documentação oficial do Google Calendar MCP. Aqui você encontrar
 
 ---
 
-Voltar para o [README principal](../README.md) 
+Voltar para o [README principal](../README.md)

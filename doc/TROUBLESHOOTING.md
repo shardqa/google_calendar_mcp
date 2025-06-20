@@ -17,4 +17,4 @@ Este documento serve como um índice para os problemas comuns e suas soluções 
 - [Arquitetura](../architecture.md)
 - [Uso](../usage.md)
 - [Desenvolvimento Futuro](../future.md)
-- [Sumário da Documentação](../README.md) 
+- [Sumário da Documentação](../README.md)

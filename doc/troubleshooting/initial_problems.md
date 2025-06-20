@@ -16,4 +16,4 @@ Mesmo com a estrutura correta, o `list_events` retornava eventos antigos repetid
 - [Passos de Diagnóstico](diagnostic_steps.md)
 - [Correções Aplicadas](applied_corrections.md)
 - [Visão Geral](../../overview.md)
-- [Arquitetura](../../architecture.md) 
+- [Arquitetura](../../architecture.md)

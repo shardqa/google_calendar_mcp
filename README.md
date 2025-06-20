@@ -18,18 +18,20 @@ Agora com suporte para integração como servidor MCP para Cursor AI e outras fe
 O módulo agora suporta execução como um servidor MCP (Model Context Protocol) para integração com o Cursor AI.
 
 Para iniciar o servidor MCP:
+
 ```bash
 python -m src.mcp_cli
 ```
 
 Opções disponíveis:
+
 - `--port PORT`: Porta para executar o servidor (padrão: 3000)
 - `--host HOST`: Host para o servidor (padrão: localhost)
 - `--setup-only`: Apenas configurar o arquivo MCP sem iniciar o servidor
 
 O comando irá automaticamente configurar o arquivo `.cursor/mcp.json` com as informações do servidor.
 
-### Endpoints disponíveis via MCP:
+### Endpoints disponíveis via MCP
 
 - `list_events`: Listar eventos do calendário
 - `add_event`: Adicionar um novo evento
@@ -45,4 +47,4 @@ O comando irá automaticamente configurar o arquivo `.cursor/mcp.json` com as in
 
 ## Licença
 
-Este projeto está licenciado sob a MIT License - veja o arquivo LICENSE para detalhes. 
+Este projeto está licenciado sob a MIT License - veja o arquivo LICENSE para detalhes.

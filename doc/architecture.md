@@ -59,17 +59,20 @@ google_calendar_mcp/
 ### Servidor MCP
 
 #### Schema MCP (`mcp_schema.py`)
+
 - Define a estrutura dos endpoints disponíveis
 - Documenta parâmetros e valores de retorno
 - Fornece metadados para integração com Cursor
 
 #### Servidor MCP (`mcp_server.py`)
+
 - Implementa servidor HTTP para o protocolo MCP
 - Expõe as operações de calendário como endpoints
 - Processa requisições JSON-RPC
 - Gerencia erros e respostas
 
 #### CLI do Servidor MCP (`mcp_cli.py`)
+
 - Interface de linha de comando para o servidor MCP
 - Configura automaticamente o arquivo `.cursor/mcp.json`
 - Gerencia argumentos de linha de comando
@@ -81,4 +84,4 @@ Para instalação, veja [Instalação](installation.md).
 Para uso, veja [Uso](usage.md).
 Para resolução de problemas, veja [Resolução de Problemas](troubleshooting.md).
 Para desenvolvimento futuro, veja [Desenvolvimento Futuro](future.md).
-Voltar para o [Sumário](README.md). 
+Voltar para o [Sumário](README.md).
