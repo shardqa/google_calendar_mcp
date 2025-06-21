@@ -115,6 +115,77 @@ def test_network_operations(self, mock_session, mock_server, mock_socket):
 - **Timing dependencies**: Mock de `time.time()`, `time.sleep()`
 - **Sistema de arquivos**: Uso de temporary files ou mocks
 
+## Testando Scripts Executáveis e Blocos `__main__`
+
+Testar o ponto de entrada de scripts executáveis é crucial para garantir a robustez e a cobertura completa. A abordagem ideal prioriza velocidade e simplicidade, evitando a complexidade de subprocessos sempre que possível.
+
+### Abordagem Recomendada: Refatoração e `monkeypatch`
+
+A maneira mais rápida e confiável de testar a lógica de um bloco `if __name__ == "__main__"` é refatorá-la para ser mais testável e, em seguida, usar as ferramentas do `pytest`.
+
+1.  **Isolar a Lógica**: Mova todo o código do bloco `__main__` para uma função separada, como `main()`. O bloco `__main__` deve apenas chamar essa nova função.
+
+    ```python
+    # Em seu_script.py
+    def main():
+        parser = argparse.ArgumentParser()
+        # ... adicionar argumentos ...
+        args = parser.parse_args()
+        # ... lógica do script ...
+
+    if __name__ == "__main__":
+        main()
+    ```
+
+2.  **Testar com `monkeypatch`**: No arquivo de teste, importe a função `main` e use `monkeypatch.setattr()` para simular os argumentos de linha de comando (`sys.argv`). Isso elimina completamente a necessidade de `subprocess`, resultando em testes muito mais rápidos e fáceis de depurar.
+
+    ```python
+    # Em tests/test_seu_script.py
+    from unittest.mock import patch
+    import sys
+    from seu_pacote import seu_script
+
+    def test_main_com_argumentos(monkeypatch):
+        """Testa a função main com argumentos simulados."""
+        # Simula a linha de comando: "python seu_script.py arg1 --opcao=valor"
+        monkeypatch.setattr(sys, 'argv', ['seu_script.py', 'arg1', '--opcao=valor'])
+
+        # Usa patch para evitar efeitos colaterais (ex: chamadas de rede)
+        with patch('seu_pacote.seu_script.funcao_principal') as mock_funcao:
+            seu_script.main()
+            # Verifica se a lógica interna foi chamada com os args corretos
+            mock_funcao.assert_called_once_with(...)
+    ```
+
+### Vantagens da Abordagem com `monkeypatch`
+
+-   **Velocidade**: Ordens de magnitude mais rápido que iniciar um subprocesso.
+-   **Simplicidade**: Evita a complexidade de gerenciar ambientes de subprocesso, `PYTHONPATH` e `coverage`.
+-   **Depuração**: Erros ocorrem no processo principal do `pytest`, permitindo o uso de depuradores padrão.
+-   **Robustez**: Menos propenso a falhas intermitentes relacionadas a timeouts ou configuração de ambiente.
+
+### Abordagem Alternativa (Legado): Subprocessos
+
+Em cenários onde a refatoração não é viável, ou para testes de integração de ponta a ponta, o uso de `subprocess` pode ser necessário. No entanto, essa abordagem é inerentemente mais lenta e complexa.
+
+#### Medindo a Cobertura em Subprocessos
+
+Para que a ferramenta `coverage` rastreie a execução em subprocessos, a seguinte configuração é necessária:
+
+1.  **Configurar `.coveragerc`**: Garanta que `parallel = true` esteja definido.
+
+    ```ini
+    [run]
+    parallel = true
+    source = src/
+    ```
+
+2.  **Executar via `coverage`**: O subprocesso deve invocar o script através do módulo `coverage`.
+
+3.  **Resolver `ModuleNotFoundError`**: Defina explicitamente a variável de ambiente `PYTHONPATH` para que o subprocesso encontre os módulos do projeto.
+
+O comando `make test` (se configurado com `coverage combine`) pode automatizar a combinação dos relatórios de cobertura. Contudo, devido à complexidade e lentidão, essa abordagem deve ser usada com moderação.
+
 ## Organização de Código
 
 ### Estrutura Modular

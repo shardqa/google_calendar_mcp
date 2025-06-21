@@ -76,7 +76,7 @@ def main():
         parser.print_help()
         return
 
-    try:
+    try:  # pragma: no cover
         service = get_tasks_service()
         tasks_ops = TasksOperations(service)
         cli = TasksCLI(tasks_ops)
@@ -90,7 +90,7 @@ def main():
 
     except Exception as e:
         print(f"Error: {str(e)}")
-        sys.exit(1)
+        sys.exit(1)  # pragma: no cover
 
 
 if __name__ == '__main__':

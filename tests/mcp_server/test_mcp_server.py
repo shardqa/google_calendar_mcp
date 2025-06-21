@@ -1,10 +1,13 @@
 import threading
 import time
 import pytest
-from src.mcp.mcp_server import CalendarMCPServer, run_server
+from src.mcp.mcp_server import CalendarMCPServer, run_server, main as mcp_main
 import src.mcp.mcp_server as mcp_server_module
 from unittest.mock import patch, MagicMock
 import socket
+import os
+import sys
+import subprocess
 
 @patch('src.mcp.mcp_server.ThreadingHTTPServer')
 @patch('src.mcp.mcp_server.CalendarMCPHandler')
@@ -90,4 +93,14 @@ def test_run_server_keyboard_interrupt(mock_sleep, MockCalendarMCPServer):
 
     mock_server_instance.start.assert_called_once()
     mock_sleep.assert_called_once_with(1)
-    mock_server_instance.stop.assert_called_once() 
+    mock_server_instance.stop.assert_called_once()
+
+@patch('src.mcp.mcp_server.run_server')
+def test_main_function_with_args(mock_run_server):
+    mcp_main(['--host', 'testhost', '--port', '1234'])
+    mock_run_server.assert_called_once_with(host='testhost', port=1234)
+
+@patch('src.mcp.mcp_server.run_server')
+def test_main_function_default_args(mock_run_server):
+    mcp_main([])
+    mock_run_server.assert_called_once_with(host='localhost', port=3000) 

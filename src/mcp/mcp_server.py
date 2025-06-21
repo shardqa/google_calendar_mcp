@@ -3,6 +3,7 @@ import threading
 import time
 import socket
 from .mcp_handler import CalendarMCPHandler
+import argparse
 
 class CalendarMCPServer:
     def __init__(self, host="localhost", port=3000):
@@ -45,5 +46,12 @@ def run_server(host="localhost", port=3000):
     except KeyboardInterrupt:
         server.stop()
 
-if __name__ == "__main__":
-    run_server() 
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Run the Calendar MCP Server.")
+    parser.add_argument("--host", default="localhost", help="Host to bind the server to.")
+    parser.add_argument("--port", type=int, default=3000, help="Port to listen on.")
+    args = parser.parse_args(argv)
+    run_server(host=args.host, port=args.port)
+
+if __name__ == "__main__":  # pragma: no cover
+    main() 

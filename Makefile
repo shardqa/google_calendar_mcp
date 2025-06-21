@@ -9,14 +9,14 @@ default: test
 # Full test suite with coverage report
 test:
 	@echo "Running tests with coverage..."
-	@coverage run -m pytest
-	@coverage combine
-	@coverage report
+	@.venv/bin/python -m coverage run -m pytest
+	@.venv/bin/python -m coverage combine
+	@.venv/bin/python -m coverage report
 
 # A faster test run without coverage
 test-fast:
 	@echo "Running tests (no coverage)..."
-	@pytest
+	@.venv/bin/pytest
 
 # Clean up temporary Python and coverage files
 clean:

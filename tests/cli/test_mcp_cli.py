@@ -54,14 +54,18 @@ def test_mcp_cli_script_execution(tmp_path):
     env = os.environ.copy()
     env['HOME'] = str(tmp_path)
     
+    # We explicitly point to the .coveragerc file to ensure parallel mode is activated.
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    rc_path = os.path.join(project_root, '.coveragerc')
+
+    python_executable = os.path.join(project_root, '.venv', 'bin', 'python')
     cmd = [
-        sys.executable, "-m", "coverage", "run",
-        "--source=src.commands.mcp_cli",
+        python_executable, "-m", "coverage", "run", f"--rcfile={rc_path}",
         script_path, '--setup-only'
     ]
 
     result = subprocess.run(
-        cmd, env=env, capture_output=True, text=True
+        cmd, env=env, capture_output=True, text=True, cwd=project_root
     )
     
     # Assert a clean run

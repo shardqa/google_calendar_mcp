@@ -158,6 +158,26 @@ def test_main_exception_handling(mock_get_service):
         mock_exit.assert_called_once_with(1)
 
 
+@patch('src.commands.tasks_cli.get_tasks_service', side_effect=Exception("Service unavailable"))
+@patch('sys.exit')
+def test_main_sys_exit_on_exception(mock_exit, mock_get_service):
+    """Test that sys.exit is called on exception during service initialization."""
+    with patch('sys.argv', ['tasks', 'list']):
+        main()
+        mock_get_service.assert_called_once()
+        mock_exit.assert_called_once_with(1)
+
+
+@patch('src.commands.tasks_cli.get_tasks_service')
+@patch('src.commands.tasks_cli.TasksCLI.add_task', side_effect=Exception("Add Task Error"))
+@patch('sys.exit')
+def test_main_add_command_exception(mock_exit, mock_add_task, mock_get_service):
+    """Test exception handling for the 'add' command."""
+    with patch('sys.argv', ['tasks', 'add', 'New Task']):
+        main()
+        mock_exit.assert_called_once_with(1)
+
+
 def test_tasks_cli_script_execution():
     """
     Test the __main__ and ImportError blocks of tasks_cli.py via subprocess.
@@ -168,14 +188,19 @@ def test_tasks_cli_script_execution():
 
     # Running the script with --help avoids needing credentials and ensures a clean exit.
     # It also triggers the __main__ block and the ImportError fallback.
+    
+    # We explicitly point to the .coveragerc file to ensure parallel mode is activated.
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    rc_path = os.path.join(project_root, '.coveragerc')
+
+    python_executable = os.path.join(project_root, '.venv', 'bin', 'python')
     cmd = [
-        sys.executable, "-m", "coverage", "run",
-        "--source=src.commands.tasks_cli",
+        python_executable, "-m", "coverage", "run", f"--rcfile={rc_path}",
         script_path, '--help'
     ]
     result = subprocess.run(
         cmd,
-        capture_output=True, text=True
+        capture_output=True, text=True, cwd=project_root
     )
     
     # Assert a clean run
