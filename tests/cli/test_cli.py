@@ -96,4 +96,65 @@ def test_run_interactive_loop(mock_input, cli, mock_calendar_ops):
 
     # Assert
     assert mock_input.call_count == 2
+    mock_calendar_ops.list_events.assert_called_once()
+
+
+@patch('builtins.input')
+def test_process_command_add_event_invalid_date(mock_input, cli, mock_calendar_ops):
+    # Arrange
+    mock_input.side_effect = [
+        "Test Event",
+        "invalid date",
+        "2024-03-20 11:00"
+    ]
+
+    # Act
+    result = cli.process_command("2")
+
+    # Assert
+    assert result is True
+    mock_calendar_ops.add_event.assert_not_called()
+
+
+@patch('builtins.input')
+def test_process_command_add_event_failed(mock_input, cli, mock_calendar_ops):
+    # Arrange
+    mock_input.side_effect = [
+        "Test Event",
+        "2024-03-20 10:00",
+        "2024-03-20 11:00"
+    ]
+    mock_calendar_ops.add_event.return_value = {"status": "error"}
+
+    # Act
+    result = cli.process_command("2")
+
+    # Assert
+    assert result is True
+    mock_calendar_ops.add_event.assert_called_once()
+
+
+@patch('builtins.input')
+def test_process_command_remove_event_failed(mock_input, cli, mock_calendar_ops):
+    # Arrange
+    mock_input.return_value = "test-event-id"
+    mock_calendar_ops.remove_event.return_value = False
+
+    # Act
+    result = cli.process_command("3")
+
+    # Assert
+    assert result is True
+    mock_calendar_ops.remove_event.assert_called_once_with("test-event-id")
+
+
+def test_process_command_list_events_empty(cli, mock_calendar_ops):
+    # Arrange
+    mock_calendar_ops.list_events.return_value = []
+
+    # Act
+    result = cli.process_command("1")
+
+    # Assert
+    assert result is True
     mock_calendar_ops.list_events.assert_called_once() 

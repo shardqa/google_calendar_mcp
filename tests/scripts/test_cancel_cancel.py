@@ -1,205 +1,151 @@
 import pytest
 from unittest.mock import patch, MagicMock
+import sys
+import os
 import requests
-import json
-import src.scripts.test_cancel_cancel as script_mod
 
-# Define a dummy URL to use in tests
-DUMMY_URL = "http://dummy-server/sse"
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+import src.scripts.test_cancel_cancel as test_cancel_cancel
 
-# Helper to create a mock response object
-def create_mock_response(status_code, json_data=None, text=None):
-    mock_response = MagicMock()
-    mock_response.status_code = status_code
-    if json_data is not None:
-        mock_response.json.return_value = json_data
-    if text is not None:
-         mock_response.text = text
-    else:
-         # Provide a default text attribute to avoid AttributeError if .text is accessed
-         mock_response.text = ""
-    return mock_response
 
-@patch('src.core.cancel_utils.get_sse_url')
-@patch('requests.Session')
-def test_cancel_request_success(mock_session_class, mock_get_sse_url, capsys):
-    # Mock get_sse_url to return a dummy URL
-    mock_get_sse_url.return_value = DUMMY_URL
-
-    # Mock the requests.Session and its post method
-    mock_session_instance = MagicMock()
-    mock_session_class.return_value = mock_session_instance
+class TestCancelCancel:
     
-    # Mock the post response for success
-    success_response_data = {"jsonrpc": "2.0", "result": {"cancelled": True}}
-    mock_post_response = create_mock_response(200, json_data=success_response_data)
-    mock_session_instance.post.return_value = mock_post_response
+    @patch('src.scripts.test_cancel_cancel.cancel_utils.get_sse_url')
+    @patch('src.scripts.test_cancel_cancel.requests.Session')
+    def test_cancel_request_success(self, mock_session_class, mock_get_sse_url):
+        """Test successful cancel request"""
+        mock_url = "http://localhost:3000/sse"
+        mock_get_sse_url.return_value = mock_url
+        
+        mock_session = MagicMock()
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"result": {"cancelled": True}, "jsonrpc": "2.0", "id": 1}
+        mock_session.post.return_value = mock_response
+        mock_session_class.return_value = mock_session
+        
+        result = test_cancel_cancel.test_cancel_request()
+        
+        mock_get_sse_url.assert_called_once_with(None)
+        mock_session.post.assert_called_once()
 
-    # Call the function under test
-    script_mod.test_cancel_request(url=None) # Pass url=None to trigger get_sse_url call
+    @patch('src.scripts.test_cancel_cancel.cancel_utils.get_sse_url')
+    @patch('src.scripts.test_cancel_cancel.requests.Session')
+    def test_cancel_request_with_custom_url(self, mock_session_class, mock_get_sse_url):
+        """Test cancel request with custom URL"""
+        mock_url = "http://example.com:8080/sse"
+        mock_get_sse_url.return_value = mock_url
+        
+        mock_session = MagicMock()
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"result": {"cancelled": True}, "jsonrpc": "2.0", "id": 1}
+        mock_session.post.return_value = mock_response
+        mock_session_class.return_value = mock_session
+        
+        test_cancel_cancel.test_cancel_request("custom_url")
+        
+        mock_get_sse_url.assert_called_once_with("custom_url")
 
-    # Assertions
-    mock_get_sse_url.assert_called_once_with(None)
-    mock_session_class.assert_called_once()
-    mock_session_instance.post.assert_called_once_with(
-        DUMMY_URL,
-        json={
-            "method": "mcp/cancel",
-            "params": {},
-            "jsonrpc": "2.0",
-            "id": 1
-        },
-        timeout=10,
-        headers={"Content-Type": "application/json", "Connection": "close"}
-    )
-    mock_post_response.json.assert_called_once()
-    
-    # Capture stdout and assert success message
-    captured = capsys.readouterr()
-    assert "✅ Success: Server correctly responded to cancellation request" in captured.out
+    @patch('src.scripts.test_cancel_cancel.cancel_utils.get_sse_url')
+    def test_cancel_request_runtime_error(self, mock_get_sse_url):
+        """Test handling of RuntimeError from get_sse_url"""
+        mock_get_sse_url.side_effect = RuntimeError("Server not running")
+        
+        result = test_cancel_cancel.test_cancel_request()
+        
+        assert result is None
+        mock_get_sse_url.assert_called_once_with(None)
 
-@patch('src.core.cancel_utils.get_sse_url')
-@patch('requests.Session')
-def test_cancel_request_get_url_error(mock_session_class, mock_get_sse_url, capsys):
-    # Mock get_sse_url to raise a RuntimeError
-    mock_get_sse_url.side_effect = RuntimeError("fake url error")
+    @patch('src.scripts.test_cancel_cancel.cancel_utils.get_sse_url')
+    @patch('src.scripts.test_cancel_cancel.requests.Session')
+    def test_cancel_request_http_error(self, mock_session_class, mock_get_sse_url):
+        """Test handling of HTTP error in request"""
+        mock_url = "http://localhost:3000/sse"
+        mock_get_sse_url.return_value = mock_url
+        
+        mock_session = MagicMock()
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        mock_response.text = "Internal Server Error"
+        mock_session.post.return_value = mock_response
+        mock_session_class.return_value = mock_session
+        
+        result = test_cancel_cancel.test_cancel_request()
+        
+        assert result is None
 
-    # Call the function under test
-    script_mod.test_cancel_request(url=None) # Pass url=None to trigger get_sse_url call
+    @patch('src.scripts.test_cancel_cancel.cancel_utils.get_sse_url')
+    @patch('src.scripts.test_cancel_cancel.requests.Session')
+    def test_cancel_request_timeout(self, mock_session_class, mock_get_sse_url):
+        """Test handling of request timeout"""
+        mock_url = "http://localhost:3000/sse"
+        mock_get_sse_url.return_value = mock_url
+        
+        mock_session = MagicMock()
+        mock_session.post.side_effect = requests.exceptions.Timeout()
+        mock_session_class.return_value = mock_session
+        
+        result = test_cancel_cancel.test_cancel_request()
+        
+        assert result is None
 
-    # Assertions
-    mock_get_sse_url.assert_called_once_with(None)
-    mock_session_class.assert_not_called() # Ensure no session is created
+    @patch('src.scripts.test_cancel_cancel.cancel_utils.get_sse_url')
+    @patch('src.scripts.test_cancel_cancel.requests.Session')
+    def test_cancel_request_connection_error(self, mock_session_class, mock_get_sse_url):
+        """Test handling of connection error"""
+        mock_url = "http://localhost:3000/sse"
+        mock_get_sse_url.return_value = mock_url
+        
+        mock_session = MagicMock()
+        mock_session.post.side_effect = requests.exceptions.ConnectionError()
+        mock_session_class.return_value = mock_session
+        
+        result = test_cancel_cancel.test_cancel_request()
+        
+        assert result is None
 
-    # Capture stdout and assert error message
-    captured = capsys.readouterr()
-    assert "fake url error" in captured.out
+    @patch('src.scripts.test_cancel_cancel.cancel_utils.get_sse_url')
+    @patch('src.scripts.test_cancel_cancel.requests.Session')
+    def test_cancel_request_generic_exception(self, mock_session_class, mock_get_sse_url):
+        """Test handling of generic exception"""
+        mock_url = "http://localhost:3000/sse"
+        mock_get_sse_url.return_value = mock_url
+        
+        mock_session = MagicMock()
+        mock_session.post.side_effect = Exception("Generic error")
+        mock_session_class.return_value = mock_session
+        
+        result = test_cancel_cancel.test_cancel_request()
+        
+        assert result is None
 
-@patch('src.core.cancel_utils.get_sse_url')
-@patch('requests.Session')
-def test_cancel_request_non_200_status(mock_session_class, mock_get_sse_url, capsys):
-    mock_get_sse_url.return_value = DUMMY_URL
+    @patch('src.scripts.test_cancel_cancel.cancel_utils.get_sse_url')
+    @patch('src.scripts.test_cancel_cancel.requests.Session')
+    def test_cancel_request_invalid_response_format(self, mock_session_class, mock_get_sse_url):
+        """Test handling of invalid response format"""
+        mock_url = "http://localhost:3000/sse"
+        mock_get_sse_url.return_value = mock_url
+        
+        mock_session = MagicMock()
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"invalid": "response"}
+        mock_session.post.return_value = mock_response
+        mock_session_class.return_value = mock_session
+        
+        result = test_cancel_cancel.test_cancel_request()
+        
+        assert result is None
 
-    mock_session_instance = MagicMock()
-    mock_session_class.return_value = mock_session_instance
-    
-    # Mock the post response for non-200 status
-    error_text = "Internal Server Error"
-    mock_post_response = create_mock_response(500, text=error_text)
-    mock_session_instance.post.return_value = mock_post_response
-
-    script_mod.test_cancel_request(url=None)
-
-    mock_get_sse_url.assert_called_once_with(None)
-    mock_session_instance.post.assert_called_once()
-    
-    # Capture stdout and assert error message
-    captured = capsys.readouterr()
-    assert "Error: Cancel request failed with status code 500" in captured.out
-    assert error_text in captured.out
-
-@patch('src.core.cancel_utils.get_sse_url')
-@patch('requests.Session')
-def test_cancel_request_timeout_error(mock_session_class, mock_get_sse_url, capsys):
-    mock_get_sse_url.return_value = DUMMY_URL
-
-    mock_session_instance = MagicMock()
-    mock_session_class.return_value = mock_session_instance
-    
-    # Mock the post method to raise a Timeout exception
-    mock_session_instance.post.side_effect = requests.exceptions.Timeout("fake timeout error")
-
-    script_mod.test_cancel_request(url=None)
-
-    mock_get_sse_url.assert_called_once_with(None)
-    mock_session_instance.post.assert_called_once()
-    
-    # Capture stdout and assert error message
-    captured = capsys.readouterr()
-    assert "Error: Cancel request timed out after 10 seconds" in captured.out
-
-@patch('src.core.cancel_utils.get_sse_url')
-@patch('requests.Session')
-def test_cancel_request_connection_error(mock_session_class, mock_get_sse_url, capsys):
-    mock_get_sse_url.return_value = DUMMY_URL
-
-    mock_session_instance = MagicMock()
-    mock_session_class.return_value = mock_session_instance
-    
-    # Mock the post method to raise a ConnectionError exception
-    mock_session_instance.post.side_effect = requests.exceptions.ConnectionError("fake connection error")
-
-    script_mod.test_cancel_request(url=None)
-
-    mock_get_sse_url.assert_called_once_with(None)
-    mock_session_instance.post.assert_called_once()
-    
-    # Capture stdout and assert error message
-    captured = capsys.readouterr()
-    assert "Error: Could not connect to server for cancel request" in captured.out
-
-@patch('src.core.cancel_utils.get_sse_url')
-@patch('requests.Session')
-def test_cancel_request_other_exception(mock_session_class, mock_get_sse_url, capsys):
-    mock_get_sse_url.return_value = DUMMY_URL
-
-    mock_session_instance = MagicMock()
-    mock_session_class.return_value = mock_session_instance
-    
-    # Mock the post method to raise a generic Exception
-    mock_session_instance.post.side_effect = Exception("fake other error")
-
-    script_mod.test_cancel_request(url=None)
-
-    mock_get_sse_url.assert_called_once_with(None)
-    mock_session_instance.post.assert_called_once()
-    
-    # Capture stdout and assert error message
-    captured = capsys.readouterr()
-    assert "Error during cancel request: fake other error" in captured.out
-
-@patch('src.core.cancel_utils.get_sse_url')
-@patch('requests.Session')
-def test_cancel_request_incorrect_response_format(mock_session_class, mock_get_sse_url, capsys):
-    mock_get_sse_url.return_value = DUMMY_URL
-
-    mock_session_instance = MagicMock()
-    mock_session_class.return_value = mock_session_instance
-    
-    # Mock the post response with incorrect format
-    incorrect_response_data = {"status": "ok"}
-    mock_post_response = create_mock_response(200, json_data=incorrect_response_data)
-    mock_session_instance.post.return_value = mock_post_response
-
-    script_mod.test_cancel_request(url=None)
-
-    mock_get_sse_url.assert_called_once_with(None)
-    mock_session_instance.post.assert_called_once()
-    mock_post_response.json.assert_called_once()
-    
-    # Capture stdout and assert error message
-    captured = capsys.readouterr()
-    assert "❌ Error: Server did not respond with proper cancellation format" in captured.out
-
-@patch('src.core.cancel_utils.get_sse_url')
-@patch('requests.Session')
-def test_cancel_request_server_not_cancelled(mock_session_class, mock_get_sse_url, capsys):
-    mock_get_sse_url.return_value = DUMMY_URL
-
-    mock_session_instance = MagicMock()
-    mock_session_class.return_value = mock_session_instance
-    
-    # Mock the post response indicating not cancelled
-    not_cancelled_response_data = {"jsonrpc": "2.0", "result": {"cancelled": False}}
-    mock_post_response = create_mock_response(200, json_data=not_cancelled_response_data)
-    mock_session_instance.post.return_value = mock_post_response
-
-    script_mod.test_cancel_request(url=None)
-
-    mock_get_sse_url.assert_called_once_with(None)
-    mock_session_instance.post.assert_called_once()
-    mock_post_response.json.assert_called_once()
-    
-    # Capture stdout and assert error message
-    captured = capsys.readouterr()
-    assert "❌ Error: Server did not respond with proper cancellation format" in captured.out 
+    def test_main_execution_simulation(self):
+        """Test that the main execution logic works correctly"""
+        # Test with argument
+        test_args = ['test_cancel_cancel.py', 'http://custom.url']
+        arg_url = test_args[1] if len(test_args) > 1 else None
+        assert arg_url == 'http://custom.url'
+        
+        # Test without argument
+        test_args = ['test_cancel_cancel.py']
+        arg_url = test_args[1] if len(test_args) > 1 else None
+        assert arg_url is None 

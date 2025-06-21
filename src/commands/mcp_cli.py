@@ -2,8 +2,14 @@
 import argparse
 import os
 import json
+import sys
 from pathlib import Path
-from ..mcp.mcp_server import run_server
+
+try:
+    from ..mcp.mcp_server import run_server
+except ImportError:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+    from src.mcp.mcp_server import run_server
 
 def setup_mcp_config(port):
     """Setup MCP configuration in user's Cursor directory"""

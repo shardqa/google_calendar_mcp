@@ -58,4 +58,65 @@ def test_not_found_handler():
     handler = DummyHandler('/other')
     handler_module.handle_get(handler)
     assert handler.status_code == 404
-    assert handler.wfile.getvalue() == b'' 
+    assert handler.wfile.getvalue() == b''
+
+
+def test_sse_handler_exception_handling(monkeypatch):
+    schema = {'protocol': '2025-03-26', 'tools': [{'name': 'tool1', 'inputSchema': {'x': 'y'}}]}
+    monkeypatch.setattr(handler_module, 'get_mcp_schema', lambda: schema)
+    
+    class ExceptionWriter:
+        def __init__(self):
+            self.write_count = 0
+            
+        def write(self, data):
+            self.write_count += 1
+            if self.write_count > 6:  # Let initial writes succeed, then fail
+                raise Exception('Write error')
+            return len(data)
+            
+        def flush(self):
+            pass
+            
+        def getvalue(self):
+            return b''
+    
+    handler = DummyHandler('/sse')
+    handler.wfile = ExceptionWriter()
+    handler_id = id(handler)
+    
+    # Mock sleep to control loop execution  
+    def fake_sleep(seconds):
+        if seconds > 1:  # This is the heartbeat sleep
+            raise Exception('Simulated write error')
+    
+    monkeypatch.setattr(handler_module.time, 'sleep', fake_sleep)
+    
+    # Run the handler - it should handle the exception gracefully
+    handler_module.handle_get(handler)
+    
+    # Verify client was removed from connected_clients
+    assert handler_id not in handler_module.connected_clients
+
+
+def test_sse_handler_client_disconnect(monkeypatch):
+    schema = {'protocol': '2025-03-26', 'tools': [{'name': 'tool1', 'inputSchema': {'x': 'y'}}]}
+    monkeypatch.setattr(handler_module, 'get_mcp_schema', lambda: schema)
+    
+    handler = DummyHandler('/sse')
+    handler_id = id(handler)
+    
+    # Mock sleep to simulate client disconnect
+    sleep_count = 0
+    def fake_sleep(seconds):
+        nonlocal sleep_count
+        sleep_count += 1
+        if seconds > 1 and sleep_count > 1:  # Second heartbeat sleep
+            handler_module.connected_clients.discard(handler_id)  # Simulate disconnect
+    
+    monkeypatch.setattr(handler_module.time, 'sleep', fake_sleep)
+    
+    handler_module.handle_get(handler)
+    
+    # Verify client was properly removed
+    assert handler_id not in handler_module.connected_clients 

@@ -5,78 +5,130 @@
 ```
 google_calendar_mcp/
 ├── config/               # Configurações do projeto
-├── doc/                  # Documentação
-├── src/                  # Código-fonte
-│   ├── __init__.py
-│   ├── auth.py           # Gerenciamento de autenticação
-│   ├── calendar_ops.py   # Operações do calendário
-│   ├── cli.py            # Interface de linha de comando
-│   ├── main.py           # Ponto de entrada da aplicação
-│   ├── mcp_cli.py        # CLI para o servidor MCP
-│   ├── mcp_schema.py     # Definição do schema MCP
-│   └── mcp_server.py     # Implementação do servidor MCP
-├── tests/                # Testes automatizados
-│   ├── test_auth.py
-│   ├── test_calendar_ops.py
-│   ├── test_cli.py
-│   └── test_main.py
-├── .coveragerc           # Configuração de cobertura de código
-├── .gitignore            # Arquivos ignorados pelo git
-├── credentials.json      # Credenciais OAuth2 (não versionado)
-├── README.md             # Documentação principal
+├── doc/                  # Documentação completa
+│   ├── troubleshooting/  # Diagnósticos e soluções
+│   ├── architecture.md
+│   ├── intelligent_scheduling.md
+│   └── tasks_integration.md
+├── src/                  # Código-fonte modular
+│   ├── commands/         # Interfaces de linha de comando
+│   │   ├── cli.py        # CLI principal do calendário
+│   │   ├── main.py       # Coordenação entre CLIs
+│   │   ├── mcp_cli.py    # CLI do servidor MCP
+│   │   └── tasks_cli.py  # CLI para Google Tasks
+│   ├── core/             # Lógica de negócio
+│   │   ├── auth.py       # Autenticação unificada
+│   │   ├── calendar_ops.py # Operações de calendário
+│   │   ├── cancel_utils.py # Utilitários de cancelamento
+│   │   ├── tasks_auth.py   # Autenticação Google Tasks
+│   │   └── tasks_ops.py    # Operações de tarefas
+│   ├── mcp/              # Protocolo MCP
+│   │   ├── mcp_handler.py     # Handler principal HTTP
+│   │   ├── mcp_get_handler.py # Endpoints GET
+│   │   ├── mcp_post_*.py      # Handlers POST especializados
+│   │   ├── mcp_schema.py      # Schema e definições
+│   │   └── mcp_server.py      # Servidor HTTP threading
+│   └── main.py           # Ponto de entrada principal
+├── tests/                # Cobertura de testes (96%)
+│   ├── auth/             # Testes de autenticação
+│   ├── calendar_ops/     # Testes de operações
+│   ├── cli/              # Testes de interfaces CLI
+│   ├── core/             # Testes de lógica central
+│   ├── integration/      # Testes de integração
+│   ├── mcp_*/            # Testes do protocolo MCP
+│   └── tasks/            # Testes Google Tasks
+├── pytest.ini           # Configuração de testes
 ├── requirements.txt      # Dependências do projeto
-└── token.pickle          # Token de autenticação (não versionado)
+└── TODO.md              # Planejamento e roadmap
 ```
 
 ## Componentes Principais
 
-### Módulo de Autenticação (`auth.py`)
+### Camada de Comandos (`src/commands/`)
 
-- Estabelece a conexão OAuth2 com o Google
-- Gerencia tokens de autenticação
-- Persiste as credenciais entre sessões
-- Renova tokens expirados automaticamente
+#### CLI Principal (`cli.py`)
+- Interface de linha de comando para operações de calendário
+- Menu interativo e processamento de argumentos
+- Exibição formatada de eventos e resultados
+- Validação de entrada e tratamento de erros
 
-### Operações de Calendário (`calendar_ops.py`)
+#### CLI Google Tasks (`tasks_cli.py`)
+- Interface dedicada para gerenciamento de tarefas
+- Comandos `list`, `add`, `remove` com parsing robusto
+- Integração com autenticação unificada
+- Mensagens de feedback e tratamento de exceções
 
-- `list_events()`: Obtém a lista de eventos do calendário
-- `add_event()`: Adiciona um novo evento ao calendário
-- `remove_event()`: Remove um evento existente
+#### Coordenador MCP (`mcp_cli.py`)
+- Configuração automática do arquivo `.cursor/mcp.json`
+- Inicialização e controle do servidor MCP
+- Argumentos de linha de comando para configuração
+- Gerenciamento de portas e hosts
 
-### Interface de Linha de Comando (`cli.py`)
+### Camada de Negócio (`src/core/`)
 
-- Menu interativo para o usuário
-- Processamento de argumentos de linha de comando
-- Exibição formatada dos eventos
-- Captura de entradas do usuário
+#### Autenticação Unificada (`auth.py`)
+- Sistema OAuth2 compartilhado entre Calendar e Tasks
+- Refresh automático de tokens com retry logic
+- Persistência segura de credenciais
+- Scopes configuráveis por serviço
 
-### Módulo Principal (`main.py`)
+#### Operações de Calendário (`calendar_ops.py`)
+- `list_events()`: Lista eventos com filtros de data
+- `add_event()`: Criação com validação de campos
+- `remove_event()`: Remoção segura com verificação de ID
+- Tratamento robusto de erros da API
 
-- Ponto de entrada da aplicação
-- Integração entre os componentes
-- Fluxo de execução principal
+#### Operações de Tasks (`tasks_ops.py`)
+- `list_tasks()`: Listagem com suporte a múltiplas listas
+- `add_task()`: Criação com título e descrição opcional
+- `remove_task()`: Remoção por ID com validação
+- Integração completa com Google Tasks API
 
-### Servidor MCP
+#### Utilitários (`cancel_utils.py`)
+- Verificação de conectividade de rede
+- Timeouts configuráveis para operações
+- Helpers para cancelamento de requisições
+- Logging estruturado para debugging
 
-#### Schema MCP (`mcp_schema.py`)
+### Camada de Protocolo (`src/mcp/`)
 
-- Define a estrutura dos endpoints disponíveis
-- Documenta parâmetros e valores de retorno
-- Fornece metadados para integração com Cursor
+#### Servidor Central (`mcp_server.py`)
+- Servidor HTTP multi-thread com ThreadingHTTPServer
+- Binding inteligente de interfaces (0.0.0.0 para localhost)
+- Configuração de socket reutilizável
+- Controle de lifecycle com start/stop thread-safe
 
-#### Servidor MCP (`mcp_server.py`)
+#### Handler Principal (`mcp_handler.py`)
+- Roteamento de requisições HTTP para handlers especializados
+- Processamento de headers e CORS
+- Delegação para GET/POST handlers
+- Tratamento centralizado de erros HTTP
 
-- Implementa servidor HTTP para o protocolo MCP
-- Expõe as operações de calendário como endpoints
-- Processa requisições JSON-RPC
-- Gerencia erros e respostas
+#### Handlers Especializados
+- **GET Handler** (`mcp_get_handler.py`): Endpoints de listagem e SSE
+- **POST Handler** (`mcp_post_handler.py`): Roteamento de operações POST
+- **POST SSE** (`mcp_post_sse_handler.py`): Server-Sent Events e tools
+- **POST Other** (`mcp_post_other_handler.py`): Operações diretas
 
-#### CLI do Servidor MCP (`mcp_cli.py`)
+#### Schema e Definições (`mcp_schema.py`)
+- Estrutura completa dos endpoints MCP
+- Documentação de parâmetros e tipos de retorno
+- Metadados para integração com assistentes IA
+- Especificação JSON-RPC 2.0 compatível
 
-- Interface de linha de comando para o servidor MCP
-- Configura automaticamente o arquivo `.cursor/mcp.json`
-- Gerencia argumentos de linha de comando
-- Controla inicialização e execução do servidor
+## Arquitetura de Qualidade
+
+### Estratégia de Testes
+- **Test-Driven Development**: Implementação red-green-refactor
+- **96% de cobertura** com 145+ testes automatizados
+- **Testes paralelos**: Execução rápida com pytest-xdist
+- **Mocking sofisticado**: Isolamento de dependências externas
+
+### Padrões de Design
+- **Separação de responsabilidades**: Camadas bem definidas
+- **Inversão de dependências**: Injeção via parâmetros
+- **Single Responsibility**: Módulos focados em uma função
+- **DRY**: Reutilização entre Calendar e Tasks APIs
 
 ---
 Para visão geral, veja [Visão Geral](overview.md).

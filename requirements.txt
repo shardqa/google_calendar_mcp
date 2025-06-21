@@ -8,3 +8,5 @@ pytest-mock
 pytest-cov==4.1.0
 coverage==7.4.3
 pytest-timeout==2.2.0
+pytest-cov==4.1.0
+coverage==7.4.3
