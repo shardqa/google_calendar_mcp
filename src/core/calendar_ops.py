@@ -35,11 +35,33 @@ class CalendarOperations:
             formatted_events.append({"type": "text", "text": event_text})
         return formatted_events
 
+    def _ensure_timezone(self, datetime_str: str) -> str:
+        """Ensure datetime string has timezone information."""
+        if datetime_str.endswith('Z') or '+' in datetime_str[-6:] or '-' in datetime_str[-6:]:
+            return datetime_str
+        
+        if '.' in datetime_str:
+            return f"{datetime_str}+00:00"
+        else:
+            return f"{datetime_str}.000+00:00"
+
     def add_event(self, event_data: Dict) -> Dict:
         try:
+            processed_event_data = event_data.copy()
+            
+            if 'start' in processed_event_data and 'dateTime' in processed_event_data['start']:
+                processed_event_data['start']['dateTime'] = self._ensure_timezone(
+                    processed_event_data['start']['dateTime']
+                )
+            
+            if 'end' in processed_event_data and 'dateTime' in processed_event_data['end']:
+                processed_event_data['end']['dateTime'] = self._ensure_timezone(
+                    processed_event_data['end']['dateTime']
+                )
+            
             event = self.service.events().insert(
                 calendarId='primary',
-                body=event_data
+                body=processed_event_data
             ).execute()
             return {'status': 'confirmed', 'event': event}
         except Exception as e:
@@ -74,7 +96,6 @@ class CalendarOperations:
             Dict containing the created event data
         """
         try:
-            # Build RRULE based on frequency
             frequency_map = {
                 'daily': 'DAILY',
                 'weekly': 'WEEKLY', 
@@ -86,11 +107,10 @@ class CalendarOperations:
             
             rrule = f"RRULE:FREQ={frequency_map[frequency]};COUNT={count}"
             
-            # Build event data
             event_data = {
                 'summary': summary,
-                'start': {'dateTime': start_time},
-                'end': {'dateTime': end_time},
+                'start': {'dateTime': self._ensure_timezone(start_time)},
+                'end': {'dateTime': self._ensure_timezone(end_time)},
                 'recurrence': [rrule]
             }
             
@@ -99,7 +119,6 @@ class CalendarOperations:
             if description:
                 event_data['description'] = description
             
-            # Create the recurring event
             event = self.service.events().insert(
                 calendarId='primary',
                 body=event_data

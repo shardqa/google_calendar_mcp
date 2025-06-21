@@ -27,6 +27,8 @@
 
 ### Next
 
+- [ ] **Adicionar opção para editar eventos do calendário**: Implementar funcionalidade para editar eventos existentes via MCP
+- [ ] **Testar e ajustar adicionar eventos**: Investigar e corrigir problema onde add_event está sendo chamado mas não está criando eventos no calendário
 - [ ] Build MCP command `schedule_tasks` that analyzes current calendar
   and tasks to propose time blocks
 - [ ] Implement priority-based task ordering algorithm considering

@@ -95,6 +95,19 @@ curl -X POST http://***REMOVED***:3001/sse \
 }
 ```
 
+```json
+{
+  "mcpServers": {
+    "google_calendar": {
+      "url": "http://10.243.215.33:3001/sse",
+      "type": "sse",
+      "enabled": true,
+      "description": "Google Calendar Integration"
+    }
+  }
+}
+```
+
 ### Verificação
 
 1. **Restart do Cursor**: Reinicie o Cursor após alterar o mcp.json
