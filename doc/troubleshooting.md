@@ -12,7 +12,8 @@
 
 **Problema**: Erro "Google Tasks API has not been used in project [PROJECT_ID] before or it is disabled"
 
-**Solução**: 
+**Solução**:
+
 1. Acesse o [Google Cloud Console](https://console.cloud.google.com/)
 2. Selecione seu projeto
 3. Vá para "APIs & Services" > "Library"
@@ -25,6 +26,7 @@
 **Problema**: Mesmo com a API habilitada, operações de tarefas falham
 
 **Solução**: Certifique-se que os escopos OAuth incluem Tasks:
+
 - `https://www.googleapis.com/auth/calendar`
 - `https://www.googleapis.com/auth/tasks`
 
@@ -103,11 +105,37 @@ Isso garante que as dependências corretas e os plugins instalados no venv (como
   - Reiniciar servidor: `pkill -f "mcp_cli" && make mcp-start`
   - Liberar porta: `sudo fuser -k 3001/tcp`
 
+### Servidor MCP Não Responde ou "Não Traz Tasks"
+
+- **Problema**: Servidor MCP parece estar rodando mas não responde adequadamente ou ferramentas como `list_tasks` não funcionam
+- **Sintomas**:
+  - Erro "no result from tool"
+  - Timeout nas chamadas MCP
+  - Ferramentas funcionam localmente mas não via MCP
+- **Diagnóstico**:
+  - Verificar se servidor está realmente ativo: `ps aux | grep mcp_cli`
+  - Testar conectividade: `curl http://localhost:3001/sse`
+  - Comparar com CLI local: `python -m src.commands.tasks_cli list`
+- **Soluções**:
+  - Reiniciar completamente: `make mcp-restart`
+  - Verificar logs do servidor por mensagens de erro
+  - Confirmar que não há conflitos de versão de código (fazer commit/push se necessário)
+  - Testar autenticação independentemente via CLI
+
 ### Ferramentas MCP "Tool not found"
 
 - **Problema**: Servidor retorna erro "Tool not found" para ferramentas válidas
 - **Causa**: Handlers SSE e Other precisam implementar as mesmas ferramentas
 - **Solução**: Verificar se ambos `mcp_post_sse_handler.py` e `mcp_post_other_handler.py` têm as ferramentas implementadas
+
+### Sincronização de Código MCP
+
+- **Problema**: MCP funciona localmente mas não em ambiente remoto/Cursor
+- **Causa**: Código local não sincronizado com repositório remoto
+- **Solução**:
+  - Fazer commit e push das alterações
+  - Aguardar deploy automático se houver pipeline CI/CD
+  - Verificar se o ambiente remoto está usando a versão correta do código
 
 ## Diagnosticando Problemas de Cobertura de Testes
 

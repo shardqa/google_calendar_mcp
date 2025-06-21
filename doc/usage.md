@@ -47,13 +47,14 @@ O servidor estará disponível em `http://localhost:3001/sse` para conexões SSE
 
 ### Ferramentas Disponíveis
 
-O servidor MCP oferece 7 ferramentas:
+O servidor MCP oferece 8 ferramentas:
 
 **Google Calendar:**
 
 - `echo` - Teste de conexão
-- `list_events` - Listar eventos do calendário
+- `list_events` - Listar eventos do calendário com informações detalhadas (data/hora, localização, descrição)
 - `add_event` - Adicionar novos eventos
+- `add_recurring_task` - Criar tarefas recorrentes (diário, semanal, mensal) como lembretes de medicação
 - `remove_event` - Remover eventos existentes
 
 **Google Tasks:**
@@ -61,6 +62,43 @@ O servidor MCP oferece 7 ferramentas:
 - `list_tasks` - Listar tarefas pendentes
 - `add_task` - Adicionar novas tarefas
 - `remove_task` - Remover tarefas existentes
+
+### Tarefas Recorrentes
+
+O sistema agora suporta criação de tarefas recorrentes através do Google Calendar, ideal para atividades repetitivas como:
+
+- Lembretes de medicação
+- Exercícios diários
+- Reuniões semanais
+- Check-ups mensais
+
+**Exemplo de uso:**
+
+```bash
+# Criar lembrete diário para tomar remédio
+add_recurring_task:
+  summary: "Tomar medicação"
+  frequency: "daily"
+  count: 30
+  start_time: "2024-03-20T08:00:00Z"
+  end_time: "2024-03-20T08:30:00Z"
+  description: "Lembrete diário - medicação da manhã"
+```
+
+**Frequências suportadas:**
+
+- `daily`: Recorrência diária
+- `weekly`: Recorrência semanal  
+- `monthly`: Recorrência mensal
+
+### Exibição Aprimorada de Eventos
+
+Os eventos do calendário agora exibem informações completas:
+
+- 📅 Data e hora de início/fim
+- 📍 Localização (quando disponível)
+- 📝 Descrição (quando disponível)
+- Formatação visual com emojis para melhor legibilidade
 
 ## Comandos CLI Disponíveis
 

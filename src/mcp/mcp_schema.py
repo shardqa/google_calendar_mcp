@@ -137,6 +137,45 @@ def get_mcp_schema():
                     },
                     "required": ["task_id"]
                 }
+            },
+            {
+                "name": "add_recurring_task",
+                "description": "Add a recurring task/event to Google Calendar",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "summary": {
+                            "type": "string",
+                            "description": "Title of the recurring task"
+                        },
+                        "frequency": {
+                            "type": "string",
+                            "description": "Recurrence frequency (daily, weekly, monthly)",
+                            "enum": ["daily", "weekly", "monthly"]
+                        },
+                        "count": {
+                            "type": "integer",
+                            "description": "Number of occurrences"
+                        },
+                        "start_time": {
+                            "type": "string",
+                            "description": "Start time (ISO format: YYYY-MM-DDTHH:MM:SS)"
+                        },
+                        "end_time": {
+                            "type": "string",
+                            "description": "End time (ISO format: YYYY-MM-DDTHH:MM:SS)"
+                        },
+                        "location": {
+                            "type": "string",
+                            "description": "Location of the task (optional)"
+                        },
+                        "description": {
+                            "type": "string",
+                            "description": "Description of the task (optional)"
+                        }
+                    },
+                    "required": ["summary", "frequency", "count", "start_time", "end_time"]
+                }
             }
         ]
     } 

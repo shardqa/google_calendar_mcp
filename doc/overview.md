@@ -9,8 +9,11 @@ tanto via linha de comando quanto através de assistentes de IA.
 
 ### Gerenciamento de Calendário
 
-- **Listar eventos**: Visualize próximos eventos com intervalos personalizáveis
+- **Listar eventos**: Eventos com informações detalhadas incluindo data/hora,
+  localização e descrição com formatação visual
 - **Adicionar eventos**: Crie eventos com título, descrição, data, hora e localização
+- **Tarefas recorrentes**: Sistema híbrido para criar eventos recorrentes
+  (diário, semanal, mensal) usando Google Calendar para lembretes persistentes
 - **Remover eventos**: Exclua eventos existentes pelo ID com tratamento de erros
 - **Autenticação OAuth2**: Conexão segura com refresh automático de tokens
 
@@ -20,14 +23,16 @@ tanto via linha de comando quanto através de assistentes de IA.
 - **Interface CLI**: Comandos `tasks list`, `tasks add`, `tasks remove`
 - **Integração MCP**: Acesso a tarefas através do protocolo MCP
 - **Autenticação unificada**: Mesmo sistema de auth para calendário e tarefas
-- **Configuração da API**: Requer habilitação da Google Tasks API no Google Cloud Console
+- **Configuração da API**: Requer habilitação da Google Tasks API no
+  Google Cloud Console
 
 ### Servidor MCP Remoto
 
 - **Acesso via rede**: Suporte a configuração de servidor remoto
 - **ZeroTier Integration**: Compatibilidade com redes mesh para acesso seguro
 - **Systemd Service**: Execução como serviço do sistema para alta disponibilidade
-- **7 Ferramentas disponíveis**: Echo, Calendar (list/add/remove events), Tasks (list/add/remove tasks)
+- **8 Ferramentas disponíveis**: Echo, Calendar (list/add/remove events,
+  add recurring tasks), Tasks (list/add/remove tasks)
 
 ### Scripts Utilitários e Diagnóstico
 
@@ -47,18 +52,21 @@ tanto via linha de comando quanto através de assistentes de IA.
 
 ### Cobertura de Testes Atual
 
-- **99% de cobertura total** com 182 testes automatizados
-- **100% de cobertura** em módulos críticos (auth, CLI, operações principais)
-- **100% de cobertura de branches** em handlers MCP essenciais
+- **100% de cobertura total** com 193 testes automatizados
+  (725 statements, 178 branches)
+- **100% de cobertura** em todos os módulos críticos (auth, CLI, operações
+  principais, handlers MCP)
+- **100% de cobertura de branches** em todos os handlers MCP
 - **Zero testes falhando** em ambiente de produção e CI/CD
 
 ### Estratégias de Teste
 
 - **Metodologia TDD**: Desenvolvimento orientado por testes
 - **Testes unitários isolados**: Mocking estratégico de dependências externas
-- **Cobertura de edge cases**: Timeouts, erros HTTP, falhas de decodificação
+- **Cobertura de edge cases**: Timeouts, erros HTTP, falhas de decodificação,
+  frequências inválidas
 - **Testes de integração**: Validação de fluxos completos de usuário
-- **Performance otimizada**: Suite completa executando em ~3.6 segundos
+- **Performance otimizada**: Suite completa executando em ~3.0 segundos
 - **CI/CD robusta**: GitHub Actions com testes automatizados e deployment
 
 ### Estrutura Modular

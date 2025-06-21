@@ -85,6 +85,29 @@ def handle_post_other(handler, request, response):
                     response["result"] = {"success": ops.remove_task(task_id, tasklist_id)}
             except Exception as e:
                 response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
+        elif tool_name == "add_recurring_task":
+            service = auth.get_calendar_service()
+            summary = tool_args.get("summary")
+            frequency = tool_args.get("frequency")
+            count = tool_args.get("count")
+            start_time = tool_args.get("start_time")
+            end_time = tool_args.get("end_time")
+            location = tool_args.get("location")
+            description = tool_args.get("description")
+            
+            if not all([summary, frequency, count, start_time, end_time]):
+                response["error"] = {"code": -32602, "message": "Missing required recurring task parameters"}
+            else:
+                ops = calendar_ops.CalendarOperations(service)
+                response["result"] = ops.add_recurring_event(
+                    summary=summary,
+                    frequency=frequency,
+                    count=count,
+                    start_time=start_time,
+                    end_time=end_time,
+                    location=location,
+                    description=description
+                )
         else:
             response["error"] = {"code": -32601, "message": f"Tool not found: {tool_name}"}
     else:

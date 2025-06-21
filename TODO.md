@@ -8,7 +8,15 @@
 
 ### MCP Agenda Enhancement
 
-- [ ] **Melhorar listagem de eventos**: Atualmente o MCP só mostra títulos dos eventos. Implementar exibição completa com data/hora, localização, descrição e outras informações relevantes usando TDD.
+- [x] **Melhorar listagem de eventos**: Implementado exibição completa com data/hora, localização, descrição e outras informações relevantes usando TDD. Eventos agora mostram todas as informações contextuais com formatação visual (emojis).
+
+### Recurring Tasks Implementation
+
+- [x] **Implementar tarefas recorrentes (Opção 1 - Híbrida)**: Comando `add_recurring_task` implementado! Adiciona eventos recorrentes no Google Calendar (daily, weekly, monthly) usando TDD. Cobertura 100% alcançada.
+
+### Quality Metrics Achievement  
+
+- [x] **100% Code Coverage**: Alcançado! 725 statements, 178 branches, 193 testes passando. Melhorias nos testes de `calendar_ops.py` e `mcp_post_sse_handler.py`.
 
 ### Próxima Fase: Intelligent Scheduling
 

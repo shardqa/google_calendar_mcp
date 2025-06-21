@@ -53,4 +53,59 @@ class CalendarOperations:
             ).execute()
             return True
         except Exception:
-            return False 
+            return False
+
+    def add_recurring_event(self, summary: str, frequency: str, count: int, 
+                          start_time: str, end_time: str, 
+                          location: Optional[str] = None, 
+                          description: Optional[str] = None) -> Dict:
+        """Create a recurring event in Google Calendar.
+        
+        Args:
+            summary: Title of the event
+            frequency: Recurrence frequency ('daily', 'weekly', 'monthly')
+            count: Number of occurrences
+            start_time: Start time in ISO format
+            end_time: End time in ISO format
+            location: Optional location
+            description: Optional description
+            
+        Returns:
+            Dict containing the created event data
+        """
+        try:
+            # Build RRULE based on frequency
+            frequency_map = {
+                'daily': 'DAILY',
+                'weekly': 'WEEKLY', 
+                'monthly': 'MONTHLY'
+            }
+            
+            if frequency not in frequency_map:
+                raise ValueError(f"Unsupported frequency: {frequency}")
+            
+            rrule = f"RRULE:FREQ={frequency_map[frequency]};COUNT={count}"
+            
+            # Build event data
+            event_data = {
+                'summary': summary,
+                'start': {'dateTime': start_time},
+                'end': {'dateTime': end_time},
+                'recurrence': [rrule]
+            }
+            
+            if location:
+                event_data['location'] = location
+            if description:
+                event_data['description'] = description
+            
+            # Create the recurring event
+            event = self.service.events().insert(
+                calendarId='primary',
+                body=event_data
+            ).execute()
+            
+            return {'status': 'confirmed', 'event': event, **event}
+            
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)} 
