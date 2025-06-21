@@ -2,9 +2,13 @@
 
 ## Status: Atividades Ativas
 
-### Servidor MCP - Reconfiguração Necessária ⚠️
+### Servidor MCP - Status ✅
 
-- [ ] **Reconfigurar servidor MCP**: Servidor não está trazendo as tasks via MCP tools, enquanto o serviço local funciona corretamente. Possível problema com token de autenticação ou configuração do servidor remoto.
+- [x] **Servidor MCP funcionando**: Problema resolvido! Servidor MCP está trazendo as tasks corretamente via MCP tools.
+
+### MCP Agenda Enhancement
+
+- [ ] **Melhorar listagem de eventos**: Atualmente o MCP só mostra títulos dos eventos. Implementar exibição completa com data/hora, localização, descrição e outras informações relevantes usando TDD.
 
 ### Próxima Fase: Intelligent Scheduling
 

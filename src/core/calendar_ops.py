@@ -19,7 +19,20 @@ class CalendarOperations:
         formatted_events = []
         for event in events:
             summary = event.get('summary', 'No Summary')
-            formatted_events.append({"type": "text", "text": summary})
+            start_time = event.get('start', {}).get('dateTime', 'No start time')
+            end_time = event.get('end', {}).get('dateTime', 'No end time')
+            location = event.get('location', '')
+            description = event.get('description', '')
+            
+            event_text = f"{summary}\n📅 Start: {start_time}\n📅 End: {end_time}"
+            
+            if location:
+                event_text += f"\n📍 Location: {location}"
+            
+            if description:
+                event_text += f"\n📝 Description: {description}"
+            
+            formatted_events.append({"type": "text", "text": event_text})
         return formatted_events
 
     def add_event(self, event_data: Dict) -> Dict:
