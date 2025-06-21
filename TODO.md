@@ -1,39 +1,19 @@
 # TODO
 
-## Status: Fase 1 Completa + Script Testing Optimization ✅
+## Status: Atividades Ativas
 
-### Google Tasks Integration (Concluída)
+### Servidor MCP - Reconfiguração Necessária ⚠️
 
-- [x] **API Integration**: Google Tasks API com autenticação OAuth2 completa
-- [x] **CLI Commands**: `tasks list`, `tasks add`, `tasks remove` funcionais
-- [x] **Unified Auth**: Sistema compartilhado Calendar + Tasks
-- [x] **Documentation**: Arquitetura, práticas e troubleshooting atualizados
+- [ ] **Reconfigurar servidor MCP**: Servidor não está trazendo as tasks via MCP tools, enquanto o serviço local funciona corretamente. Possível problema com token de autenticação ou configuração do servidor remoto.
 
-### Testing Excellence (Concluída) ✅
-
-- [x] **Test Coverage**: 100% geral do projeto com 182+ testes 🏆
-- [x] **Coverage Improvement**: Meta ultrapassada! Aumentou de 90% para 100%:
-  - `mcp_post_other_handler.py` (64% → 100%): +36% melhoria
-  - `mcp_post_sse_handler.py` (72% → 100%): +28% melhoria
-- [x] **Branch Coverage**: 100% - todas as branches condicionais testadas
-- [x] **Script Testing**: 94-96% cobertura em scripts utilitários
-- [x] **Zero Failures**: Todos os testes passando consistentemente
-- [x] **TDD Implementation**: Metodologia red-green-refactor consolidada
-- [x] **Edge Case Coverage**: Timeouts, erros HTTP, decodificação,
-  formatos desconhecidos + cenários de erro Tasks + branches condicionais
-- [x] **Performance**: Suite completa executando em ~3.6 segundos
-- [x] **Isolated Testing**: Testes unitários com mocking estratégico
-- [x] **Diagnostic Scripts**: Conectividade, SSE, inicialização,
-  cancelamento
-
-## Próxima Fase: Intelligent Scheduling
+### Próxima Fase: Intelligent Scheduling
 
 - [ ] Design intelligent scheduling algorithm that reads current
   calendar/tasks and suggests time blocks
 - [ ] Update project documentation and README with new usage examples
 - [ ] Run markdownlint --fix on all markdown documents
 
-## Next
+### Next
 
 - [ ] Build MCP command `schedule_tasks` that analyzes current calendar
   and tasks to propose time blocks
@@ -48,7 +28,7 @@
   and adjust imports
 - [ ] Maintain comprehensive test coverage during refactors
 
-## Later
+### Later
 
 - [ ] Build a lightweight web interface for unified calendar and task management
 - [ ] Profile and optimize performance for large datasets
@@ -76,3 +56,29 @@
 
 For background information, see the project [Architecture](doc/architecture.md)
 and [Overview](doc/overview.md) documents.
+
+## Completed Activities ✅
+
+### Google Tasks Integration (Concluída)
+
+- [x] **API Integration**: Google Tasks API com autenticação OAuth2 completa
+- [x] **CLI Commands**: `tasks list`, `tasks add`, `tasks remove` funcionais
+- [x] **Unified Auth**: Sistema compartilhado Calendar + Tasks
+- [x] **Documentation**: Arquitetura, práticas e troubleshooting atualizados
+
+### Testing Excellence (Concluída) ✅
+
+- [x] **Test Coverage**: 100% geral do projeto com 182+ testes 🏆
+- [x] **Coverage Improvement**: Meta ultrapassada! Aumentou de 90% para 100%:
+  - `mcp_post_other_handler.py` (64% → 100%): +36% melhoria
+  - `mcp_post_sse_handler.py` (72% → 100%): +28% melhoria
+- [x] **Branch Coverage**: 100% - todas as branches condicionais testadas
+- [x] **Script Testing**: 94-96% cobertura em scripts utilitários
+- [x] **Zero Failures**: Todos os testes passando consistentemente
+- [x] **TDD Implementation**: Metodologia red-green-refactor consolidada
+- [x] **Edge Case Coverage**: Timeouts, erros HTTP, decodificação,
+  formatos desconhecidos + cenários de erro Tasks + branches condicionais
+- [x] **Performance**: Suite completa executando em ~3.6 segundos
+- [x] **Isolated Testing**: Testes unitários com mocking estratégico
+- [x] **Diagnostic Scripts**: Conectividade, SSE, inicialização,
+  cancelamento

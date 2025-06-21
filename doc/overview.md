@@ -20,6 +20,14 @@ tanto via linha de comando quanto através de assistentes de IA.
 - **Interface CLI**: Comandos `tasks list`, `tasks add`, `tasks remove`
 - **Integração MCP**: Acesso a tarefas através do protocolo MCP
 - **Autenticação unificada**: Mesmo sistema de auth para calendário e tarefas
+- **Configuração da API**: Requer habilitação da Google Tasks API no Google Cloud Console
+
+### Servidor MCP Remoto
+
+- **Acesso via rede**: Suporte a configuração de servidor remoto
+- **ZeroTier Integration**: Compatibilidade com redes mesh para acesso seguro
+- **Systemd Service**: Execução como serviço do sistema para alta disponibilidade
+- **7 Ferramentas disponíveis**: Echo, Calendar (list/add/remove events), Tasks (list/add/remove tasks)
 
 ### Scripts Utilitários e Diagnóstico
 
@@ -39,10 +47,10 @@ tanto via linha de comando quanto através de assistentes de IA.
 
 ### Cobertura de Testes Atual
 
-- **98% de cobertura total** com 200+ testes automatizados
+- **99% de cobertura total** com 182 testes automatizados
 - **100% de cobertura** em módulos críticos (auth, CLI, operações principais)
-- **94-96% de cobertura** em scripts utilitários e diagnóstico
-- **Zero testes falhando** em ambiente de produção
+- **100% de cobertura de branches** em handlers MCP essenciais
+- **Zero testes falhando** em ambiente de produção e CI/CD
 
 ### Estratégias de Teste
 
@@ -50,7 +58,8 @@ tanto via linha de comando quanto através de assistentes de IA.
 - **Testes unitários isolados**: Mocking estratégico de dependências externas
 - **Cobertura de edge cases**: Timeouts, erros HTTP, falhas de decodificação
 - **Testes de integração**: Validação de fluxos completos de usuário
-- **Performance otimizada**: Suite completa executando em ~4 segundos
+- **Performance otimizada**: Suite completa executando em ~3.6 segundos
+- **CI/CD robusta**: GitHub Actions com testes automatizados e deployment
 
 ### Estrutura Modular
 

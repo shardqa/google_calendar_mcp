@@ -6,6 +6,64 @@
 - **Erros de API**: Confirme se a API do Google Calendar está ativada no Console Google Cloud.
 - **Token inválido**: Exclua o arquivo `token.pickle` para forçar uma nova autenticação.
 
+## Google Tasks API
+
+### API não habilitada
+
+**Problema**: Erro "Google Tasks API has not been used in project [PROJECT_ID] before or it is disabled"
+
+**Solução**: 
+1. Acesse o [Google Cloud Console](https://console.cloud.google.com/)
+2. Selecione seu projeto
+3. Vá para "APIs & Services" > "Library"
+4. Pesquise por "Google Tasks API" e clique em "Enable"
+5. Aguarde alguns minutos para a API ser ativada
+6. Teste novamente com `tasks list` ou `tasks add`
+
+### Escopo de autenticação insuficiente
+
+**Problema**: Mesmo com a API habilitada, operações de tarefas falham
+
+**Solução**: Certifique-se que os escopos OAuth incluem Tasks:
+- `https://www.googleapis.com/auth/calendar`
+- `https://www.googleapis.com/auth/tasks`
+
+Delete `token.pickle` para forçar nova autenticação com escopos corretos.
+
+## Problemas de CI/CD
+
+### GitHub Actions - Caminhos Python Hardcoded
+
+**Problema**: Testes falhando no GitHub Actions com `FileNotFoundError` para caminhos como `/home/runner/work/.../.../.venv/bin/python`
+
+**Causa**: Testes usando caminhos hardcoded em vez do executável Python atual
+
+**Solução**: Substituir referências diretas ao path do venv por `sys.executable`:
+
+```python
+# Antes (problemático)
+python_executable = os.path.join(os.getcwd(), '.venv', 'bin', 'python')
+
+# Depois (correto)
+python_executable = sys.executable
+```
+
+### Subprocess Tests em CI
+
+**Problema**: Testes com subprocess falhando em ambientes CI/CD
+
+**Solução**: Simplificar testes para usar simulação direta em vez de subprocess:
+
+```python
+# Abordagem robusta para teste de __main__
+@patch('sys.argv', ['script_name'])
+@patch('builtins.exec')
+def test_main_execution(mock_exec):
+    with open(script_path, 'r') as f:
+        script_content = f.read()
+    exec(script_content)
+```
+
 ## Problemas na Execução de Testes
 
 ### Diagnóstico de Testes Lentos
