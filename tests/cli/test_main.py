@@ -108,9 +108,8 @@ def test_commands_main_dunder_main_coverage():
     # We mock the underlying interactive loop in 'src.main.main' to prevent it
     # from hanging, allowing the script to exit cleanly.
     with patch('src.main.main', return_value=0):
-        python_executable = os.path.join(project_root, '.venv', 'bin', 'python')
         cmd = [
-            python_executable,
+            sys.executable,
             "-m", "coverage", "run",
             "--source=src.commands.main",
             "-m", "src.commands.main"

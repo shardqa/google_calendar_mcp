@@ -58,9 +58,8 @@ def test_mcp_cli_script_execution(tmp_path):
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     rc_path = os.path.join(project_root, '.coveragerc')
 
-    python_executable = os.path.join(project_root, '.venv', 'bin', 'python')
     cmd = [
-        python_executable, "-m", "coverage", "run", f"--rcfile={rc_path}",
+        sys.executable, "-m", "coverage", "run", f"--rcfile={rc_path}",
         script_path, '--setup-only'
     ]
 
