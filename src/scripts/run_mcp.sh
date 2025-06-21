@@ -2,7 +2,12 @@
 # Script to run the Google Calendar MCP server
 
 # Change to the project root directory
-cd "$(dirname "$(dirname "$0")")"
+cd "$(dirname "$(dirname "$(dirname "$0")")")"
+
+# Activate virtual environment if it exists
+if [ -d ".venv" ]; then
+    source .venv/bin/activate
+fi
 
 # Default port
 PORT=3001
@@ -44,15 +49,19 @@ check_server() {
 
 # Set any environment variables if needed
 
+# Determine Python executable (prefer venv if available)
+PYTHON_CMD=".venv/bin/python3"
+echo "Using virtual environment Python: $PYTHON_CMD"
+
 if [ "$TEST_BASIC" = true ]; then
   echo "Running basic server connectivity test"
-  python -m src.test_server
+  PYTHONPATH=. $PYTHON_CMD -m src.test_server
 elif [ "$TEST_CANCEL" = true ]; then
   echo "Running cancel test - testing cancellation functionality"
-  python -m src.test_cancel
+  PYTHONPATH=. $PYTHON_CMD -m src.test_cancel
 elif [ "$TEST_MODE" = true ]; then
   echo "Running in test mode - testing SSE connection"
-  python -m src.test_sse_client
+  PYTHONPATH=. $PYTHON_CMD -m src.test_sse_client
 else
   # Check if server is already running
   if check_server; then
@@ -64,6 +73,6 @@ else
   else
     # Run the MCP server
     echo "Starting Google Calendar MCP server at http://localhost:$PORT/"
-    python -m src.commands.mcp_cli --port $PORT
+    PYTHONPATH=. $PYTHON_CMD -m src.commands.mcp_cli --port $PORT
   fi
 fi 

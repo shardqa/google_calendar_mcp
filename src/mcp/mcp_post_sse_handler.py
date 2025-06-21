@@ -1,6 +1,7 @@
 import json
 from .mcp_schema import get_mcp_schema
 from .. import calendar_ops, auth
+from ..core import tasks_auth, tasks_ops
 
 def handle_post_sse(handler, request, response):
     method = request.get("method")
@@ -72,6 +73,44 @@ def handle_post_sse(handler, request, response):
             else:
                 ops = calendar_ops.CalendarOperations(service)
                 response["result"] = {"success": ops.remove_event(event_id)}
+        elif tool_name == "list_tasks":
+            try:
+                service = tasks_auth.get_tasks_service()
+                tasklist_id = tool_args.get("tasklist_id", "@default")
+                ops = tasks_ops.TasksOperations(service)
+                response["result"] = {"content": ops.list_tasks(tasklist_id)}
+            except Exception as e:
+                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
+        elif tool_name == "add_task":
+            try:
+                service = tasks_auth.get_tasks_service()
+                title = tool_args.get("title")
+                if not title:
+                    response["error"] = {"code": -32602, "message": "Task title is required"}
+                else:
+                    task_data = {"title": title}
+                    if tool_args.get("notes"):
+                        task_data["notes"] = tool_args.get("notes")
+                    if tool_args.get("due"):
+                        task_data["due"] = tool_args.get("due")
+                    
+                    tasklist_id = tool_args.get("tasklist_id", "@default")
+                    ops = tasks_ops.TasksOperations(service)
+                    response["result"] = ops.add_task(task_data, tasklist_id)
+            except Exception as e:
+                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
+        elif tool_name == "remove_task":
+            try:
+                service = tasks_auth.get_tasks_service()
+                task_id = tool_args.get("task_id")
+                if not task_id:
+                    response["error"] = {"code": -32602, "message": "Task ID is required"}
+                else:
+                    tasklist_id = tool_args.get("tasklist_id", "@default")
+                    ops = tasks_ops.TasksOperations(service)
+                    response["result"] = {"success": ops.remove_task(task_id, tasklist_id)}
+            except Exception as e:
+                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
         else:
             response["error"] = {"code": -32601, "message": f"Tool not found: {tool_name}"}
     else:

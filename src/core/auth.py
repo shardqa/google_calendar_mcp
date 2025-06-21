@@ -5,8 +5,11 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-# Escopo necessário para acessar o Google Calendar
-SCOPES = ['https://www.googleapis.com/auth/calendar']
+# Escopos necessários para acessar o Google Calendar e Tasks
+SCOPES = [
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/tasks'
+]
 
 def load_credentials(credentials_path: str) -> dict:
     """

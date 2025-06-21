@@ -79,6 +79,64 @@ def get_mcp_schema():
                     },
                     "required": ["event_id"]
                 }
+            },
+            {
+                "name": "list_tasks",
+                "description": "List pending tasks from Google Tasks",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tasklist_id": {
+                            "type": "string",
+                            "description": "Task list ID (optional, defaults to @default)"
+                        }
+                    },
+                    "required": []
+                }
+            },
+            {
+                "name": "add_task",
+                "description": "Add a new task to Google Tasks",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "title": {
+                            "type": "string",
+                            "description": "Title of the task"
+                        },
+                        "notes": {
+                            "type": "string",
+                            "description": "Notes or description of the task"
+                        },
+                        "due": {
+                            "type": "string",
+                            "description": "Due date (ISO format: YYYY-MM-DDTHH:MM:SS)"
+                        },
+                        "tasklist_id": {
+                            "type": "string",
+                            "description": "Task list ID (optional, defaults to @default)"
+                        }
+                    },
+                    "required": ["title"]
+                }
+            },
+            {
+                "name": "remove_task",
+                "description": "Remove a task from Google Tasks",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "task_id": {
+                            "type": "string",
+                            "description": "ID of the task to remove"
+                        },
+                        "tasklist_id": {
+                            "type": "string",
+                            "description": "Task list ID (optional, defaults to @default)"
+                        }
+                    },
+                    "required": ["task_id"]
+                }
             }
         ]
     } 

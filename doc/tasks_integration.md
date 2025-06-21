@@ -50,7 +50,36 @@ Comprehensive test suite following TDD methodology:
 - User interface output formatting
 - Integration with operations layer
 
+## MCP Integration
+
+### Google Tasks via MCP Server
+
+O servidor MCP agora oferece integração completa com Google Tasks através de 3 ferramentas:
+
+- **`list_tasks`**: Lista tarefas pendentes do Google Tasks
+- **`add_task`**: Adiciona novas tarefas com título, notas e data de vencimento
+- **`remove_task`**: Remove tarefas existentes por ID
+
+### Configuração OAuth
+
+Para habilitar Google Tasks no MCP, é necessário:
+
+1. **Atualizar escopos OAuth**: Incluir `https://www.googleapis.com/auth/tasks`
+2. **Remover token existente**: `rm config/token.pickle`
+3. **Reautorizar aplicação**: Próxima chamada ativará fluxo OAuth
+4. **Habilitar Google Tasks API**: Visitar [Google Cloud Console](https://console.developers.google.com/apis/api/tasks.googleapis.com/)
+
+### Uso via Cursor
+
+Após configuração, as ferramentas ficam disponíveis no Cursor:
+
+- `@mcp_google_calendar_list_tasks`
+- `@mcp_google_calendar_add_task`
+- `@mcp_google_calendar_remove_task`
+
 ## Usage Examples
+
+### CLI Usage
 
 ```bash
 # List all pending tasks
