@@ -40,10 +40,7 @@ class CalendarOperations:
         if datetime_str.endswith('Z') or '+' in datetime_str[-6:] or '-' in datetime_str[-6:]:
             return datetime_str
         
-        if '.' in datetime_str:
-            return f"{datetime_str}+00:00"
-        else:
-            return f"{datetime_str}.000+00:00"
+        return f"{datetime_str}-03:00"
 
     def add_event(self, event_data: Dict) -> Dict:
         try:
@@ -53,11 +50,15 @@ class CalendarOperations:
                 processed_event_data['start']['dateTime'] = self._ensure_timezone(
                     processed_event_data['start']['dateTime']
                 )
+                if 'timeZone' not in processed_event_data['start']:
+                    processed_event_data['start']['timeZone'] = 'America/Sao_Paulo'
             
             if 'end' in processed_event_data and 'dateTime' in processed_event_data['end']:
                 processed_event_data['end']['dateTime'] = self._ensure_timezone(
                     processed_event_data['end']['dateTime']
                 )
+                if 'timeZone' not in processed_event_data['end']:
+                    processed_event_data['end']['timeZone'] = 'America/Sao_Paulo'
             
             event = self.service.events().insert(
                 calendarId='primary',
@@ -129,8 +130,14 @@ class CalendarOperations:
             
             event_data = {
                 'summary': summary,
-                'start': {'dateTime': self._ensure_timezone(start_time)},
-                'end': {'dateTime': self._ensure_timezone(end_time)},
+                'start': {
+                    'dateTime': self._ensure_timezone(start_time),
+                    'timeZone': 'America/Sao_Paulo'
+                },
+                'end': {
+                    'dateTime': self._ensure_timezone(end_time),
+                    'timeZone': 'America/Sao_Paulo'
+                },
                 'recurrence': [rrule]
             }
             

@@ -27,22 +27,22 @@ class TestEnsureTimezone:
         assert result == "2024-03-20T10:00:00-05:00"
     
     def test_ensure_timezone_adds_utc_to_datetime_with_microseconds(self):
-        """Test adding UTC timezone to datetime with microseconds."""
+        """Test adding Brazil timezone to datetime with microseconds."""
         input_time = "2024-03-20T10:00:00.123456"
         result = self.calendar_ops._ensure_timezone(input_time)
-        assert result == "2024-03-20T10:00:00.123456+00:00"
+        assert result == "2024-03-20T10:00:00.123456-03:00"
     
     def test_ensure_timezone_adds_utc_to_datetime_without_microseconds(self):
-        """Test adding UTC timezone to datetime without microseconds."""
+        """Test adding Brazil timezone to datetime without microseconds."""
         input_time = "2024-03-20T10:00:00"
         result = self.calendar_ops._ensure_timezone(input_time)
-        assert result == "2024-03-20T10:00:00.000+00:00"
+        assert result == "2024-03-20T10:00:00-03:00"
     
     def test_ensure_timezone_handles_isoformat_output(self):
         """Test handling typical output from datetime.isoformat()."""
         input_time = "2024-03-20T15:30:45.123456"
         result = self.calendar_ops._ensure_timezone(input_time)
-        assert result == "2024-03-20T15:30:45.123456+00:00"
+        assert result == "2024-03-20T15:30:45.123456-03:00"
     
     def test_ensure_timezone_edge_case_short_offset_plus(self):
         """Test edge case with short positive timezone offset."""
