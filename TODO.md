@@ -4,8 +4,6 @@
 
 ### High Priority
 
-- [ ] **Adicionar opção para editar eventos do calendário**: Implementar
-  funcionalidade para editar eventos existentes via MCP
 - [ ] **Testar e ajustar adicionar eventos**: Investigar e corrigir problema
   onde add_event está sendo chamado mas não está criando eventos no calendário
 
@@ -36,19 +34,19 @@
 
 - **Core modules**: 100% (auth, calendar_ops, tasks_ops)
 - **CLI handlers**: 100% (main, mcp_cli, tasks_cli)
-- **MCP components**: 98-99% (handlers, server, schemas)
+- **MCP components**: 100% (handlers, server, schemas)
 - **Utility scripts**: 94-96% (connectivity, initialization,
   streaming)
-- **Overall project**: 100% 🏆 (230 tests passing)
+- **Overall project**: 100% 🏆 (235 tests passing)
 
 ### Test Quality Standards
 
-- **230+ automated tests** with zero failures
+- **235+ automated tests** with zero failures
 - **Comprehensive edge case coverage** including network failures,
   timeouts, invalid data, Tasks error scenarios
 - **Isolated unit tests** using strategic mocking for external
   dependencies
-- **Performance optimized** test suite execution (~3.6s)
+- **Performance optimized** test suite execution (~2.8s)
 - **TDD methodology** maintained throughout development
 
 For background information, see the project [Architecture](doc/architecture.md)

@@ -20,6 +20,15 @@
   `add_recurring_task` implementado! Adiciona eventos recorrentes no Google
   Calendar (daily, weekly, monthly) usando TDD. Cobertura 100% alcançada.
 
+### Calendar Event Editing ✅
+
+- [x] **Adicionar opção para editar eventos do calendário**: Implementada
+  funcionalidade completa para editar eventos existentes via MCP! Comando
+  `edit_event` permite modificar título, descrição, localização e outros
+  detalhes de eventos no Google Calendar. Implementação corrigida para passar
+  parâmetros corretos à API (calendarId, eventId, body). Cobertura 100% com
+  testes de sucesso, falha e tratamento de exceções.
+
 ### Intelligent Scheduling ✅
 
 - [x] **Design intelligent scheduling algorithm**: Projetado um algoritmo que lê o

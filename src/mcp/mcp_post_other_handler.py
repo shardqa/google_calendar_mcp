@@ -57,11 +57,11 @@ def handle_post_other(handler, request, response):
             else:
                 try:
                     # Retrieve the event instance and apply updates
-                    event_instance = service.events().get().execute()
+                    event_instance = service.events().get(calendarId="primary", eventId=event_id).execute()
                     event_instance.update(updated_details)
 
                     # Persist the updates back to Google Calendar
-                    updated_event = service.events().patch().execute()
+                    updated_event = service.events().patch(calendarId="primary", eventId=event_id, body=event_instance).execute()
 
                     response["result"] = updated_event
                 except Exception:

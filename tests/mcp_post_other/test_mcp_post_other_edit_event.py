@@ -10,8 +10,13 @@ class TestMcpPostOtherEditEvent(unittest.TestCase):
         mock_get_service.return_value = mock_service
 
         mock_event_instance = MagicMock()
-        mock_service.events().get().execute.return_value = mock_event_instance
-        mock_service.events().patch().execute.return_value = {"id": "test_event_id", "summary": "Updated Summary"}
+        mock_get_call = MagicMock()
+        mock_get_call.execute.return_value = mock_event_instance
+        mock_service.events().get.return_value = mock_get_call
+        
+        mock_patch_call = MagicMock()
+        mock_patch_call.execute.return_value = {"id": "test_event_id", "summary": "Updated Summary"}
+        mock_service.events().patch.return_value = mock_patch_call
 
         request = {
             "method": "tools/call",
@@ -31,6 +36,10 @@ class TestMcpPostOtherEditEvent(unittest.TestCase):
         self.assertIn("result", response)
         self.assertEqual(response["result"]["summary"], "Updated Summary")
         mock_event_instance.update.assert_called_once_with({"summary": "Updated Summary"})
+        
+        # Verify correct API calls with proper parameters
+        mock_service.events().get.assert_called_once_with(calendarId="primary", eventId="test_event_id")
+        mock_service.events().patch.assert_called_once_with(calendarId="primary", eventId="test_event_id", body=mock_event_instance)
 
     @patch("src.core.auth.get_calendar_service")
     def test_edit_event_mcp_call_missing_params(self, mock_get_service):
