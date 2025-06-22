@@ -77,6 +77,22 @@ class CalendarOperations:
         except Exception:
             return False
 
+    def edit_event(self, event_id: str, updated_details: Dict) -> Optional[Dict]:
+        try:
+            event = self.service.events().get().execute()
+            
+            event.update(updated_details)
+            
+            updated_event = self.service.events().patch(
+                calendarId='primary', 
+                eventId=event_id, 
+                body=event
+            ).execute()
+            
+            return updated_event
+        except Exception:
+            return None
+
     def add_recurring_event(self, summary: str, frequency: str, count: int, 
                           start_time: str, end_time: str, 
                           location: Optional[str] = None, 

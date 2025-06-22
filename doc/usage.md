@@ -8,7 +8,8 @@ Execute o programa a partir da raiz do projeto:
 python -m src.main
 ```
 
-Na primeira execução, você será redirecionado para o navegador para autorizar o acesso ao seu Google Calendar.
+Na primeira execução, você será redirecionado para o navegador para autorizar o
+acesso ao seu Google Calendar.
 
 ## Executando o Servidor MCP
 
@@ -52,9 +53,11 @@ O servidor MCP oferece 8 ferramentas:
 **Google Calendar:**
 
 - `echo` - Teste de conexão
-- `list_events` - Listar eventos do calendário com informações detalhadas (data/hora, localização, descrição)
+- `list_events` - Listar eventos do calendário com informações detalhadas
+  (data/hora, localização, descrição)
 - `add_event` - Adicionar novos eventos
-- `add_recurring_task` - Criar tarefas recorrentes (diário, semanal, mensal) como lembretes de medicação
+- `add_recurring_task` - Criar tarefas recorrentes (diário, semanal, mensal)
+  como lembretes de medicação
 - `remove_event` - Remover eventos existentes
 
 **Google Tasks:**
@@ -65,7 +68,8 @@ O servidor MCP oferece 8 ferramentas:
 
 ### Tarefas Recorrentes
 
-O sistema agora suporta criação de tarefas recorrentes através do Google Calendar, ideal para atividades repetitivas como:
+O sistema agora suporta criação de tarefas recorrentes através do Google Calendar,
+ideal para atividades repetitivas como:
 
 - Lembretes de medicação
 - Exercícios diários
@@ -99,6 +103,186 @@ Os eventos do calendário agora exibem informações completas:
 - 📍 Localização (quando disponível)
 - 📝 Descrição (quando disponível)
 - Formatação visual com emojis para melhor legibilidade
+
+## Exemplos Avançados e Cenários de Uso
+
+### Cenário 1: Planejamento de Sprint de Desenvolvimento
+
+**Contexto:** Equipe de desenvolvimento planeja uma sprint de 2 semanas
+
+```bash
+# 1. Listar eventos existentes para verificar conflitos
+mcp_google_calendar_list_events max_results=20
+
+# 2. Adicionar reuniões da sprint
+mcp_google_calendar_add_event
+  summary="Sprint Planning"
+  start_time="2024-03-25T09:00:00"
+  end_time="2024-03-25T11:00:00"
+  location="Sala de reuniões"
+  description="Planejamento da Sprint 12 - definir objetivos e distribuir tarefas"
+
+# 3. Criar daily standups recorrentes
+mcp_google_calendar_add_recurring_task
+  summary="Daily Standup"
+  frequency="daily"
+  count=10
+  start_time="2024-03-26T09:00:00"
+  end_time="2024-03-26T09:15:00"
+  location="Zoom: https://company.zoom.us/j/123456"
+
+# 4. Adicionar tarefas específicas
+mcp_google_calendar_add_task
+  title="Implementar autenticação OAuth"
+  notes="Usar Google OAuth 2.0, documentar processo"
+  due="2024-03-29T17:00:00"
+
+# 5. Usar agendamento inteligente para otimizar desenvolvimento
+mcp_google_calendar_schedule_tasks
+  time_period="week"
+  work_hours_start="09:00"
+  work_hours_end="17:00"
+  max_task_duration=240
+```
+
+### Cenário 2: Gestão de Saúde Pessoal
+
+**Contexto:** Organizar rotina de saúde com medicações e consultas
+
+```bash
+# 1. Medicação diária
+mcp_google_calendar_add_recurring_task
+  summary="💊 Medicação - Hipertensão"
+  frequency="daily"
+  count=90
+  start_time="2024-03-20T08:00:00"
+  end_time="2024-03-20T08:05:00"
+  description="Losartana 50mg + Hidroclorotiazida 12.5mg"
+
+# 2. Exercícios regulares
+mcp_google_calendar_add_recurring_task
+  summary="🏃‍♂️ Caminhada 30min"
+  frequency="daily"
+  count=30
+  start_time="2024-03-20T18:00:00"
+  end_time="2024-03-20T18:30:00"
+  location="Parque da cidade"
+
+# 3. Consultas médicas
+mcp_google_calendar_add_event
+  summary="🩺 Cardiologista - Dr. Silva"
+  start_time="2024-03-28T14:30:00"
+  end_time="2024-03-28T15:30:00"
+  location="Clínica CardioLife - Sala 205"
+  description="Consulta de retorno - levar exames de sangue"
+
+# 4. Adicionar lembrete para exames
+mcp_google_calendar_add_task
+  title="Agendar exames de sangue"
+  notes="Colesterol, glicemia, função renal"
+  due="2024-03-22T12:00:00"
+```
+
+### Cenário 3: Coordenação de Projeto Multi-equipes
+
+**Contexto:** Gerenciar projeto com múltiplas equipes e deadlines
+
+```bash
+# 1. Verificar disponibilidade das equipes
+mcp_google_calendar_schedule_tasks
+  time_period="month"
+  work_hours_start="08:00"
+  work_hours_end="18:00"
+  max_task_duration=180
+
+# 2. Reuniões de checkpoint semanais
+mcp_google_calendar_add_recurring_task
+  summary="📊 Checkpoint Projeto Alpha"
+  frequency="weekly"
+  count=8
+  start_time="2024-03-22T15:00:00"
+  end_time="2024-03-22T16:00:00"
+  location="Hybrid: Sala 3 + Teams"
+  description="Status update das 3 equipes + próximos passos"
+
+# 3. Marcos importantes do projeto
+mcp_google_calendar_add_event
+  summary="🎯 Milestone: Protótipo MVP"
+  start_time="2024-04-05T09:00:00"
+  end_time="2024-04-05T17:00:00"
+  description="Entrega do MVP para validação interna"
+
+# 4. Tarefas críticas no backlog
+mcp_google_calendar_add_task
+  title="Definir arquitetura de dados"
+  notes="Escolher entre PostgreSQL vs MongoDB, documentar decisão"
+  due="2024-03-26T17:00:00"
+```
+
+### Cenário 4: Rotina de Estudos e Certificações
+
+**Contexto:** Preparação para certificação técnica com cronograma estruturado
+
+```bash
+# 1. Sessões de estudo diárias
+mcp_google_calendar_add_recurring_task
+  summary="📚 Estudo AWS Solutions Architect"
+  frequency="daily"
+  count=60
+  start_time="2024-03-20T19:00:00"
+  end_time="2024-03-20T21:00:00"
+  description="Capítulos 1-3: Fundamentals + hands-on labs"
+
+# 2. Simulados semanais
+mcp_google_calendar_add_recurring_task
+  summary="✅ Simulado AWS SAA-C03"
+  frequency="weekly"
+  count=8
+  start_time="2024-03-23T09:00:00"
+  end_time="2024-03-23T11:00:00"
+  description="Simulado completo + revisão de gaps"
+
+# 3. Data da prova
+mcp_google_calendar_add_event
+  summary="🎓 PROVA: AWS Solutions Architect"
+  start_time="2024-05-15T10:00:00"
+  end_time="2024-05-15T12:30:00"
+  location="Centro de Testes Pearson VUE"
+  description="Chegar 30min antes. Doc: RG + CPF"
+
+# 4. Usar IA para otimizar cronograma de estudos
+mcp_google_calendar_schedule_tasks
+  time_period="week"
+  work_hours_start="19:00"
+  work_hours_end="22:00"
+  max_task_duration=120
+```
+
+### Integração com Assistentes AI - Comandos Comuns
+
+**Perguntas típicas que o sistema pode responder:**
+
+```bash
+# Análise de agenda
+"Como está minha agenda para amanhã?"
+"Tenho tempo livre na quinta-feira?"
+"Quais são minhas próximas 5 reuniões?"
+
+# Gestão de tarefas
+"Quais tarefas estão atrasadas?"
+"Agende tempo para terminar o relatório"
+"Crie um lembrete para ligar para o cliente"
+
+# Planejamento inteligente
+"Reorganize minha semana considerando a nova prioridade"
+"Sugira horários para minhas tarefas pendentes"
+"Quando posso encaixar uma reunião de 1 hora?"
+
+# Análise de produtividade
+"Quantas horas tenho livres esta semana?"
+"Qual é o melhor horário para tarefas que exigem concentração?"
+"Como distribuir 3 tarefas de 2 horas cada ao longo da semana?"
+```
 
 ## Comandos CLI Disponíveis
 

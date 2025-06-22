@@ -1,6 +1,7 @@
 # Google Calendar MCP
 
-Servidor MCP (Model Context Protocol) completo para integração de Google Calendar e
+Servidor MCP (Model Context Protocol) completo para integração de Google
+Calendar e
 Google Tasks com assistentes de IA. Oferece interface unificada para
 gerenciamento de eventos e tarefas, com suporte a execução local e remota.
 
@@ -27,7 +28,8 @@ gerenciamento de eventos e tarefas, com suporte a execução local e remota.
 
 ## Uso como Servidor MCP
 
-O módulo suporta execução como servidor MCP para integração com Cursor AI e outras ferramentas compatíveis.
+O módulo suporta execução como servidor MCP para integração com Cursor AI e
+outras ferramentas compatíveis.
 
 Para iniciar o servidor MCP local:
 
@@ -41,7 +43,8 @@ Opções disponíveis:
 - `--host HOST`: Host para o servidor (padrão: localhost)
 - `--setup-only`: Apenas configurar o arquivo MCP sem iniciar o servidor
 
-O comando irá automaticamente configurar o arquivo `.cursor/mcp.json` com as informações do servidor.
+O comando irá automaticamente configurar o arquivo `.cursor/mcp.json` com as
+informações do servidor.
 
 ### Ferramentas Disponíveis via MCP
 
@@ -66,6 +69,138 @@ O comando irá automaticamente configurar o arquivo `.cursor/mcp.json` com as in
 **Utilitários:**
 
 - `echo`: Teste de conectividade e validação
+
+## Exemplos Práticos de Uso
+
+### Gerenciamento Básico de Eventos
+
+**Listar eventos da semana:**
+
+```bash
+# Via MCP tool call
+mcp_google_calendar_list_events max_results=10
+```
+
+**Criar reunião com detalhes completos:**
+
+```bash
+# Via MCP tool call
+mcp_google_calendar_add_event 
+  summary="Reunião de planejamento sprint"
+  start_time="2024-03-25T14:00:00"
+  end_time="2024-03-25T15:30:00"
+  location="Sala de conferências A"
+  description="Revisar objetivos e definir tarefas para próxima sprint"
+```
+
+### Integração com Google Tasks
+
+**Adicionar tarefa com prazo:**
+
+```bash
+# Via MCP tool call
+mcp_google_calendar_add_task
+  title="Finalizar relatório mensal"
+  notes="Incluir dados de Q1 e análise de performance"
+  due="2024-03-28T17:00:00"
+```
+
+**Listar tarefas pendentes:**
+
+```bash
+# Via MCP tool call
+mcp_google_calendar_list_tasks
+```
+
+### Agendamento Inteligente
+
+**Analisar agenda e propor horários para tarefas:**
+
+```bash
+# Via MCP tool call
+mcp_google_calendar_schedule_tasks
+  time_period="week"
+  work_hours_start="09:00"
+  work_hours_end="18:00"
+  max_task_duration=120
+```
+
+**Exemplo de output do schedule_tasks:**
+
+```json
+{
+  "analysis": {
+    "total_events": 8,
+    "available_slots": 12,
+    "pending_tasks": 5
+  },
+  "proposed_schedule": [
+    {
+      "task": "Finalizar relatório mensal",
+      "suggested_time": "2024-03-26T10:00:00 - 11:30:00",
+      "duration": 90,
+      "rationale": "Slot livre entre reuniões, duração adequada para tarefa complexa"
+    }
+  ]
+}
+```
+
+### Tarefas Recorrentes
+
+**Criar lembrete de medicação:**
+
+```bash
+# Via MCP tool call
+mcp_google_calendar_add_recurring_task
+  summary="Tomar medicação matinal"
+  frequency="daily"
+  count=30
+  start_time="2024-03-20T08:00:00"
+  end_time="2024-03-20T08:15:00"
+  description="Lembrete diário - medicação hipertensão"
+```
+
+**Reunião semanal de equipe:**
+
+```bash
+# Via MCP tool call
+mcp_google_calendar_add_recurring_task
+  summary="Weekly Team Sync"
+  frequency="weekly"
+  count=12
+  start_time="2024-03-25T09:00:00"
+  end_time="2024-03-25T10:00:00"
+  location="Zoom: https://company.zoom.us/j/123456789"
+```
+
+### Fluxos de Trabalho Típicos
+
+**1. Planejamento Semanal Automatizado:**
+
+```text
+1. Executar schedule_tasks para analisar a semana
+2. Revisar propostas de agendamento
+3. Criar eventos automáticos para tarefas prioritárias
+4. Ajustar conforme necessário
+```
+
+**2. Gestão de Projetos:**
+
+```text
+1. Adicionar tarefas do projeto via add_task
+2. Usar schedule_tasks para distribuir ao longo da semana
+3. Criar lembretes recorrentes para check-ins
+4. Monitorar progresso via list_events/list_tasks
+```
+
+**3. Integração com Assistentes AI:**
+
+```text
+- "Agende minhas tarefas para esta semana"
+- "Crie um lembrete recorrente para exercícios"
+- "Qual é a próxima reunião e o que preciso preparar?"
+- "Reorganize minha agenda considerando a nova prioridade"
+```
 
 ## Configuração Inicial
 

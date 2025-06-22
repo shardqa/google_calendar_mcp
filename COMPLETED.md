@@ -20,6 +20,24 @@
   `add_recurring_task` implementado! Adiciona eventos recorrentes no Google
   Calendar (daily, weekly, monthly) usando TDD. Cobertura 100% alcançada.
 
+### Intelligent Scheduling ✅
+
+- [x] **Design intelligent scheduling algorithm**: Projetado um algoritmo que lê o
+  calendário e as tarefas atuais para sugerir blocos de tempo otimizados.
+- [x] **Build MCP command `schedule_tasks`**: Construído o comando `schedule_tasks`
+  para analisar o calendário e as tarefas do usuário, propondo blocos de
+  tempo para a conclusão das tarefas.
+
+### Documentation Enhancement ✅
+
+- [x] **Update project documentation and README with new usage examples**:
+  Documentação completamente atualizada! Adicionados exemplos práticos
+  detalhados de uso das ferramentas MCP, cenários reais de aplicação,
+  fluxos de trabalho típicos e exemplos do intelligent scheduling system.
+  Incluídos exemplos para desenvolvimento de software, gestão de saúde,
+  coordenação de equipes e estudos. Formatação markdown corrigida com
+  markdownlint.
+
 ### Quality Metrics Achievement  
 
 - [x] **100% Code Coverage**: Alcançado! 725 statements, 178 branches, 193

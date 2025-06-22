@@ -47,6 +47,20 @@ def handle_post_other(handler, request, response):
             else:
                 ops = calendar_ops.CalendarOperations(service)
                 response["result"] = {"success": ops.remove_event(event_id)}
+        elif tool_name == "edit_event":
+            service = auth.get_calendar_service()
+            event_id = tool_args.get("event_id")
+            updated_details = tool_args.get("updated_details")
+            if not event_id or not updated_details:
+                response["error"] = {"code": -32602, "message": "event_id and updated_details are required."}
+            else:
+                try:
+                    event = service.events().get().execute()
+                    event.update(updated_details)
+                    patched = service.events().patch(calendarId="primary", eventId=event_id, body=event).execute()
+                    response["result"] = patched if patched else {"summary": event.get("summary", "")}
+                except Exception as e:
+                    response["error"] = {"code": -32603, "message": f"Failed to edit event {event_id}."}
         elif tool_name == "list_tasks":
             try:
                 service = tasks_auth.get_tasks_service()

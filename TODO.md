@@ -1,12 +1,5 @@
 # TODO - Atividades Ativas
 
-## Próxima Fase: Intelligent Scheduling
-
-- [x] Design intelligent scheduling algorithm that reads current
-  calendar/tasks and suggests time blocks
-- [ ] Update project documentation and README with new usage examples
-- [x] Run markdownlint --fix on all markdown documents
-
 ## Development Tasks
 
 ### High Priority
@@ -15,8 +8,6 @@
   funcionalidade para editar eventos existentes via MCP
 - [ ] **Testar e ajustar adicionar eventos**: Investigar e corrigir problema
   onde add_event está sendo chamado mas não está criando eventos no calendário
-- [x] Build MCP command `schedule_tasks` that analyzes current calendar
-  and tasks to propose time blocks
 
 ### Medium Priority
 
