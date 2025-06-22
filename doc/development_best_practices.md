@@ -103,8 +103,8 @@ def test_network_operations(self, mock_session, mock_server, mock_socket):
 
 #### Métricas de Qualidade Atuais
 
-- **193 testes** executando consistentemente em ~3.0 segundos
-- **100% cobertura geral** do projeto (725 statements, 178 branches)
+- **230+ testes** executando consistentemente em ~4.0 segundos
+- **100% cobertura geral** do projeto (818 statements, 210 branches)
 - **100% cobertura de branches** em todos os handlers MCP críticos
 - **Zero testes falhando** em produção e CI/CD
 - **GitHub Actions**: Pipeline automatizada com deployment contínuo
@@ -115,7 +115,13 @@ def test_network_operations(self, mock_session, mock_server, mock_socket):
 
 - Início: 90% de cobertura com 158 testes
 - Progressão: 98% de cobertura com 182 testes  
-- **Conquista atual: 100% de cobertura com 193 testes**
+- **Conquista atual: 100% de cobertura com 230+ testes**
+
+**Marcos Recentes:**
+
+- **Intelligent Scheduling**: Implementação completa com TDD
+- **Debugging de branch coverage**: Identificação e correção de bugs lógicos
+- **Edge cases abrangentes**: Cobertura de cenários extremos e falhas
 
 **Áreas de Foco para Alcançar 100%:**
 
@@ -133,6 +139,38 @@ def test_network_operations(self, mock_session, mock_server, mock_socket):
 - **Testes de erro de serviço**: Simular falhas da API Google usando mock exceptions
 - **Testes de handlers MCP**: Cobertura completa de cenários com/sem parâmetros opcionais
 - **Validação de parâmetros**: Testes específicos para parâmetros obrigatórios ausentes
+
+### Debugging Branch Coverage: Casos Avançados
+
+**Problema Comum: Branch Parts Não Cobertos**
+
+Quando relatórios mostram `97->96` ou similar, indica branches específicos não testados:
+
+```python
+# Exemplo problemático original:
+event_start = event.get('start', {}).get('dateTime', work_start)  # ❌
+if work_start < event_start:  # Sempre False quando dateTime missing
+    # Esta branch nunca é executada
+```
+
+**Estratégias de Debugging:**
+
+1. **Análise de Lógica**: Questionar se condições são realmente alcançáveis
+2. **Testes de Condições Extremas**: Testar valores edge (None, empty, boundary conditions)
+3. **Correção de Bugs Lógicos**: Refatorar código para torná-lo testável
+
+```python
+# Solução corrigida:
+event_start = event.get('start', {}).get('dateTime')  # ✅
+if event_start and work_start < event_start:  # Agora testável
+    # Branch pode ser coberto com testes apropriados
+```
+
+**Lições Aprendidas:**
+
+- **Untestable code pode indicar bugs**: Condições impossíveis revelam problemas de design
+- **Fallbacks problemáticos**: Valores padrão que criam condições sempre falsas
+- **Preferir correção a pragma**: Corrigir lógica é melhor que ignorar cobertura
 
 ## Lidando com Código Intestável: O `pragma: no cover`
 

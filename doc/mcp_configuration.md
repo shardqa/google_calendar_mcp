@@ -74,6 +74,11 @@ Após configuração, as seguintes ferramentas ficam disponíveis no Cursor:
 - `@mcp_google_calendar_add_task`
 - `@mcp_google_calendar_remove_task`
 
+**Agendamento Inteligente:**
+
+- `@mcp_google_calendar_add_recurring_task`
+- `@mcp_google_calendar_schedule_tasks`
+
 ### Exemplos de Uso
 
 ```bash
@@ -90,6 +95,15 @@ Após configuração, as seguintes ferramentas ficam disponíveis no Cursor:
 # Adicionar tarefa
 @mcp_google_calendar_add_task title="Revisar código" \
   notes="Verificar implementação MCP"
+
+# Agendamento inteligente de tarefas
+@mcp_google_calendar_schedule_tasks time_period="day" \
+  work_hours_start="09:00" work_hours_end="18:00" max_task_duration=120
+
+# Adicionar tarefa recorrente
+@mcp_google_calendar_add_recurring_task summary="Daily standup" \
+  frequency="daily" count=30 start_time="2024-03-25T09:00:00" \
+  end_time="2024-03-25T09:30:00"
 ```
 
 ## Gerenciamento do Servidor

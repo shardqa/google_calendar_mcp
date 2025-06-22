@@ -2,7 +2,7 @@
 
 ## Estrutura de Diretórios
 
-```
+```text
 google_calendar_mcp/
 ├── config/               # Configurações do projeto
 ├── doc/                  # Documentação completa
@@ -20,6 +20,7 @@ google_calendar_mcp/
 │   │   ├── auth.py       # Autenticação unificada
 │   │   ├── calendar_ops.py # Operações de calendário
 │   │   ├── cancel_utils.py # Utilitários de cancelamento
+│   │   ├── scheduling_engine.py # Motor de agendamento inteligente
 │   │   ├── tasks_auth.py   # Autenticação Google Tasks
 │   │   └── tasks_ops.py    # Operações de tarefas
 │   ├── mcp/              # Protocolo MCP
@@ -29,13 +30,14 @@ google_calendar_mcp/
 │   │   ├── mcp_schema.py      # Schema e definições
 │   │   └── mcp_server.py      # Servidor HTTP threading
 │   └── main.py           # Ponto de entrada principal
-├── tests/                # Cobertura de testes (96%)
+├── tests/                # Cobertura de testes (100%)
 │   ├── auth/             # Testes de autenticação
 │   ├── calendar_ops/     # Testes de operações
 │   ├── cli/              # Testes de interfaces CLI
 │   ├── core/             # Testes de lógica central
 │   ├── integration/      # Testes de integração
 │   ├── mcp_*/            # Testes do protocolo MCP
+│   ├── scheduling/       # Testes do motor de agendamento
 │   └── tasks/            # Testes Google Tasks
 ├── pytest.ini           # Configuração de testes
 ├── requirements.txt      # Dependências do projeto
@@ -47,18 +49,21 @@ google_calendar_mcp/
 ### Camada de Comandos (`src/commands/`)
 
 #### CLI Principal (`cli.py`)
+
 - Interface de linha de comando para operações de calendário
 - Menu interativo e processamento de argumentos
 - Exibição formatada de eventos e resultados
 - Validação de entrada e tratamento de erros
 
 #### CLI Google Tasks (`tasks_cli.py`)
+
 - Interface dedicada para gerenciamento de tarefas
 - Comandos `list`, `add`, `remove` com parsing robusto
 - Integração com autenticação unificada
 - Mensagens de feedback e tratamento de exceções
 
 #### Coordenador MCP (`mcp_cli.py`)
+
 - Configuração automática do arquivo `.cursor/mcp.json`
 - Inicialização e controle do servidor MCP
 - Argumentos de linha de comando para configuração
@@ -67,24 +72,37 @@ google_calendar_mcp/
 ### Camada de Negócio (`src/core/`)
 
 #### Autenticação Unificada (`auth.py`)
+
 - Sistema OAuth2 compartilhado entre Calendar e Tasks
 - Refresh automático de tokens com retry logic
 - Persistência segura de credenciais
 - Scopes configuráveis por serviço
 
 #### Operações de Calendário (`calendar_ops.py`)
+
 - `list_events()`: Lista eventos com filtros de data
 - `add_event()`: Criação com validação de campos
 - `remove_event()`: Remoção segura com verificação de ID
 - Tratamento robusto de erros da API
 
 #### Operações de Tasks (`tasks_ops.py`)
+
 - `list_tasks()`: Listagem com suporte a múltiplas listas
 - `add_task()`: Criação com título e descrição opcional
 - `remove_task()`: Remoção por ID com validação
 - Integração completa com Google Tasks API
 
+#### Motor de Agendamento (`scheduling_engine.py`)
+
+- **Análise de calendário**: Identifica slots disponíveis entre eventos
+- **Proposição de horários**: Sugere blocos de tempo para tarefas pendentes
+- **Configuração flexível**: Horários de trabalho e duração máxima
+- **Validação inteligente**: Evita slots menores que 30 minutos
+- **Suporte a períodos**: Análise diária, semanal ou mensal
+- **Integração MCP**: Comando `schedule_tasks` via Server-Sent Events
+
 #### Utilitários (`cancel_utils.py`)
+
 - Verificação de conectividade de rede
 - Timeouts configuráveis para operações
 - Helpers para cancelamento de requisições
@@ -93,24 +111,28 @@ google_calendar_mcp/
 ### Camada de Protocolo (`src/mcp/`)
 
 #### Servidor Central (`mcp_server.py`)
+
 - Servidor HTTP multi-thread com ThreadingHTTPServer
 - Binding inteligente de interfaces (0.0.0.0 para localhost)
 - Configuração de socket reutilizável
 - Controle de lifecycle com start/stop thread-safe
 
 #### Handler Principal (`mcp_handler.py`)
+
 - Roteamento de requisições HTTP para handlers especializados
 - Processamento de headers e CORS
 - Delegação para GET/POST handlers
 - Tratamento centralizado de erros HTTP
 
 #### Handlers Especializados
+
 - **GET Handler** (`mcp_get_handler.py`): Endpoints de listagem e SSE
 - **POST Handler** (`mcp_post_handler.py`): Roteamento de operações POST
 - **POST SSE** (`mcp_post_sse_handler.py`): Server-Sent Events e tools
 - **POST Other** (`mcp_post_other_handler.py`): Operações diretas
 
 #### Schema e Definições (`mcp_schema.py`)
+
 - Estrutura completa dos endpoints MCP
 - Documentação de parâmetros e tipos de retorno
 - Metadados para integração com assistentes IA
@@ -119,12 +141,16 @@ google_calendar_mcp/
 ## Arquitetura de Qualidade
 
 ### Estratégia de Testes
+
 - **Test-Driven Development**: Implementação red-green-refactor
-- **96% de cobertura** com 145+ testes automatizados
+- **100% de cobertura** com 230+ testes automatizados
 - **Testes paralelos**: Execução rápida com pytest-xdist
 - **Mocking sofisticado**: Isolamento de dependências externas
+- **Edge cases abrangentes**: Cobertura de cenários de falha e extremos
+- **Correção de bugs lógicos**: Análise de branch coverage para qualidade
 
 ### Padrões de Design
+
 - **Separação de responsabilidades**: Camadas bem definidas
 - **Inversão de dependências**: Injeção via parâmetros
 - **Single Responsibility**: Módulos focados em uma função

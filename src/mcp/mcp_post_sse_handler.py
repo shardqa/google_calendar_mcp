@@ -134,6 +134,31 @@ def handle_post_sse(handler, request, response):
                     location=location,
                     description=description
                 )
+        elif tool_name == "schedule_tasks":
+            try:
+                from ..core.scheduling_engine import SchedulingEngine
+                
+                calendar_service = auth.get_calendar_service()
+                tasks_service = tasks_auth.get_tasks_service()
+                
+                time_period = tool_args.get("time_period")
+                work_hours_start = tool_args.get("work_hours_start")
+                work_hours_end = tool_args.get("work_hours_end")
+                max_task_duration = tool_args.get("max_task_duration", 120)
+                
+                if not all([time_period, work_hours_start, work_hours_end]):
+                    response["error"] = {"code": -32602, "message": "Missing required scheduling parameters"}
+                else:
+                    engine = SchedulingEngine(calendar_service, tasks_service)
+                    result = engine.propose_schedule(
+                        time_period=time_period,
+                        work_hours_start=work_hours_start,
+                        work_hours_end=work_hours_end,
+                        max_task_duration=max_task_duration
+                    )
+                    response["result"] = result
+            except Exception as e:
+                response["error"] = {"code": -32603, "message": f"Scheduling service error: {str(e)}"}
         else:
             response["error"] = {"code": -32601, "message": f"Tool not found: {tool_name}"}
     else:

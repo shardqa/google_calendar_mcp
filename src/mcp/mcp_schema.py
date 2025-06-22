@@ -176,6 +176,33 @@ def get_mcp_schema():
                     },
                     "required": ["summary", "frequency", "count", "start_time", "end_time"]
                 }
+            },
+            {
+                "name": "schedule_tasks",
+                "description": "Intelligently schedule tasks based on calendar availability and task priorities",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "time_period": {
+                            "type": "string",
+                            "description": "Time period for scheduling",
+                            "enum": ["day", "week", "month"]
+                        },
+                        "work_hours_start": {
+                            "type": "string",
+                            "description": "Work hours start time (HH:MM format)"
+                        },
+                        "work_hours_end": {
+                            "type": "string",
+                            "description": "Work hours end time (HH:MM format)"
+                        },
+                        "max_task_duration": {
+                            "type": "integer",
+                            "description": "Maximum task duration in minutes (default: 120)"
+                        }
+                    },
+                    "required": ["time_period", "work_hours_start", "work_hours_end"]
+                }
             }
         ]
     } 

@@ -1,13 +1,17 @@
 # Google Calendar MCP
 
-Servidor MCP (Model Context Protocol) completo para integração de Google Calendar e Google Tasks com assistentes de IA. Oferece interface unificada para gerenciamento de eventos e tarefas, com suporte a execução local e remota.
+Servidor MCP (Model Context Protocol) completo para integração de Google Calendar e
+Google Tasks com assistentes de IA. Oferece interface unificada para
+gerenciamento de eventos e tarefas, com suporte a execução local e remota.
 
 ## Características Principais
 
 - **Gerenciamento de Calendário**: Listar, adicionar e remover eventos
 - **Integração Google Tasks**: Operações completas de CRUD para tarefas
+- **Agendamento Inteligente**: Análise automática de agenda e proposição de horários
 - **Servidor MCP Remoto**: Execução como serviço via systemd
-- **Alta Confiabilidade**: 99% de cobertura de testes com 182 testes automatizados
+- **Alta Confiabilidade**: 100% de cobertura de testes com 230+ testes
+  automatizados
 - **CI/CD Automatizada**: Pipeline GitHub Actions com deployment contínuo
 
 ## Documentação
@@ -42,16 +46,25 @@ O comando irá automaticamente configurar o arquivo `.cursor/mcp.json` com as in
 ### Ferramentas Disponíveis via MCP
 
 **Calendário:**
+
 - `list_events`: Listar eventos próximos
 - `add_event`: Criar novos eventos com título, descrição, horário e localização
 - `remove_event`: Remover eventos existentes
 
 **Tarefas (Google Tasks):**
+
 - `list_tasks`: Listar tarefas pendentes
 - `add_task`: Criar tarefas com título, notas e prazo
 - `remove_task`: Marcar tarefas como concluídas
 
+**Agendamento Inteligente:**
+
+- `schedule_tasks`: Analisar agenda e propor horários para tarefas
+- `add_recurring_task`: Criar eventos recorrentes com frequência
+  configurável
+
 **Utilitários:**
+
 - `echo`: Teste de conectividade e validação
 
 ## Configuração Inicial
