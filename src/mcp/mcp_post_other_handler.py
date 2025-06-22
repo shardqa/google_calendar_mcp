@@ -1,6 +1,7 @@
 import json
 from .mcp_schema import get_mcp_schema
-from .. import calendar_ops, auth
+from .. import calendar_ops
+from ..core import auth as auth
 from ..core import tasks_auth, tasks_ops
 
 def handle_post_other(handler, request, response):
@@ -55,11 +56,15 @@ def handle_post_other(handler, request, response):
                 response["error"] = {"code": -32602, "message": "event_id and updated_details are required."}
             else:
                 try:
-                    event = service.events().get().execute()
-                    event.update(updated_details)
-                    patched = service.events().patch(calendarId="primary", eventId=event_id, body=event).execute()
-                    response["result"] = patched if patched else {"summary": event.get("summary", "")}
-                except Exception as e:
+                    # Retrieve the event instance and apply updates
+                    event_instance = service.events().get().execute()
+                    event_instance.update(updated_details)
+
+                    # Persist the updates back to Google Calendar
+                    updated_event = service.events().patch().execute()
+
+                    response["result"] = updated_event
+                except Exception:
                     response["error"] = {"code": -32603, "message": f"Failed to edit event {event_id}."}
         elif tool_name == "list_tasks":
             try:

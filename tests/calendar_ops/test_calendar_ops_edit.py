@@ -4,8 +4,6 @@ import pytest
 
 from src.core.calendar_ops import CalendarOperations
 
-pytestmark = pytest.mark.skip(reason="edit_event WIP")
-
 
 class TestCalendarOpsEdit(unittest.TestCase):
     @patch("src.core.auth.get_calendar_service")
@@ -41,6 +39,19 @@ class TestCalendarOpsEdit(unittest.TestCase):
             mock_service.events().patch().execute(),
             "The updated event should be returned.",
         )
+
+    @patch("src.core.auth.get_calendar_service")
+    def test_edit_event_failure_returns_none(self, mock_get_calendar_service):
+        mock_service = MagicMock()
+        mock_get_calendar_service.return_value = mock_service
+        calendar_ops = CalendarOperations(mock_service)
+
+        # Simulate service exception on retrieval to trigger failure path
+        mock_service.events().get().execute.side_effect = Exception("Failure")
+
+        result = calendar_ops.edit_event("bad_id", {"summary": "s"})
+
+        self.assertIsNone(result)
 
 
 if __name__ == "__main__":

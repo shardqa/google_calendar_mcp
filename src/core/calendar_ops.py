@@ -79,16 +79,20 @@ class CalendarOperations:
 
     def edit_event(self, event_id: str, updated_details: Dict) -> Optional[Dict]:
         try:
-            event = self.service.events().get().execute()
-            
+            event = (
+                self.service.events()
+                .get(calendarId="primary", eventId=event_id)
+                .execute()
+            )
+
             event.update(updated_details)
-            
-            updated_event = self.service.events().patch(
-                calendarId='primary', 
-                eventId=event_id, 
-                body=event
-            ).execute()
-            
+
+            updated_event = (
+                self.service.events()
+                .patch(calendarId="primary", eventId=event_id, body=event)
+                .execute()
+            )
+
             return updated_event
         except Exception:
             return None
