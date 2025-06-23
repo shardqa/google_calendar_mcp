@@ -34,7 +34,8 @@ class TestMcpPostOtherEditEvent(unittest.TestCase):
         handle_post_other(mock_handler, request, response)
 
         self.assertIn("result", response)
-        self.assertEqual(response["result"]["summary"], "Updated Summary")
+        self.assertIn("content", response["result"])
+        self.assertIn("✅ Evento editado com sucesso!", response["result"]["content"][0]["text"])
         mock_event_instance.update.assert_called_once_with({"summary": "Updated Summary"})
         
         # Verify correct API calls with proper parameters

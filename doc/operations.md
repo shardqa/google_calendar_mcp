@@ -22,6 +22,59 @@ Local Development → GitHub → CI/CD Pipeline → Remote Server
   localhost        Tests      Deploy        ZeroTier IP
 ```
 
+## Desenvolvimento Local
+
+### Comandos Make Disponíveis
+
+**Servidor MCP Local:**
+
+```bash
+# Iniciar servidor MCP na porta 3001 (desenvolvimento)
+make mcp-local
+
+# Iniciar servidor MCP padrão
+make mcp-start
+
+# Parar servidor MCP
+make mcp-stop
+
+# Reiniciar servidor MCP
+make mcp-restart
+```
+
+**Testes e Qualidade:**
+
+```bash
+# Executar testes completos com cobertura
+make test
+
+# Executar testes rápidos (sem cobertura)
+make test-fast
+
+# Limpar arquivos temporários
+make clean
+
+# Ver todos os comandos disponíveis
+make help
+```
+
+### Desenvolvimento com MCP Local
+
+O comando `make mcp-local` é especialmente útil para desenvolvimento pois:
+
+- Inicia o servidor na porta 3001 (não conflita com outros serviços)
+- Configura automaticamente o arquivo `.cursor/mcp.json` para Cursor IDE
+- Permite desenvolvimento e testes locais antes do deploy
+- Inclui logs detalhados para debugging
+
+**Fluxo de Desenvolvimento Recomendado:**
+
+1. Fazer alterações no código
+2. Executar `make test` para verificar 100% de cobertura
+3. Executar `make mcp-local` para testar localmente
+4. Testar via Cursor IDE com configuração local
+5. Commit e push para deploy automático
+
 ## Deployment Automatizado
 
 ### GitHub Actions Pipeline

@@ -6,6 +6,10 @@
 
 - [x] **Servidor MCP funcionando**: Problema resolvido! Servidor MCP está
   trazendo as tasks corretamente via MCP tools.
+- [x] **Testar e ajustar adicionar eventos**: Investigado e corrigido! 
+  Problema onde add_event estava sendo chamado mas não criava eventos no 
+  calendário foi resolvido. Também adicionado e melhorado edit_event com 
+  schema MCP exposto e formato de resposta consistente com outros comandos.
 
 ### MCP Agenda Enhancement
 

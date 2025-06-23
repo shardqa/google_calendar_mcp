@@ -138,6 +138,63 @@ google_calendar_mcp/
 - Metadados para integração com assistentes IA
 - Especificação JSON-RPC 2.0 compatível
 
+### Protocolo de Resposta MCP
+
+#### Formato Padronizado
+
+Todas as ferramentas MCP implementam o mesmo formato de resposta para garantir compatibilidade:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Conteúdo formatado da resposta"
+      }
+    ]
+  }
+}
+```
+
+#### Implementação Dual
+
+**Handlers Paralelos**: Ambos `mcp_post_sse_handler.py` e `mcp_post_other_handler.py` implementam as mesmas ferramentas:
+
+- `echo`: Retorna mensagem com emoji de confirmação
+- `list_events`: Lista eventos formatados com data/hora
+- `add_event`: Cria evento e retorna confirmação visual
+- `remove_event`: Remove evento com status de sucesso
+- `list_tasks`: Lista tarefas do Google Tasks
+- `add_task`: Cria tarefa com confirmação
+- `remove_task`: Remove tarefa com validação
+- `add_recurring_task`: Cria eventos recorrentes
+- `schedule_tasks`: Agendamento inteligente de tarefas
+
+#### Consistência de Formatação
+
+**Sucessos** incluem emojis e informações estruturadas:
+```text
+✅ Evento criado com sucesso!
+📅 Reunião de Equipe
+🕐 2025-06-22T14:00:00-03:00 - 2025-06-22T15:00:00-03:00
+📍 Sala de Reuniões
+```
+
+**Erros** são informativos e actionable:
+```text
+❌ Erro ao criar evento: Missing required parameters
+```
+
+#### Benefícios Arquiteturais
+
+- **Compatibilidade**: Funciona com Cursor IDE e outros clientes MCP
+- **Consistência**: Mesma experiência em todas as ferramentas
+- **Debugabilidade**: Respostas visualmente claras e estruturadas
+- **Manutenibilidade**: Formato padronizado facilita testes e evolução
+
 ## Arquitetura de Qualidade
 
 ### Estratégia de Testes

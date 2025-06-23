@@ -350,6 +350,113 @@ class EventNotFoundError(CalendarError):
 - **Decomposição de lógica** facilita tanto desenvolvimento quanto teste
 - **Cobertura alta** não deve comprometer a qualidade ou legibilidade dos testes
 
+## Padrões MCP e Formato de Resposta
+
+### Formato Padronizado de Resposta MCP
+
+Todas as ferramentas MCP devem retornar respostas no formato padronizado para garantir compatibilidade com clientes como Cursor IDE:
+
+```python
+# ✅ Formato correto - sempre usar
+response["result"] = {
+    "content": [
+        {
+            "type": "text", 
+            "text": "conteúdo da resposta formatado"
+        }
+    ]
+}
+
+# ❌ Formatos incorretos - evitar
+response["result"] = {"echo": message}           # Não padronizado
+response["result"] = raw_api_response           # Sem formatação
+response["result"] = {"status": "ok"}           # Sem conteúdo visual
+```
+
+### Implementação Consistente em Handlers
+
+**Princípio**: Ambos os handlers (`mcp_post_other_handler.py` e `mcp_post_sse_handler.py`) devem implementar exatamente as mesmas ferramentas com o mesmo formato de resposta.
+
+```python
+# Exemplo: Ferramenta echo em ambos os handlers
+if tool_name == "echo":
+    message = tool_args.get("message", "No message provided")
+    print(f"Echoing message via tools/call: {message}")
+    response["result"] = {"content": [{"type": "text", "text": f"🔊 Echo: {message}"}]}
+```
+
+### Tratamento de Erro Padronizado
+
+**Sucessos** devem retornar informações visuais úteis:
+
+```python
+# Add Event - Sucesso
+if result.get('status') == 'confirmed':
+    event = result.get('event', {})
+    summary = event.get('summary', 'Evento criado')
+    start_time = event.get('start', {}).get('dateTime', 'N/A')
+    end_time = event.get('end', {}).get('dateTime', 'N/A')
+    location = event.get('location', '')
+    
+    event_text = f"✅ Evento criado com sucesso!\n📅 {summary}\n🕐 {start_time} - {end_time}"
+    if location:
+        event_text += f"\n📍 {location}"
+    
+    response["result"] = {"content": [{"type": "text", "text": event_text}]}
+```
+
+**Erros** devem ser informativos:
+
+```python
+# Add Event - Erro
+else:
+    error_msg = result.get('message', 'Erro desconhecido')
+    response["result"] = {"content": [{"type": "text", "text": f"❌ Erro ao criar evento: {error_msg}"}]}
+```
+
+### Testes de Compatibilidade MCP
+
+Sempre incluir testes que verificam o formato de resposta:
+
+```python
+def test_mcp_response_format(monkeypatch):
+    # ... setup ...
+    mod.handle_post_other(handler, request, response)
+    body = parse_response(handler)
+    
+    # Verificar estrutura padronizada
+    assert "result" in body
+    assert "content" in body["result"]
+    assert isinstance(body["result"]["content"], list)
+    assert len(body["result"]["content"]) > 0
+    assert "type" in body["result"]["content"][0]
+    assert "text" in body["result"]["content"][0]
+    assert body["result"]["content"][0]["type"] == "text"
+```
+
+### Debugging de Ferramentas MCP
+
+**Diagnóstico de problemas comuns:**
+
+1. **Ferramenta executa mas não retorna**: Verificar formato de resposta
+2. **Cliente recebe "no result"**: Comparar com ferramentas funcionais (`list_events`)
+3. **Funciona localmente mas não via Cursor**: Verificar logs do servidor e formato de resposta
+
+**Ferramentas de teste:**
+
+```bash
+# Teste direto com curl
+curl -X POST http://localhost:3001 \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"tool": "echo", "args": {"message": "test"}}}'
+
+# Servidor local para desenvolvimento
+make mcp-local
+
+# Verificar logs do servidor
+# (logs aparecem no terminal onde o servidor está rodando)
+```
+
 ---
 Para visão geral do projeto, veja [Visão Geral](overview.md).
 Para arquitetura técnica, veja [Arquitetura](architecture.md).

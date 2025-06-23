@@ -137,6 +137,82 @@ Isso garante que as dependências corretas e os plugins instalados no venv (como
   - Aguardar deploy automático se houver pipeline CI/CD
   - Verificar se o ambiente remoto está usando a versão correta do código
 
+## Problemas de Resposta MCP
+
+### Ferramentas MCP Não Retornam Resultados
+
+**Problema**: Ferramentas MCP (como `echo` e `add_event`) executam no servidor mas não retornam resultados para o cliente Cursor/MCP.
+
+**Sintomas**:
+- `list_events` funciona normalmente
+- `echo` e `add_event` executam (visível nos logs do servidor) mas não retornam resposta
+- Cliente recebe "no result from tool"
+
+**Causa Raiz**: Inconsistência no formato de resposta entre diferentes ferramentas MCP. O cliente espera sempre o formato padronizado:
+
+```json
+{
+  "result": {
+    "content": [
+      {
+        "type": "text", 
+        "text": "conteúdo da resposta"
+      }
+    ]
+  }
+}
+```
+
+**Ferramentas afetadas**:
+- `echo`: Retornava `{"echo": "message"}` em vez do formato padrão
+- `add_event`: Retornava objeto direto em vez do formato padrão
+- Outras ferramentas que não seguem o padrão de `content` array
+
+**Solução**:
+
+1. **Padronizar formato de resposta** em `mcp_post_other_handler.py` e `mcp_post_sse_handler.py`:
+
+```python
+# Echo - Antes (problemático)
+response["result"] = {"echo": message}
+
+# Echo - Depois (correto)
+response["result"] = {"content": [{"type": "text", "text": f"🔊 Echo: {message}"}]}
+
+# Add Event - Antes (problemático) 
+response["result"] = ops.add_event(event_data)
+
+# Add Event - Depois (correto)
+if result.get('status') == 'confirmed':
+    event_text = f"✅ Evento criado com sucesso!\n📅 {summary}\n🕐 {start_time} - {end_time}"
+    response["result"] = {"content": [{"type": "text", "text": event_text}]}
+```
+
+2. **Atualizar testes** para verificar o novo formato:
+
+```python
+# Teste antigo
+assert body.get("result") == {"echo": "hello"}
+
+# Teste novo
+assert body.get("result") == {"content": [{"type": "text", "text": "🔊 Echo: hello"}]}
+```
+
+3. **Verificar outras ferramentas** para garantir consistência de formato
+
+**Prevenção**: Sempre usar o formato `{"content": [{"type": "text", "text": "..."}]}` para todas as respostas MCP.
+
+### Ferramenta MCP Funciona Localmente Mas Não Via Cursor
+
+**Problema**: Ferramenta funciona quando testada diretamente (curl, CLI) mas não responde via Cursor
+
+**Diagnóstico**:
+- Testar com curl: `curl -X POST http://localhost:3001 -H "Content-Type: application/json" -d '{"method": "tools/call", "params": {"tool": "echo", "args": {"message": "test"}}}'`
+- Verificar logs do servidor para ver se requisições estão chegando
+- Confirmar se formato de resposta está correto
+
+**Solução**: Geralmente relacionado ao formato de resposta (ver seção anterior) ou configuração de CORS/headers.
+
 ## Diagnosticando Problemas de Cobertura de Testes
 
 Alcançar 100% de cobertura é importante, mas às vezes o relatório não reflete a execução real dos testes.

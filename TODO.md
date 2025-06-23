@@ -4,9 +4,6 @@
 
 ### High Priority
 
-- [ ] **Testar e ajustar adicionar eventos**: Investigar e corrigir problema
-  onde add_event está sendo chamado mas não está criando eventos no calendário
-
 ### Medium Priority
 
 - [ ] Implement priority-based task ordering algorithm considering

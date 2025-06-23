@@ -77,7 +77,17 @@ def handle_post_other(handler, request, response):
                     # Persist the updates back to Google Calendar
                     updated_event = service.events().patch(calendarId="primary", eventId=event_id, body=event_instance).execute()
 
-                    response["result"] = updated_event
+                    # Format response similar to add_event
+                    summary = updated_event.get('summary', 'Evento editado')
+                    start_time = updated_event.get('start', {}).get('dateTime', 'N/A')
+                    end_time = updated_event.get('end', {}).get('dateTime', 'N/A')
+                    location = updated_event.get('location', '')
+                    
+                    event_text = f"✅ Evento editado com sucesso!\n📅 {summary}\n🕐 {start_time} - {end_time}"
+                    if location:
+                        event_text += f"\n📍 {location}"
+                    
+                    response["result"] = {"content": [{"type": "text", "text": event_text}]}
                 except Exception:
                     response["error"] = {"code": -32603, "message": f"Failed to edit event {event_id}."}
         elif tool_name == "list_tasks":

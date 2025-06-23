@@ -81,6 +81,56 @@ def get_mcp_schema():
                 }
             },
             {
+                "name": "edit_event",
+                "description": "Edit an existing event in Google Calendar",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "event_id": {
+                            "type": "string",
+                            "description": "ID of the event to edit"
+                        },
+                        "updated_details": {
+                            "type": "object",
+                            "description": "Updated event details (summary, location, description, start/end times)",
+                            "properties": {
+                                "summary": {
+                                    "type": "string",
+                                    "description": "New title of the event"
+                                },
+                                "location": {
+                                    "type": "string",
+                                    "description": "New location of the event"
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "New description of the event"
+                                },
+                                "start": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dateTime": {
+                                            "type": "string",
+                                            "description": "New start time (ISO format)"
+                                        }
+                                    }
+                                },
+                                "end": {
+                                    "type": "object",
+                                    "properties": {
+                                        "dateTime": {
+                                            "type": "string",
+                                            "description": "New end time (ISO format)"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "required": ["event_id", "updated_details"]
+                }
+            },
+            {
                 "name": "list_tasks",
                 "description": "List pending tasks from Google Tasks",
                 "inputSchema": {
