@@ -4,10 +4,6 @@
 
 ### High Priority
 
-- [x] Sync tasks with calendar events when due dates are present
-- [ ] Integrate read-only work calendar to display its events in listings
-- [x] Support viewing events from external ICS calendars (e.g., Office 365 GlobalSys) via URL parsing
-- [ ] Implement task completion handling and status updates
 - [ ] Add SSE support for tasks operations to enable real-time updates
 - [ ] Increase CalendarOperations.edit_event timezone branch test coverage to
   100%

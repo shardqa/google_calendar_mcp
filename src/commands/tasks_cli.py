@@ -55,6 +55,26 @@ class TasksCLI:
             
         return result
 
+    def complete_task(self, task_id: str) -> Dict:
+        result = self.tasks_ops.complete_task(task_id)
+        
+        if result['status'] == 'completed':
+            print(f"✓ Task completed: {task_id}")
+        else:
+            print(f"✗ Error completing task: {result.get('message', 'Unknown error')}")
+            
+        return result
+
+    def update_task_status(self, task_id: str, status: str) -> Dict:
+        result = self.tasks_ops.update_task_status(task_id, status)
+        
+        if result['status'] == 'updated':
+            print(f"✓ Task status updated to '{status}': {task_id}")
+        else:
+            print(f"✗ Error updating task status: {result.get('message', 'Unknown error')}")
+            
+        return result
+
 
 def main():
     parser = argparse.ArgumentParser(description='Google Tasks CLI')
@@ -69,6 +89,13 @@ def main():
     
     remove_parser = subparsers.add_parser('remove', help='Remove a task')
     remove_parser.add_argument('task_id', help='Task ID to remove')
+
+    complete_parser = subparsers.add_parser('complete', help='Mark a task as completed')
+    complete_parser.add_argument('task_id', help='Task ID to complete')
+
+    status_parser = subparsers.add_parser('status', help='Update task status')
+    status_parser.add_argument('task_id', help='Task ID to update')
+    status_parser.add_argument('status', choices=['needsAction', 'completed'], help='New task status')
 
     args = parser.parse_args()
 
@@ -87,6 +114,10 @@ def main():
             cli.add_task(args.title, notes=args.notes, due=args.due)
         elif args.command == 'remove':
             cli.remove_task(args.task_id)
+        elif args.command == 'complete':
+            cli.complete_task(args.task_id)
+        elif args.command == 'status':
+            cli.update_task_status(args.task_id, args.status)
 
     except Exception as e:
         print(f"Error: {str(e)}")

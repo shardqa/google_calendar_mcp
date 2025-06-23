@@ -145,6 +145,31 @@ def handle_post_other(handler, request, response):
                     response["result"] = {"success": ops.remove_task(task_id, tasklist_id)}
             except Exception as e:
                 response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
+        elif tool_name == "complete_task":
+            try:
+                service = tasks_auth.get_tasks_service()
+                task_id = tool_args.get("task_id")
+                if not task_id:
+                    response["error"] = {"code": -32602, "message": "Task ID is required"}
+                else:
+                    tasklist_id = tool_args.get("tasklist_id", "@default")
+                    ops = tasks_ops.TasksOperations(service)
+                    response["result"] = ops.complete_task(task_id, tasklist_id)
+            except Exception as e:
+                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
+        elif tool_name == "update_task_status":
+            try:
+                service = tasks_auth.get_tasks_service()
+                task_id = tool_args.get("task_id")
+                status = tool_args.get("status")
+                if not task_id or not status:
+                    response["error"] = {"code": -32602, "message": "Task ID and status are required"}
+                else:
+                    tasklist_id = tool_args.get("tasklist_id", "@default")
+                    ops = tasks_ops.TasksOperations(service)
+                    response["result"] = ops.update_task_status(task_id, status, tasklist_id)
+            except Exception as e:
+                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
         elif tool_name == "add_recurring_task":
             service = auth.get_calendar_service()
             summary = tool_args.get("summary")

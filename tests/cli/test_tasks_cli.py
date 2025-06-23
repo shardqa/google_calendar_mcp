@@ -96,6 +96,54 @@ def test_remove_task_command_failure(tasks_cli, mock_tasks_ops):
     assert result is False
 
 
+def test_complete_task_success(tasks_cli, mock_tasks_ops):
+    mock_tasks_ops.complete_task.return_value = {
+        'status': 'completed',
+        'task': {'id': 'task_123', 'status': 'completed'}
+    }
+    
+    result = tasks_cli.complete_task('task_123')
+    
+    mock_tasks_ops.complete_task.assert_called_once_with('task_123')
+    assert result['status'] == 'completed'
+
+
+def test_complete_task_error(tasks_cli, mock_tasks_ops):
+    mock_tasks_ops.complete_task.return_value = {
+        'status': 'error',
+        'message': 'Task not found'
+    }
+    
+    result = tasks_cli.complete_task('invalid_task')
+    
+    mock_tasks_ops.complete_task.assert_called_once_with('invalid_task')
+    assert result['status'] == 'error'
+
+
+def test_update_task_status_success(tasks_cli, mock_tasks_ops):
+    mock_tasks_ops.update_task_status.return_value = {
+        'status': 'updated',
+        'task': {'id': 'task_123', 'status': 'needsAction'}
+    }
+    
+    result = tasks_cli.update_task_status('task_123', 'needsAction')
+    
+    mock_tasks_ops.update_task_status.assert_called_once_with('task_123', 'needsAction')
+    assert result['status'] == 'updated'
+
+
+def test_update_task_status_error(tasks_cli, mock_tasks_ops):
+    mock_tasks_ops.update_task_status.return_value = {
+        'status': 'error',
+        'message': 'Invalid status'
+    }
+    
+    result = tasks_cli.update_task_status('task_123', 'invalid_status')
+    
+    mock_tasks_ops.update_task_status.assert_called_once_with('task_123', 'invalid_status')
+    assert result['status'] == 'error'
+
+
 @patch('sys.argv', ['tasks'])
 def test_main_no_command():
     with patch('argparse.ArgumentParser.print_help') as mock_help:
@@ -137,6 +185,36 @@ def test_main_add_command(mock_ops_class, mock_get_service):
 @patch('src.commands.tasks_cli.get_tasks_service')
 @patch('src.commands.tasks_cli.TasksOperations')
 def test_main_remove_command(mock_ops_class, mock_get_service):
+    mock_service = MagicMock()
+    mock_get_service.return_value = mock_service
+    mock_ops = MagicMock()
+    mock_ops_class.return_value = mock_ops
+    
+    main()
+    
+    mock_get_service.assert_called_once()
+    mock_ops_class.assert_called_once_with(mock_service)
+
+
+@patch('sys.argv', ['tasks', 'complete', 'task_123'])
+@patch('src.commands.tasks_cli.get_tasks_service')
+@patch('src.commands.tasks_cli.TasksOperations')
+def test_main_complete_command(mock_ops_class, mock_get_service):
+    mock_service = MagicMock()
+    mock_get_service.return_value = mock_service
+    mock_ops = MagicMock()
+    mock_ops_class.return_value = mock_ops
+    
+    main()
+    
+    mock_get_service.assert_called_once()
+    mock_ops_class.assert_called_once_with(mock_service)
+
+
+@patch('sys.argv', ['tasks', 'status', 'task_123', 'completed'])
+@patch('src.commands.tasks_cli.get_tasks_service')
+@patch('src.commands.tasks_cli.TasksOperations')
+def test_main_status_command(mock_ops_class, mock_get_service):
     mock_service = MagicMock()
     mock_get_service.return_value = mock_service
     mock_ops = MagicMock()

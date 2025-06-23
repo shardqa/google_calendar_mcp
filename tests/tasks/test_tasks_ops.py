@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, Mock
 from src.core.tasks_ops import TasksOperations
 
 
@@ -143,4 +143,105 @@ def test_remove_task_with_custom_tasklist(tasks_ops, mock_service):
     result = tasks_ops.remove_task(task_id, tasklist_id='custom_list')
     
     tasks_mock.delete.assert_called_once_with(tasklist='custom_list', task=task_id)
-    assert result is True 
+    assert result is True
+
+
+def test_complete_task_success(tasks_ops, mock_service):
+    task_id = 'task_to_complete'
+    mock_updated_task = {
+        'id': task_id,
+        'title': 'Completed task',
+        'status': 'completed',
+        'completed': '2024-03-25T12:00:00.000Z'
+    }
+    
+    tasks_mock = mock_service.tasks.return_value
+    tasks_mock.update.return_value.execute.return_value = mock_updated_task
+    
+    result = tasks_ops.complete_task(task_id)
+    
+    assert result['status'] == 'completed'
+    assert result['task']['status'] == 'completed'
+    tasks_mock.update.assert_called_once()
+    
+    call_args = tasks_mock.update.call_args
+    assert call_args[1]['tasklist'] == '@default'
+    assert call_args[1]['task'] == task_id
+    assert call_args[1]['body']['status'] == 'completed'
+
+
+def test_complete_task_with_custom_tasklist(tasks_ops, mock_service):
+    task_id = 'task_to_complete'
+    tasklist_id = 'custom_list'
+    mock_updated_task = {
+        'id': task_id,
+        'status': 'completed'
+    }
+    
+    tasks_mock = mock_service.tasks.return_value
+    tasks_mock.update.return_value.execute.return_value = mock_updated_task
+    
+    result = tasks_ops.complete_task(task_id, tasklist_id)
+    
+    assert result['status'] == 'completed'
+    tasks_mock.update.assert_called_once_with(
+        tasklist=tasklist_id,
+        task=task_id,
+        body={'status': 'completed'}
+    )
+
+
+def test_complete_task_error(tasks_ops, mock_service):
+    task_id = 'nonexistent_task'
+    
+    tasks_mock = mock_service.tasks.return_value
+    tasks_mock.update.return_value.execute.side_effect = Exception('Task not found')
+    
+    result = tasks_ops.complete_task(task_id)
+    
+    assert result['status'] == 'error'
+    assert 'Task not found' in result['message']
+
+
+def test_update_task_status_success(tasks_ops, mock_service):
+    task_id = 'task_to_update'
+    new_status = 'needsAction'
+    mock_updated_task = {
+        'id': task_id,
+        'status': new_status
+    }
+    
+    tasks_mock = mock_service.tasks.return_value
+    tasks_mock.update.return_value.execute.return_value = mock_updated_task
+    
+    result = tasks_ops.update_task_status(task_id, new_status)
+    
+    assert result['status'] == 'updated'
+    assert result['task']['status'] == new_status
+    tasks_mock.update.assert_called_once_with(
+        tasklist='@default',
+        task=task_id,
+        body={'status': new_status}
+    )
+
+
+def test_update_task_status_invalid_status(tasks_ops, mock_service):
+    task_id = 'task_to_update'
+    invalid_status = 'invalid_status'
+    
+    result = tasks_ops.update_task_status(task_id, invalid_status)
+    
+    assert result['status'] == 'error'
+    assert 'Invalid status' in result['message']
+
+
+def test_update_task_status_error(tasks_ops, mock_service):
+    task_id = 'nonexistent_task'
+    
+    tasks_mock = mock_service.tasks.return_value
+    tasks_mock.update.return_value.execute.side_effect = Exception('API Error')
+    
+    result = tasks_ops.update_task_status(task_id, 'completed')
+    
+    assert result['status'] == 'error'
+    assert 'API Error' in result['message'] 

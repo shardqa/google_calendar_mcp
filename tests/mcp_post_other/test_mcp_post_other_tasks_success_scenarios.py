@@ -19,13 +19,34 @@ class TestMcpPostOtherTasksSuccessScenarios(unittest.TestCase):
         mock_get_service.return_value = mock_service
         mock_ops = Mock()
         mock_ops_class.return_value = mock_ops
-        mock_ops.list_tasks.return_value = [{"title": "Test Task"}]
+        mock_ops.list_tasks.return_value = [{"type": "text", "text": "Test task"}]
+        
+        request = {
+            "method": "tools/call",
+            "params": {"name": "list_tasks"}
+        }
+        response = {}
+        
+        handle_post_other(self.handler, request, response)
+        
+        self.assertIn("result", response)
+        self.assertEqual(response["result"]["content"], [{"type": "text", "text": "Test task"}])
+        mock_ops.list_tasks.assert_called_once_with("@default")
+
+    @patch('src.mcp.mcp_post_other_handler.tasks_ops.TasksOperations')
+    @patch('src.mcp.mcp_post_other_handler.tasks_auth.get_tasks_service')
+    def test_add_task_basic_success(self, mock_get_service, mock_ops_class):
+        mock_service = Mock()
+        mock_get_service.return_value = mock_service
+        mock_ops = Mock()
+        mock_ops_class.return_value = mock_ops
+        mock_ops.add_task.return_value = {"status": "created", "task": {"id": "123"}}
         
         request = {
             "method": "tools/call",
             "params": {
-                "name": "list_tasks",
-                "arguments": {"tasklist_id": "custom_list"}
+                "name": "add_task",
+                "arguments": {"title": "Test Task"}
             }
         }
         response = {}
@@ -33,8 +54,7 @@ class TestMcpPostOtherTasksSuccessScenarios(unittest.TestCase):
         handle_post_other(self.handler, request, response)
         
         self.assertIn("result", response)
-        self.assertIn("content", response["result"])
-        mock_ops.list_tasks.assert_called_once_with("custom_list")
+        mock_ops.add_task.assert_called_once_with({"title": "Test Task"}, "@default")
 
     @patch('src.mcp.mcp_post_other_handler.tasks_ops.TasksOperations')
     @patch('src.mcp.mcp_post_other_handler.tasks_auth.get_tasks_service')
@@ -82,8 +102,56 @@ class TestMcpPostOtherTasksSuccessScenarios(unittest.TestCase):
             "method": "tools/call",
             "params": {
                 "name": "remove_task",
+                "arguments": {"task_id": "task123"}
+            }
+        }
+        response = {}
+        
+        handle_post_other(self.handler, request, response)
+        
+        self.assertIn("result", response)
+        self.assertEqual(response["result"]["success"], True)
+        mock_ops.remove_task.assert_called_once_with("task123", "@default")
+
+    @patch('src.mcp.mcp_post_other_handler.tasks_ops.TasksOperations')
+    @patch('src.mcp.mcp_post_other_handler.tasks_auth.get_tasks_service')
+    def test_complete_task_success(self, mock_get_service, mock_ops_class):
+        mock_service = Mock()
+        mock_get_service.return_value = mock_service
+        mock_ops = Mock()
+        mock_ops_class.return_value = mock_ops
+        mock_ops.complete_task.return_value = {"status": "completed", "task": {"id": "task123", "status": "completed"}}
+        
+        request = {
+            "method": "tools/call",
+            "params": {
+                "name": "complete_task",
+                "arguments": {"task_id": "task123"}
+            }
+        }
+        response = {}
+        
+        handle_post_other(self.handler, request, response)
+        
+        self.assertIn("result", response)
+        self.assertEqual(response["result"]["status"], "completed")
+        mock_ops.complete_task.assert_called_once_with("task123", "@default")
+
+    @patch('src.mcp.mcp_post_other_handler.tasks_ops.TasksOperations')
+    @patch('src.mcp.mcp_post_other_handler.tasks_auth.get_tasks_service')
+    def test_complete_task_with_custom_tasklist(self, mock_get_service, mock_ops_class):
+        mock_service = Mock()
+        mock_get_service.return_value = mock_service
+        mock_ops = Mock()
+        mock_ops_class.return_value = mock_ops
+        mock_ops.complete_task.return_value = {"status": "completed", "task": {"id": "task123"}}
+        
+        request = {
+            "method": "tools/call",
+            "params": {
+                "name": "complete_task",
                 "arguments": {
-                    "task_id": "test_task_123",
+                    "task_id": "task123",
                     "tasklist_id": "custom_list"
                 }
             }
@@ -93,8 +161,61 @@ class TestMcpPostOtherTasksSuccessScenarios(unittest.TestCase):
         handle_post_other(self.handler, request, response)
         
         self.assertIn("result", response)
-        self.assertIn("success", response["result"])
-        mock_ops.remove_task.assert_called_once_with("test_task_123", "custom_list")
+        mock_ops.complete_task.assert_called_once_with("task123", "custom_list")
+
+    @patch('src.mcp.mcp_post_other_handler.tasks_ops.TasksOperations')
+    @patch('src.mcp.mcp_post_other_handler.tasks_auth.get_tasks_service')
+    def test_update_task_status_success(self, mock_get_service, mock_ops_class):
+        mock_service = Mock()
+        mock_get_service.return_value = mock_service
+        mock_ops = Mock()
+        mock_ops_class.return_value = mock_ops
+        mock_ops.update_task_status.return_value = {"status": "updated", "task": {"id": "task123", "status": "needsAction"}}
+        
+        request = {
+            "method": "tools/call",
+            "params": {
+                "name": "update_task_status",
+                "arguments": {
+                    "task_id": "task123",
+                    "status": "needsAction"
+                }
+            }
+        }
+        response = {}
+        
+        handle_post_other(self.handler, request, response)
+        
+        self.assertIn("result", response)
+        self.assertEqual(response["result"]["status"], "updated")
+        mock_ops.update_task_status.assert_called_once_with("task123", "needsAction", "@default")
+
+    @patch('src.mcp.mcp_post_other_handler.tasks_ops.TasksOperations')
+    @patch('src.mcp.mcp_post_other_handler.tasks_auth.get_tasks_service')
+    def test_update_task_status_with_custom_tasklist(self, mock_get_service, mock_ops_class):
+        mock_service = Mock()
+        mock_get_service.return_value = mock_service
+        mock_ops = Mock()
+        mock_ops_class.return_value = mock_ops
+        mock_ops.update_task_status.return_value = {"status": "updated", "task": {"id": "task123"}}
+        
+        request = {
+            "method": "tools/call",
+            "params": {
+                "name": "update_task_status",
+                "arguments": {
+                    "task_id": "task123",
+                    "status": "completed",
+                    "tasklist_id": "custom_list"
+                }
+            }
+        }
+        response = {}
+        
+        handle_post_other(self.handler, request, response)
+        
+        self.assertIn("result", response)
+        mock_ops.update_task_status.assert_called_once_with("task123", "completed", "custom_list")
 
 if __name__ == '__main__':
     unittest.main() 

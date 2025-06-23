@@ -210,6 +210,47 @@ def get_mcp_schema():
                 }
             },
             {
+                "name": "complete_task",
+                "description": "Mark a task as completed in Google Tasks",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "task_id": {
+                            "type": "string",
+                            "description": "ID of the task to complete"
+                        },
+                        "tasklist_id": {
+                            "type": "string",
+                            "description": "Task list ID (optional, defaults to @default)"
+                        }
+                    },
+                    "required": ["task_id"]
+                }
+            },
+            {
+                "name": "update_task_status",
+                "description": "Update the status of a task in Google Tasks",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "task_id": {
+                            "type": "string",
+                            "description": "ID of the task to update"
+                        },
+                        "status": {
+                            "type": "string",
+                            "description": "New status for the task",
+                            "enum": ["needsAction", "completed"]
+                        },
+                        "tasklist_id": {
+                            "type": "string",
+                            "description": "Task list ID (optional, defaults to @default)"
+                        }
+                    },
+                    "required": ["task_id", "status"]
+                }
+            },
+            {
                 "name": "add_recurring_task",
                 "description": "Add a recurring task/event to Google Calendar",
                 "inputSchema": {
