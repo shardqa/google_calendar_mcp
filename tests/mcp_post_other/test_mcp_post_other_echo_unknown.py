@@ -34,7 +34,7 @@ def test_echo():
     response = {"jsonrpc": "2.0", "id": 2}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert body.get("result") == {"echo": "hello"}
+    assert body.get("result") == {"content": [{"type": "text", "text": "🔊 Echo: hello"}]}
 
 
 def test_unknown_tool():

@@ -2,6 +2,7 @@ import json
 import pytest
 import src.mcp_post_other_handler as mod
 from unittest.mock import Mock
+import sys
 
 class DummyHandler:
     def __init__(self):
@@ -48,7 +49,7 @@ def test_add_event_success(monkeypatch):
             called['service'] = service
         def add_event(self, event_data):
             called['event_data'] = event_data
-            return {'status': 'ok'}
+            return {'status': 'confirmed', 'event': {'summary': 'Test Event', 'start': {'dateTime': '2024-01-01T10:00:00'}, 'end': {'dateTime': '2024-01-01T11:00:00'}}}
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc2')
     monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
     args = {"summary": "t", "start_time": "s", "end_time": "e", "location": "loc", "description": "desc"}
@@ -57,6 +58,49 @@ def test_add_event_success(monkeypatch):
     response = {"jsonrpc": "2.0", "id": 5}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert body.get("result") == {'status': 'ok'}
+    assert "✅ Evento criado com sucesso!" in body.get("result", {}).get("content", [{}])[0].get("text", "")
     assert called['service'] == 'svc2'
-    assert called['event_data']["summary"] == "t" 
+    assert called['event_data']["summary"] == "t"
+    assert called['event_data']["location"] == "loc"
+    assert called['event_data']["description"] == "desc"
+
+def test_add_event_with_location_coverage(monkeypatch):
+    """Test to cover line 52 - if location: condition"""
+    handler = DummyHandler()
+    called = {}
+    class FakeOps:
+        def __init__(self, service):
+            called['service'] = service
+        def add_event(self, event_data):
+            called['event_data'] = event_data
+            return {'status': 'confirmed', 'event': {'summary': 'Test Event', 'start': {'dateTime': '2024-01-01T10:00:00'}, 'end': {'dateTime': '2024-01-01T11:00:00'}, 'location': 'Test Location'}}
+    monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc2')
+    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
+    args = {"summary": "Test Event", "start_time": "2024-01-01T10:00:00", "end_time": "2024-01-01T11:00:00", "location": "Test Location"}
+    request = {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"tool": "add_event", "args": args}}
+    response = {"jsonrpc": "2.0", "id": 5}
+    mod.handle_post_other(handler, request, response)
+    body = parse_response(handler)
+    result_text = body.get("result", {}).get("content", [{}])[0].get("text", "")
+    assert "✅ Evento criado com sucesso!" in result_text
+    assert "📍 Test Location" in result_text
+
+def test_add_event_error_coverage(monkeypatch):
+    """Test to cover line 56 - else: condition when add_event fails"""
+    handler = DummyHandler()
+    called = {}
+    class FakeOps:
+        def __init__(self, service):
+            called['service'] = service
+        def add_event(self, event_data):
+            called['event_data'] = event_data
+            return {'status': 'error', 'message': 'Test error message'}
+    monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc2')
+    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
+    args = {"summary": "Test Event", "start_time": "2024-01-01T10:00:00", "end_time": "2024-01-01T11:00:00"}
+    request = {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"tool": "add_event", "args": args}}
+    response = {"jsonrpc": "2.0", "id": 5}
+    mod.handle_post_other(handler, request, response)
+    body = parse_response(handler)
+    result_text = body.get("result", {}).get("content", [{}])[0].get("text", "")
+    assert "❌ Erro ao criar evento: Test error message" in result_text 

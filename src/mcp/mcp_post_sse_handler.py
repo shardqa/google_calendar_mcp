@@ -45,7 +45,7 @@ def handle_post_sse(handler, request, response):
         if tool_name == "echo":
             message = tool_args.get("message", "No message provided")
             print(f"Echoing message via tools/call: {message}")
-            response["result"] = {"echo": message}
+            response["result"] = {"content": [{"type": "text", "text": f"🔊 Echo: {message}"}]}
         elif tool_name == "list_events":
             service = auth.get_calendar_service()
             max_results = tool_args.get("max_results", 10)
@@ -64,7 +64,21 @@ def handle_post_sse(handler, request, response):
                 event_data = {"summary": summary, "start": {"dateTime": start_time}, "end": {"dateTime": end_time}}
                 if location: event_data["location"] = location
                 if description: event_data["description"] = description
-                response["result"] = ops.add_event(event_data)
+                result = ops.add_event(event_data)
+                if result.get('status') == 'confirmed':
+                    event = result.get('event', {})
+                    summary = event.get('summary', 'Evento criado')
+                    start_time = event.get('start', {}).get('dateTime', 'N/A')
+                    end_time = event.get('end', {}).get('dateTime', 'N/A')
+                    location = event.get('location', '')
+                    
+                    event_text = f"✅ Evento criado com sucesso!\n📅 {summary}\n🕐 {start_time} - {end_time}"
+                    if location:
+                        event_text += f"\n📍 {location}"
+                    
+                    response["result"] = {"content": [{"type": "text", "text": event_text}]}
+                else:
+                    response["result"] = {"content": [{"type": "text", "text": f"❌ Erro ao criar evento: {result.get('message', 'Erro desconhecido')}"}]}
         elif tool_name == "remove_event":
             service = auth.get_calendar_service()
             event_id = tool_args.get("event_id")

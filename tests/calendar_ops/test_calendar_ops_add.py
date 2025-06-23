@@ -153,4 +153,24 @@ def test_add_recurring_event_service_error(calendar_ops, mock_service):
     )
     
     assert result['status'] == 'error'
-    assert 'Service error' in result['message'] 
+    assert 'Service error' in result['message']
+
+def test_add_event_with_existing_timezone(calendar_ops, mock_service):
+    """Test add_event when timeZone already exists in start/end - covers lines 53-56, 60-63 branches"""
+    event_data = {
+        'summary': 'Test Event with Timezone',
+        'start': {'dateTime': '2024-03-20T10:00:00', 'timeZone': 'Europe/London'},
+        'end': {'dateTime': '2024-03-20T11:00:00', 'timeZone': 'Europe/London'}
+    }
+    
+    mock_event = {'id': 'test_event_123', 'summary': 'Test Event with Timezone'}
+    mock_service.events().insert().execute.return_value = mock_event
+    
+    result = calendar_ops.add_event(event_data)
+    
+    # Check that the timezone was preserved (not overwritten)
+    call_args = mock_service.events().insert.call_args
+    assert call_args[1]['body']['start']['timeZone'] == 'Europe/London'
+    assert call_args[1]['body']['end']['timeZone'] == 'Europe/London'
+    
+    assert result == {'status': 'confirmed', 'event': mock_event} 

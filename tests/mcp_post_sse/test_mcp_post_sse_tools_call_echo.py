@@ -32,7 +32,7 @@ def test_tools_call_echo():
     response = {}
     mod.handle_post_sse(handler, request, response)
     body = parse_json(handler)
-    assert body["result"] == {"echo":"hi"}
+    assert body["result"] == {"content": [{"type": "text", "text": "🔊 Echo: hi"}]}
 
 def test_tools_call_unknown_tool():
     handler = DummyHandler()
