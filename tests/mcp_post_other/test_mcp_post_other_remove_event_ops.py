@@ -56,5 +56,8 @@ def test_remove_event_success(monkeypatch):
     response = {"jsonrpc": "2.0", "id": 7}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert body.get("result") == {'success': True}
+    # Agora retorna resposta formatada em vez de {'success': True}
+    assert "result" in body
+    assert "content" in body["result"]
+    assert "✅ Evento removido com sucesso!" in body["result"]["content"][0]["text"]
     assert called['event_id'] == 'id1' 

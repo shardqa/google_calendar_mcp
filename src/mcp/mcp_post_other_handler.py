@@ -47,7 +47,8 @@ def handle_post_other(handler, request, response):
                     end_time = event.get('end', {}).get('dateTime', 'N/A')
                     location = event.get('location', '')
                     
-                    event_text = f"✅ Evento criado com sucesso!\n📅 {summary}\n🕐 {start_time} - {end_time}"
+                    event_id = event.get('id', 'N/A')
+                    event_text = f"✅ Evento criado com sucesso!\n🆔 ID: {event_id}\n📅 {summary}\n🕐 {start_time} - {end_time}"
                     if location:
                         event_text += f"\n📍 {location}"
                     
@@ -61,7 +62,12 @@ def handle_post_other(handler, request, response):
                 response["error"] = {"code": -32602, "message": "Event ID is required"}
             else:
                 ops = calendar_ops.CalendarOperations(service)
-                response["result"] = {"success": ops.remove_event(event_id)}
+                success = ops.remove_event(event_id)
+                if success:
+                    event_text = f"✅ Evento removido com sucesso!\n🆔 ID: {event_id}"
+                    response["result"] = {"content": [{"type": "text", "text": event_text}]}
+                else:
+                    response["result"] = {"content": [{"type": "text", "text": f"❌ Erro ao remover evento {event_id}"}]}
         elif tool_name == "edit_event":
             service = auth.get_calendar_service()
             event_id = tool_args.get("event_id")
@@ -69,26 +75,21 @@ def handle_post_other(handler, request, response):
             if not event_id or not updated_details:
                 response["error"] = {"code": -32602, "message": "event_id and updated_details are required."}
             else:
-                try:
-                    # Retrieve the event instance and apply updates
-                    event_instance = service.events().get(calendarId="primary", eventId=event_id).execute()
-                    event_instance.update(updated_details)
-
-                    # Persist the updates back to Google Calendar
-                    updated_event = service.events().patch(calendarId="primary", eventId=event_id, body=event_instance).execute()
-
+                ops = calendar_ops.CalendarOperations(service)
+                updated_event = ops.edit_event(event_id, updated_details)
+                if updated_event:
                     # Format response similar to add_event
                     summary = updated_event.get('summary', 'Evento editado')
                     start_time = updated_event.get('start', {}).get('dateTime', 'N/A')
                     end_time = updated_event.get('end', {}).get('dateTime', 'N/A')
                     location = updated_event.get('location', '')
                     
-                    event_text = f"✅ Evento editado com sucesso!\n📅 {summary}\n🕐 {start_time} - {end_time}"
+                    event_text = f"✅ Evento editado com sucesso!\n🆔 ID: {event_id}\n📅 {summary}\n🕐 {start_time} - {end_time}"
                     if location:
                         event_text += f"\n📍 {location}"
                     
                     response["result"] = {"content": [{"type": "text", "text": event_text}]}
-                except Exception:
+                else:
                     response["error"] = {"code": -32603, "message": f"Failed to edit event {event_id}."}
         elif tool_name == "list_tasks":
             try:

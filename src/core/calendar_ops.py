@@ -18,13 +18,14 @@ class CalendarOperations:
         events = events_result.get('items', [])
         formatted_events = []
         for event in events:
+            event_id = event.get('id', 'No ID')
             summary = event.get('summary', 'No Summary')
             start_time = event.get('start', {}).get('dateTime', 'No start time')
             end_time = event.get('end', {}).get('dateTime', 'No end time')
             location = event.get('location', '')
             description = event.get('description', '')
             
-            event_text = f"{summary}\n📅 Start: {start_time}\n📅 End: {end_time}"
+            event_text = f"{summary}\n🆔 ID: {event_id}\n📅 Start: {start_time}\n📅 End: {end_time}"
             
             if location:
                 event_text += f"\n📍 Location: {location}"
@@ -80,22 +81,41 @@ class CalendarOperations:
 
     def edit_event(self, event_id: str, updated_details: Dict) -> Optional[Dict]:
         try:
-            event = (
-                self.service.events()
-                .get(calendarId="primary", eventId=event_id)
-                .execute()
-            )
+            # Get the current event
+            event = self.service.events().get(
+                calendarId="primary", 
+                eventId=event_id
+            ).execute()
 
-            event.update(updated_details)
+            # Update only the specified fields
+            for key, value in updated_details.items():
+                event[key] = value
 
-            updated_event = (
-                self.service.events()
-                .patch(calendarId="primary", eventId=event_id, body=event)
-                .execute()
-            )
+            # Apply timezone fixes if start/end times are being updated
+            if 'start' in updated_details and 'dateTime' in updated_details['start']:
+                event['start']['dateTime'] = self._ensure_timezone(
+                    updated_details['start']['dateTime']
+                )
+                if 'timeZone' not in event['start']:
+                    event['start']['timeZone'] = 'America/Sao_Paulo'
+            
+            if 'end' in updated_details and 'dateTime' in updated_details['end']:
+                event['end']['dateTime'] = self._ensure_timezone(
+                    updated_details['end']['dateTime']
+                )
+                if 'timeZone' not in event['end']:
+                    event['end']['timeZone'] = 'America/Sao_Paulo'
+
+            # Send the updated event back to Google Calendar
+            updated_event = self.service.events().patch(
+                calendarId="primary",
+                eventId=event_id,
+                body=event
+            ).execute()
 
             return updated_event
-        except Exception:
+        except Exception as e:
+            print(f"Error editing event {event_id}: {str(e)}")
             return None
 
     def add_recurring_event(self, summary: str, frequency: str, count: int, 

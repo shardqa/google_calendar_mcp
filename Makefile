@@ -1,7 +1,7 @@
 # Makefile for google_calendar_mcp
 
 # Use .PHONY to ensure these commands run even if files with the same name exist
-.PHONY: test test-fast clean mcp-start mcp-stop mcp-restart mcp-local
+.PHONY: test test-fast clean mcp-start mcp-stop mcp-restart mcp-restart-local mcp-local
 
 # Define the default command to run when you just type 'make'
 default: test
@@ -34,11 +34,17 @@ mcp-start:
 mcp-stop:
 	@echo "Stopping MCP server..."
 	@pkill -f "mcp_cli" || echo "No MCP server running"
+	@pkill -f "mcp_server.py" || echo "No local MCP server running"
 
 mcp-restart: mcp-stop
 	@sleep 2
 	@echo "Restarting MCP server..."
 	@src/scripts/run_mcp.sh
+
+mcp-restart-local: mcp-stop
+	@sleep 2
+	@echo "Restarting local MCP server on port 3001..."
+	@src/scripts/run_mcp.sh --port 3001
 
 mcp-local:
 	@echo "Starting Google Calendar MCP server locally on port 3001..."
@@ -53,5 +59,6 @@ help:
 	@echo "  make mcp-start  - Start the Google Calendar MCP server"
 	@echo "  make mcp-local  - Start the MCP server locally on port 3001"
 	@echo "  make mcp-stop   - Stop the MCP server"
-	@echo "  make mcp-restart- Restart the MCP server"
+	@echo "  make mcp-restart - Restart the MCP server"
+	@echo "  make mcp-restart-local - Restart the local MCP server on port 3001"
 	@echo "  make help       - Show this help message" 

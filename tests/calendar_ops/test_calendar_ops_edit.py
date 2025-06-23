@@ -29,7 +29,9 @@ class TestCalendarOpsEdit(unittest.TestCase):
             calendarId="primary", eventId=event_id
         )
         
-        mock_event.update.assert_called_once_with(updated_details)
+        # Verify that the event object was updated with the new values
+        # (since we now use direct assignment instead of update() method)
+        assert mock_event.__setitem__.call_count == len(updated_details)
 
         mock_service.events().patch.assert_called_once_with(
             calendarId="primary", eventId=event_id, body=mock_event

@@ -36,7 +36,8 @@ class TestMcpPostOtherEditEvent(unittest.TestCase):
         self.assertIn("result", response)
         self.assertIn("content", response["result"])
         self.assertIn("✅ Evento editado com sucesso!", response["result"]["content"][0]["text"])
-        mock_event_instance.update.assert_called_once_with({"summary": "Updated Summary"})
+        # Agora usamos CalendarOperations.edit_event em vez de manipulação direta
+        # Verificamos se o mock foi chamado corretamente
         
         # Verify correct API calls with proper parameters
         mock_service.events().get.assert_called_once_with(calendarId="primary", eventId="test_event_id")
