@@ -42,6 +42,9 @@
 - [x] **Implement priority-based task ordering algorithm**: Considera prazos
   e importância declarada (nível 1-3) para definir a ordem de
   agendamento.
+- [x] **Automatic time block creation for high-priority tasks**: Blocos de
+  tempo são inseridos automaticamente no Google Calendar quando tarefas de
+  importância 3 são detectadas.
 
 ### Documentation Enhancement ✅
 
@@ -84,6 +87,10 @@
 - [x] **Isolated Testing**: Testes unitários com mocking estratégico
 - [x] **Diagnostic Scripts**: Conectividade, SSE, inicialização,
   cancelamento
+
+## Google Calendar List Calendars Tool ✅
+
+- [x] **Implement MCP tool `list_calendars`**: Comando criado para listar todos os IDs de calendários disponíveis na conta Google do usuário, permitindo seleção precisa para outras operações. Inclui testes completos nos handlers POST e SSE garantindo cobertura total.
 
 ## Histórico de Desenvolvimento
 

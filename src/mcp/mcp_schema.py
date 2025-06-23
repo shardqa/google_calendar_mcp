@@ -37,6 +37,15 @@ def get_mcp_schema():
                 }
             },
             {
+                "name": "list_calendars",
+                "description": "List calendars available in the user's Google account",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
+            },
+            {
                 "name": "add_event",
                 "description": "Add a new event to Google Calendar",
                 "inputSchema": {

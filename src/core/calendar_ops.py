@@ -6,10 +6,10 @@ class CalendarOperations:
         self.service = service
         self._events = None
 
-    def list_events(self, max_results: Optional[int] = None) -> List[Dict]:
+    def list_events(self, max_results: Optional[int] = None, calendar_id: str = 'primary') -> List[Dict]:
         now = datetime.now(timezone.utc).isoformat()
         events_result = self.service.events().list(
-            calendarId='primary',
+            calendarId=calendar_id,
             timeMin=now,
             maxResults=max_results,
             singleEvents=True,
@@ -174,4 +174,14 @@ class CalendarOperations:
             return {'status': 'confirmed', 'event': event, **event}
             
         except Exception as e:
-            return {'status': 'error', 'message': str(e)} 
+            return {'status': 'error', 'message': str(e)}
+
+    def list_calendars(self):
+        calendars_result = self.service.calendarList().list().execute()
+        calendars = calendars_result.get('items', [])
+        formatted_calendars = []
+        for cal in calendars:
+            cal_id = cal.get('id', 'No ID')
+            summary = cal.get('summary', 'No Summary')
+            formatted_calendars.append({"type": "text", "text": f"{summary}\n🆔 ID: {cal_id}"})
+        return formatted_calendars 

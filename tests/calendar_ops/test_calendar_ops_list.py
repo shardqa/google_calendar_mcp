@@ -145,4 +145,13 @@ def test_list_events_with_detailed_info(calendar_ops, mock_service):
     # Third event with minimal details
     third_event = events[2]
     assert 'Lunch with Client' in third_event['text']
-    assert '2024-03-21T12:00:00Z' in third_event['text'] 
+    assert '2024-03-21T12:00:00Z' in third_event['text']
+
+def test_list_events_other_calendar(calendar_ops, mock_service):
+    mock_events = {'items': []}
+    events_mock = mock_service.events.return_value
+    events_mock.list.return_value.execute.return_value = mock_events
+    calendar_ops.list_events(calendar_id='globalsys')
+    events_mock.list.assert_called_once()
+    kwargs = events_mock.list.call_args.kwargs
+    assert kwargs['calendarId'] == 'globalsys' 

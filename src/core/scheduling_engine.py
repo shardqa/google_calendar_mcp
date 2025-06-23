@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
-import re
-from src.core.task_ordering import order_tasks
+from src.core.time_block_creator import calculate_duration, calculate_gaps_between_events
 
 
 class SchedulingEngine:
@@ -76,7 +75,7 @@ class SchedulingEngine:
         if not events:
             start_time = f"2024-03-21T{start_hour}:00Z"
             end_time = f"2024-03-21T{end_hour}:00Z"
-            duration = self._calculate_duration(start_time, end_time)
+            duration = calculate_duration(start_time, end_time)
             
             return [{
                 'start_time': start_time,
@@ -84,51 +83,18 @@ class SchedulingEngine:
                 'duration_minutes': duration
             }]
         
-        return self._calculate_gaps_between_events(events, start_hour, end_hour)
-    
-    def _calculate_duration(self, start: str, end: str) -> int:
-        start_dt = datetime.fromisoformat(start.replace('Z', '+00:00'))
-        end_dt = datetime.fromisoformat(end.replace('Z', '+00:00'))
-        return int((end_dt - start_dt).total_seconds() / 60)
-    
-    def _calculate_gaps_between_events(self, events: List[Dict], 
-                                     start_hour: str, end_hour: str) -> List[Dict]:
-        slots = []
-        for i, event in enumerate(events):
-            if i == 0:
-                work_start = f"2024-03-21T{start_hour}:00Z"
-                event_start = event.get('start', {}).get('dateTime')
-                if event_start and work_start < event_start:
-                    duration = self._calculate_duration(work_start, event_start)
-                    if duration >= 30:
-                        slots.append({
-                            'start_time': work_start,
-                            'end_time': event_start,
-                            'duration_minutes': duration
-                        })
-        
-        return slots
+        return calculate_gaps_between_events(events, start_hour, end_hour)
     
     def _create_task_events(self, available_slots: List[Dict], 
                           tasks: List[Dict], max_duration: int) -> List[Dict]:
-        proposed_events = []
-        ordered_tasks = order_tasks(tasks)
+        from src.core.time_block_creator import create_task_events
+        return create_task_events(
+            self.calendar_service, available_slots, tasks, max_duration
+        )
 
-        for slot, task in zip(available_slots, ordered_tasks):
-            task_duration = min(60, max_duration)
-            if slot['duration_minutes'] < task_duration:
-                continue
+    # Thin wrappers kept for backward compatibility with existing tests
+    def _calculate_gaps_between_events(self, events: List[Dict], start_hour: str, end_hour: str) -> List[Dict]:
+        return calculate_gaps_between_events(events, start_hour, end_hour)
 
-            proposed_events.append({
-                'summary': f"Work on: {task.get('title', 'Untitled Task')}",
-                'start': {'dateTime': slot['start_time']},
-                'end': {'dateTime': self._add_minutes_to_time(slot['start_time'], task_duration)},
-                'description': f"Scheduled task: {task.get('title', '')}"
-            })
-
-        return proposed_events
-    
-    def _add_minutes_to_time(self, time_str: str, minutes: int) -> str:
-        dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
-        new_dt = dt + timedelta(minutes=minutes)
-        return new_dt.isoformat().replace('+00:00', 'Z') 
+    def _calculate_duration(self, start: str, end: str) -> int:
+        return calculate_duration(start, end) 

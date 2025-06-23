@@ -6,9 +6,8 @@
 
 ### Medium Priority
 
-- [ ] Add automatic time block creation for high-priority tasks in
-  available calendar slots
-- [ ] Sync tasks with calendar events when due dates are present
+- [x] Sync tasks with calendar events when due dates are present
+- [ ] Integrate read-only work calendar to display its events in listings
 - [ ] Implement task completion handling and status updates
 - [ ] Add SSE support for tasks operations to enable real-time updates
 - [ ] Increase CalendarOperations.edit_event timezone branch test coverage to

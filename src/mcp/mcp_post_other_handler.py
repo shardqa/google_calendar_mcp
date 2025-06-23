@@ -3,6 +3,7 @@ from .mcp_schema import get_mcp_schema
 from .. import calendar_ops
 from ..core import auth as auth
 from ..core import tasks_auth, tasks_ops
+from ..core.tasks_calendar_sync import sync_tasks_with_calendar
 
 def handle_post_other(handler, request, response):
     method = request.get("method")
@@ -24,7 +25,8 @@ def handle_post_other(handler, request, response):
         elif tool_name == "list_events":
             service = auth.get_calendar_service()
             max_results = tool_args.get("max_results", 10)
-            response["result"] = {"content": calendar_ops.CalendarOperations(service).list_events(max_results)}
+            calendar_id = tool_args.get("calendar_id", "primary")
+            response["result"] = {"content": calendar_ops.CalendarOperations(service).list_events(max_results, calendar_id)}
         elif tool_name == "add_event":
             service = auth.get_calendar_service()
             summary = tool_args.get("summary")
@@ -55,6 +57,10 @@ def handle_post_other(handler, request, response):
                     response["result"] = {"content": [{"type": "text", "text": event_text}]}
                 else:
                     response["result"] = {"content": [{"type": "text", "text": f"❌ Erro ao criar evento: {result.get('message', 'Erro desconhecido')}"}]}
+        elif tool_name == "list_calendars":
+            service = auth.get_calendar_service()
+            ops = calendar_ops.CalendarOperations(service)
+            response["result"] = {"content": ops.list_calendars()}
         elif tool_name == "remove_event":
             service = auth.get_calendar_service()
             event_id = tool_args.get("event_id")
@@ -94,6 +100,8 @@ def handle_post_other(handler, request, response):
         elif tool_name == "list_tasks":
             try:
                 service = tasks_auth.get_tasks_service()
+                # Keep calendar and tasks in sync
+                sync_tasks_with_calendar(auth.get_calendar_service(), service)
                 tasklist_id = tool_args.get("tasklist_id", "@default")
                 ops = tasks_ops.TasksOperations(service)
                 response["result"] = {"content": ops.list_tasks(tasklist_id)}
