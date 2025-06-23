@@ -17,7 +17,7 @@ class TestMainBlockExecution:
         # Test that the script can be executed directly
         try:
             result = subprocess.run([
-                sys.executable, script_path, '--help'
+                'python', script_path, '--help'
             ], capture_output=True, text=True, timeout=10)
             
             # Should show help message without error
@@ -34,7 +34,7 @@ class TestMainBlockExecution:
         # Test that the script can be executed directly
         try:
             result = subprocess.run([
-                sys.executable, script_path, '--help'
+                'python', script_path, '--help'
             ], capture_output=True, text=True, timeout=10)
             
             # Should show help message without error

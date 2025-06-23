@@ -20,6 +20,8 @@ google_calendar_mcp/
 │   │   ├── auth.py       # Autenticação unificada
 │   │   ├── calendar_ops.py # Operações de calendário
 │   │   ├── cancel_utils.py # Utilitários de cancelamento
+│   │   ├── ics_ops.py    # Operações de calendários ICS externos
+│   │   ├── ics_registry.py # Registry de aliases para calendários ICS
 │   │   ├── scheduling_engine.py # Motor de agendamento inteligente
 │   │   ├── tasks_auth.py   # Autenticação Google Tasks
 │   │   └── tasks_ops.py    # Operações de tarefas
@@ -80,10 +82,26 @@ google_calendar_mcp/
 
 #### Operações de Calendário (`calendar_ops.py`)
 
-- `list_events()`: Lista eventos com filtros de data
+- `list_events()`: Lista eventos com filtros de data e suporte a calendar_id
+- `list_calendars()`: Lista todos os IDs de calendários disponíveis
 - `add_event()`: Criação com validação de campos
 - `remove_event()`: Remoção segura com verificação de ID
 - Tratamento robusto de erros da API
+
+#### Operações ICS Externas (`ics_ops.py`)
+
+- `list_events()`: Parsing de calendários ICS via URL
+- Suporte a múltiplos formatos de data (ISO, datetime, date-only)
+- Tratamento robusto de exceções para URLs inválidas
+- Cache interno para performance e rate limiting
+
+#### Registry ICS (`ics_registry.py`)
+
+- Sistema persistente de aliases em `config/ics_urls.json`
+- Thread-safe com locks para operações concorrentes
+- `register()`: Adiciona novos aliases URL
+- `get()`: Recupera URL por alias
+- `list_all()`: Lista todos os calendários registrados
 
 #### Operações de Tasks (`tasks_ops.py`)
 
@@ -164,7 +182,8 @@ Todas as ferramentas MCP implementam o mesmo formato de resposta para garantir c
 **Handlers Paralelos**: Ambos `mcp_post_sse_handler.py` e `mcp_post_other_handler.py` implementam as mesmas ferramentas:
 
 - `echo`: Retorna mensagem com emoji de confirmação
-- `list_events`: Lista eventos formatados com data/hora
+- `list_events`: Lista eventos formatados com data/hora (Google + ICS)
+- `list_calendars`: Lista IDs de calendários Google disponíveis
 - `add_event`: Cria evento e retorna confirmação visual
 - `remove_event`: Remove evento com status de sucesso
 - `list_tasks`: Lista tarefas do Google Tasks
@@ -172,10 +191,13 @@ Todas as ferramentas MCP implementam o mesmo formato de resposta para garantir c
 - `remove_task`: Remove tarefa com validação
 - `add_recurring_task`: Cria eventos recorrentes
 - `schedule_tasks`: Agendamento inteligente de tarefas
+- `register_ics_calendar`: Registra alias para calendário ICS externo
+- `list_ics_calendars`: Lista calendários ICS registrados
 
 #### Consistência de Formatação
 
 **Sucessos** incluem emojis e informações estruturadas:
+
 ```text
 ✅ Evento criado com sucesso!
 📅 Reunião de Equipe
@@ -184,6 +206,7 @@ Todas as ferramentas MCP implementam o mesmo formato de resposta para garantir c
 ```
 
 **Erros** são informativos e actionable:
+
 ```text
 ❌ Erro ao criar evento: Missing required parameters
 ```
