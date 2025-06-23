@@ -108,6 +108,7 @@
 
 ## Recent High Priority Completions ✅
 
+- [x] **Remove CLI functionality and focus only on MCP tools to simplify project scope**: Remoção completa da funcionalidade CLI tradicional (src/commands/cli.py, src/commands/tasks_cli.py, src/main.py, etc.) mantendo apenas o servidor MCP. Projeto agora focado exclusivamente em MCP tools com 246 testes e 100% cobertura.
 - [x] **Implement task completion handling and status updates**: Implementada funcionalidade completa para marcar tasks como completadas e atualizar status. Inclui métodos `complete_task()` e `update_task_status()` com suporte nos CLIs e handlers MCP, validação de parâmetros e tratamento de erros.
 - [x] **Sync tasks with calendar events when due dates are present**: Implementada integração completa entre Google Tasks e Google Calendar. Tarefas com due dates são sincronizadas automaticamente como eventos no calendário.
 - [x] **Integrate read-only work calendar to display its events in listings**: Sistema ICS implementado permitindo integração de calendários externos (como Office 365) via URLs ICS para exibição read-only de eventos.

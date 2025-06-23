@@ -27,22 +27,7 @@ class TestMainBlockExecution:
             # If it times out, that's okay for our coverage test
             pass
     
-    def test_tasks_cli_main_block(self):
-        """Test tasks_cli.py __main__ block execution"""
-        script_path = os.path.join(os.path.dirname(__file__), '..', '..', 'src', 'commands', 'tasks_cli.py')
-        
-        # Test that the script can be executed directly
-        try:
-            result = subprocess.run([
-                'python', script_path, '--help'
-            ], capture_output=True, text=True, timeout=10)
-            
-            # Should show help message without error
-            assert result.returncode == 0
-            assert 'Google Tasks CLI' in result.stdout
-        except subprocess.TimeoutExpired:
-            # If it times out, that's okay for our coverage test
-            pass
+
 
     @patch('src.commands.mcp_cli.main')
     def test_mcp_cli_import_and_main_execution(self, mock_main):
@@ -55,16 +40,7 @@ if __name__ == "__main__":
         
         mock_main.assert_called_once()
 
-    @patch('src.commands.tasks_cli.main')  
-    def test_tasks_cli_import_and_main_execution(self, mock_main):
-        """Test importing and executing tasks_cli main block"""
-        # Simulate the __main__ execution
-        exec('''
-if __name__ == '__main__':
-    main()
-''', {'__name__': '__main__', 'main': mock_main})
-        
-        mock_main.assert_called_once()
+
 
     def test_import_error_coverage(self):
         """Test import error handling in CLI modules"""
@@ -83,28 +59,7 @@ if __name__ == '__main__':
         parts = normalized_path.split(os.sep)
         assert len(parts) >= 2  # Should have at least some path components
 
-def test_main_py_script_execution():
-    """Test that src/main.py can be executed as a script and exits gracefully"""
-    result = subprocess.run([
-        'python3', '-c', '''
-import sys
-import os
-sys.path.insert(0, os.getcwd())
 
-from unittest.mock import patch, MagicMock
-
-with patch('src.main.CLI') as mock_cli_class:
-    mock_cli = MagicMock()
-    mock_cli_class.return_value = mock_cli
-    
-    with patch('src.main.get_calendar_service'):
-        with patch('sys.argv', ['main.py']):
-            import src.main
-'''
-    ], capture_output=True, text=True, timeout=10, cwd=os.getcwd())
-    
-    # Should exit cleanly (exit code 0 or 1 are both acceptable for this test)
-    assert result.returncode in [0, 1]
 
 
 def test_mcp_cli_py_script_execution():
@@ -119,13 +74,4 @@ def test_mcp_cli_py_script_execution():
     assert "MCP configuration created" in result.stdout
 
 
-def test_tasks_cli_py_script_execution():
-    """Test that src/commands/tasks_cli.py can be executed as a script"""
-    result = subprocess.run([
-        'python3', 'src/commands/tasks_cli.py', '--help'
-    ], capture_output=True, text=True, timeout=10, cwd=os.getcwd())
-    
-    # Should exit cleanly (help exits with code 0)
-    assert result.returncode == 0
-    # Should show help text
-    assert "Google Tasks CLI" in result.stdout 
+ 
