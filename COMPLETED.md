@@ -6,9 +6,9 @@
 
 - [x] **Servidor MCP funcionando**: Problema resolvido! Servidor MCP está
   trazendo as tasks corretamente via MCP tools.
-- [x] **Testar e ajustar adicionar eventos**: Investigado e corrigido! 
-  Problema onde add_event estava sendo chamado mas não criava eventos no 
-  calendário foi resolvido. Também adicionado e melhorado edit_event com 
+- [x] **Testar e ajustar adicionar eventos**: Investigado e corrigido!
+  Problema onde add_event estava sendo chamado mas não criava eventos no
+  calendário foi resolvido. Também adicionado e melhorado edit_event com
   schema MCP exposto e formato de resposta consistente com outros comandos.
 
 ### MCP Agenda Enhancement
@@ -35,11 +35,13 @@
 
 ### Intelligent Scheduling ✅
 
-- [x] **Design intelligent scheduling algorithm**: Projetado um algoritmo que lê o
-  calendário e as tarefas atuais para sugerir blocos de tempo otimizados.
-- [x] **Build MCP command `schedule_tasks`**: Construído o comando `schedule_tasks`
-  para analisar o calendário e as tarefas do usuário, propondo blocos de
-  tempo para a conclusão das tarefas.
+- [x] **Design intelligent scheduling algorithm**: Projetado um algoritmo que
+  lê o calendário e as tarefas atuais para sugerir blocos de tempo otimizados.
+- [x] **Build MCP command `schedule_tasks`**: Construído o comando
+  `schedule_tasks`
+- [x] **Implement priority-based task ordering algorithm**: Considera prazos
+  e importância declarada (nível 1-3) para definir a ordem de
+  agendamento.
 
 ### Documentation Enhancement ✅
 

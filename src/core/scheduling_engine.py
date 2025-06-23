@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 import re
+from src.core.task_ordering import order_tasks
 
 
 class SchedulingEngine:
@@ -111,20 +112,20 @@ class SchedulingEngine:
     def _create_task_events(self, available_slots: List[Dict], 
                           tasks: List[Dict], max_duration: int) -> List[Dict]:
         proposed_events = []
-        
-        for task in tasks:
-            if available_slots:
-                slot = available_slots[0]
-                task_duration = min(60, max_duration)
-                
-                if slot['duration_minutes'] >= task_duration:
-                    proposed_events.append({
-                        'summary': f"Work on: {task.get('title', 'Untitled Task')}",
-                        'start': {'dateTime': slot['start_time']},
-                        'end': {'dateTime': self._add_minutes_to_time(slot['start_time'], task_duration)},
-                        'description': f"Scheduled task: {task.get('title', '')}"
-                    })
-        
+        ordered_tasks = order_tasks(tasks)
+
+        for slot, task in zip(available_slots, ordered_tasks):
+            task_duration = min(60, max_duration)
+            if slot['duration_minutes'] < task_duration:
+                continue
+
+            proposed_events.append({
+                'summary': f"Work on: {task.get('title', 'Untitled Task')}",
+                'start': {'dateTime': slot['start_time']},
+                'end': {'dateTime': self._add_minutes_to_time(slot['start_time'], task_duration)},
+                'description': f"Scheduled task: {task.get('title', '')}"
+            })
+
         return proposed_events
     
     def _add_minutes_to_time(self, time_str: str, minutes: int) -> str:

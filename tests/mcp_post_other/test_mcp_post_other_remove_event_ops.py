@@ -60,4 +60,23 @@ def test_remove_event_success(monkeypatch):
     assert "result" in body
     assert "content" in body["result"]
     assert "✅ Evento removido com sucesso!" in body["result"]["content"][0]["text"]
-    assert called['event_id'] == 'id1' 
+    assert called['event_id'] == 'id1'
+
+def test_remove_event_failure(monkeypatch):
+    handler = DummyHandler()
+    called = {}
+    class FakeOps:
+        def __init__(self, service):
+            called['service'] = service
+        def remove_event(self, event_id):
+            called['event_id'] = event_id
+            return False
+    monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc4')
+    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
+    request = {"jsonrpc": "2.0", "id": 8, "method": "tools/call", "params": {"tool": "remove_event", "args": {"event_id": "id_fail"}}}
+    response = {"jsonrpc": "2.0", "id": 8}
+    mod.handle_post_other(handler, request, response)
+    body = parse_response(handler)
+    assert "result" in body
+    assert "❌ Erro ao remover evento" in body["result"]["content"][0]["text"]
+    assert called['event_id'] == 'id_fail' 

@@ -89,5 +89,41 @@ class TestMcpPostOtherEditEvent(unittest.TestCase):
         self.assertEqual(response["error"].get("code"), -32603)
         self.assertIn("Failed to edit event", response["error"].get("message", ""))
 
+    @patch("src.core.auth.get_calendar_service")
+    def test_edit_event_with_location(self, mock_get_service):
+        mock_service = MagicMock()
+        mock_get_service.return_value = mock_service
+
+        updated_event_response = {
+            "id": "loc_event_id",
+            "summary": "Meeting",
+            "start": {"dateTime": "2024-03-22T09:00:00Z"},
+            "end": {"dateTime": "2024-03-22T10:00:00Z"},
+            "location": "Office"
+        }
+
+        class FakeOps:
+            def __init__(self, service):
+                self.service = service
+            def edit_event(self, event_id, updated_details):
+                return updated_event_response
+        with patch("src.mcp.mcp_post_other_handler.calendar_ops.CalendarOperations", FakeOps):
+            request = {
+                "method": "tools/call",
+                "params": {
+                    "tool": "edit_event",
+                    "args": {
+                        "event_id": "loc_event_id",
+                        "updated_details": {"location": "Office"}
+                    }
+                }
+            }
+            response = {}
+            mock_handler = MagicMock()
+            handle_post_other(mock_handler, request, response)
+            self.assertIn("result", response)
+            text = response["result"]["content"][0]["text"]
+            self.assertIn("📍 Office", text)
+
 if __name__ == '__main__':
     unittest.main() 

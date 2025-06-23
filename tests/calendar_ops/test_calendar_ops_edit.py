@@ -55,6 +55,36 @@ class TestCalendarOpsEdit(unittest.TestCase):
 
         self.assertIsNone(result)
 
+    @patch("src.core.auth.get_calendar_service")
+    def test_edit_event_adds_timezones(self, mock_get_calendar_service):
+        mock_service = MagicMock()
+        mock_get_calendar_service.return_value = mock_service
+        ops = CalendarOperations(mock_service)
+
+        event_id = "tz_event"
+        updated_details = {
+            "start": {"dateTime": "2024-03-22T09:00:00"},
+            "end": {"dateTime": "2024-03-22T10:00:00"}
+        }
+
+        # Existing event object missing timeZone
+        mock_event = {
+            "start": {"dateTime": "old"},
+            "end": {"dateTime": "old"}
+        }
+        mock_service.events().get.return_value.execute.return_value = mock_event
+        mock_service.events().patch.return_value.execute.return_value = {
+            "id": event_id
+        }
+
+        result = ops.edit_event(event_id, updated_details)
+
+        # Verify timezone was added
+        patched_body = mock_service.events().patch.call_args[1]["body"]
+        assert patched_body["start"]["timeZone"] == "America/Sao_Paulo"
+        assert patched_body["end"]["timeZone"] == "America/Sao_Paulo"
+        assert result["id"] == event_id
+
 
 if __name__ == "__main__":
     unittest.main() 

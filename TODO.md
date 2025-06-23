@@ -6,13 +6,13 @@
 
 ### Medium Priority
 
-- [ ] Implement priority-based task ordering algorithm considering
-  deadlines and importance
 - [ ] Add automatic time block creation for high-priority tasks in
   available calendar slots
 - [ ] Sync tasks with calendar events when due dates are present
 - [ ] Implement task completion handling and status updates
 - [ ] Add SSE support for tasks operations to enable real-time updates
+- [ ] Increase CalendarOperations.edit_event timezone branch test coverage to
+  100%
 
 ### Maintenance
 
