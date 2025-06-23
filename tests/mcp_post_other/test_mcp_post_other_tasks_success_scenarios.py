@@ -12,11 +12,14 @@ class TestMcpPostOtherTasksSuccessScenarios(unittest.TestCase):
         self.handler.wfile = Mock()
         self.handler.wfile.write = Mock()
 
+    @patch('src.mcp.mcp_post_other_handler.sync_tasks_with_calendar')
+    @patch('src.mcp.mcp_post_other_handler.auth.get_calendar_service')
     @patch('src.mcp.mcp_post_other_handler.tasks_ops.TasksOperations')
     @patch('src.mcp.mcp_post_other_handler.tasks_auth.get_tasks_service')
-    def test_list_tasks_success(self, mock_get_service, mock_ops_class):
+    def test_list_tasks_success(self, mock_get_service, mock_ops_class, mock_cal_service, mock_sync):
         mock_service = Mock()
         mock_get_service.return_value = mock_service
+        mock_cal_service.return_value = Mock()
         mock_ops = Mock()
         mock_ops_class.return_value = mock_ops
         mock_ops.list_tasks.return_value = [{"type": "text", "text": "Test task"}]
@@ -32,6 +35,7 @@ class TestMcpPostOtherTasksSuccessScenarios(unittest.TestCase):
         self.assertIn("result", response)
         self.assertEqual(response["result"]["content"], [{"type": "text", "text": "Test task"}])
         mock_ops.list_tasks.assert_called_once_with("@default")
+        mock_sync.assert_called_once()
 
     @patch('src.mcp.mcp_post_other_handler.tasks_ops.TasksOperations')
     @patch('src.mcp.mcp_post_other_handler.tasks_auth.get_tasks_service')

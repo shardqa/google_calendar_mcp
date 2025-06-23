@@ -108,6 +108,7 @@
 
 ## Recent High Priority Completions ✅
 
+- [x] **Fix pipeline test failure: mock credentials file access in tasks tests**: Corrigido erro na pipeline onde testes tentavam acessar arquivos reais de credenciais. Adicionados mocks apropriados para `sync_tasks_with_calendar` e `auth.get_calendar_service` nos testes de tasks. Mantida cobertura 100% com todos os 246 testes passando em ~1.7s.
 - [x] **Remove CLI functionality and focus only on MCP tools to simplify project scope**: Remoção completa da funcionalidade CLI tradicional (src/commands/cli.py, src/commands/tasks_cli.py, src/main.py, etc.) mantendo apenas o servidor MCP. Projeto agora focado exclusivamente em MCP tools com 246 testes e 100% cobertura.
 - [x] **Implement task completion handling and status updates**: Implementada funcionalidade completa para marcar tasks como completadas e atualizar status. Inclui métodos `complete_task()` e `update_task_status()` com suporte nos CLIs e handlers MCP, validação de parâmetros e tratamento de erros.
 - [x] **Sync tasks with calendar events when due dates are present**: Implementada integração completa entre Google Tasks e Google Calendar. Tarefas com due dates são sincronizadas automaticamente como eventos no calendário.
