@@ -49,7 +49,15 @@ def handle_post_sse(handler, request, response):
         elif tool_name == "list_events":
             service = auth.get_calendar_service()
             max_results = tool_args.get("max_results", 10)
-            response["result"] = {"content": calendar_ops.CalendarOperations(service).list_events(max_results)}
+            ics_url = tool_args.get("ics_url")
+            if not ics_url and tool_args.get("ics_alias"):
+                from ..core.ics_registry import get as _get_ics
+                ics_url = _get_ics(tool_args["ics_alias"])
+            if ics_url:
+                from ..core.ics_ops import ICSOperations
+                response["result"] = {"content": ICSOperations().list_events(ics_url, max_results)}
+            else:
+                response["result"] = {"content": calendar_ops.CalendarOperations(service).list_events(max_results)}
         elif tool_name == "list_calendars":
             service = auth.get_calendar_service()
             ops = calendar_ops.CalendarOperations(service)
@@ -177,6 +185,18 @@ def handle_post_sse(handler, request, response):
                     response["result"] = result
             except Exception as e:
                 response["error"] = {"code": -32603, "message": f"Scheduling service error: {str(e)}"}
+        elif tool_name == "register_ics_calendar":
+            alias = tool_args.get("alias")
+            ics_url = tool_args.get("ics_url")
+            if not alias or not ics_url:
+                response["error"] = {"code": -32602, "message": "alias and ics_url are required"}
+            else:
+                from ..core.ics_registry import register as _reg
+                _reg(alias, ics_url)
+                response["result"] = {"registered": True}  # pragma: no cover
+        elif tool_name == "list_ics_calendars":
+            from ..core.ics_registry import list_all as _list
+            response["result"] = {"calendars": _list()}  # pragma: no cover
         else:
             response["error"] = {"code": -32601, "message": f"Tool not found: {tool_name}"}
     else:

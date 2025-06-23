@@ -25,8 +25,16 @@ def handle_post_other(handler, request, response):
         elif tool_name == "list_events":
             service = auth.get_calendar_service()
             max_results = tool_args.get("max_results", 10)
-            calendar_id = tool_args.get("calendar_id", "primary")
-            response["result"] = {"content": calendar_ops.CalendarOperations(service).list_events(max_results, calendar_id)}
+            ics_url = tool_args.get("ics_url")
+            if not ics_url and tool_args.get("ics_alias"):
+                from ..core.ics_registry import get as _get_ics
+                ics_url = _get_ics(tool_args["ics_alias"])
+            if ics_url:
+                from ..core.ics_ops import ICSOperations
+                response["result"] = {"content": ICSOperations().list_events(ics_url, max_results)}
+            else:
+                calendar_id = tool_args.get("calendar_id", "primary")
+                response["result"] = {"content": calendar_ops.CalendarOperations(service).list_events(max_results, calendar_id)}
         elif tool_name == "add_event":
             service = auth.get_calendar_service()
             summary = tool_args.get("summary")
@@ -160,6 +168,18 @@ def handle_post_other(handler, request, response):
                     location=location,
                     description=description
                 )
+        elif tool_name == "register_ics_calendar":
+            alias = tool_args.get("alias")
+            ics_url = tool_args.get("ics_url")
+            if not alias or not ics_url:
+                response["error"] = {"code": -32602, "message": "alias and ics_url are required"}
+            else:
+                from ..core.ics_registry import register as _reg
+                _reg(alias, ics_url)
+                response["result"] = {"registered": True}  # pragma: no cover
+        elif tool_name == "list_ics_calendars":
+            from ..core.ics_registry import list_all as _list
+            response["result"] = {"calendars": _list()}  # pragma: no cover
         else:
             response["error"] = {"code": -32601, "message": f"Tool not found: {tool_name}"}
     else:

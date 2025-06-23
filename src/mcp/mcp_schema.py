@@ -24,13 +24,25 @@ def get_mcp_schema():
             },
             {
                 "name": "list_events",
-                "description": "List upcoming events from Google Calendar",
+                "description": "List upcoming events from Google Calendar or an external ICS URL",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
                         "max_results": {
                             "type": "integer",
                             "description": "Maximum number of events to return"
+                        },
+                        "calendar_id": {
+                            "type": "string",
+                            "description": "ID of the Google Calendar to query (defaults to primary)"
+                        },
+                        "ics_url": {
+                            "type": "string",
+                            "description": "External ICS URL to fetch events from (takes precedence over calendar_id)"
+                        },
+                        "ics_alias": {
+                            "type": "string",
+                            "description": "Alias of a previously registered ICS calendar URL"
                         }
                     },
                     "required": []
@@ -262,6 +274,23 @@ def get_mcp_schema():
                     },
                     "required": ["time_period", "work_hours_start", "work_hours_end"]
                 }
+            },
+            {
+                "name": "register_ics_calendar",
+                "description": "Register a persistent alias for an external ICS calendar URL",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "alias": {"type": "string", "description": "Short alias"},
+                        "ics_url": {"type": "string", "description": "ICS URL to associate"}
+                    },
+                    "required": ["alias", "ics_url"]
+                }
+            },
+            {
+                "name": "list_ics_calendars",
+                "description": "List registered ICS calendar aliases",
+                "inputSchema": {"type": "object", "properties": {}, "required": []}
             }
         ]
     } 

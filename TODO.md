@@ -4,16 +4,15 @@
 
 ### High Priority
 
-### Medium Priority
-
 - [x] Sync tasks with calendar events when due dates are present
 - [ ] Integrate read-only work calendar to display its events in listings
+- [x] Support viewing events from external ICS calendars (e.g., Office 365 GlobalSys) via URL parsing
 - [ ] Implement task completion handling and status updates
 - [ ] Add SSE support for tasks operations to enable real-time updates
 - [ ] Increase CalendarOperations.edit_event timezone branch test coverage to
   100%
 
-### Maintenance
+### Medium Priority
 
 - [ ] Refactor any directory exceeding ten items into logical sub-folders
   and adjust imports
@@ -33,11 +32,11 @@
 - **MCP components**: 100% (handlers, server, schemas)
 - **Utility scripts**: 94-96% (connectivity, initialization,
   streaming)
-- **Overall project**: 100% 🏆 (235 tests passing)
+- **Overall project**: 100% 🏆 (274 tests passing)
 
 ### Test Quality Standards
 
-- **235+ automated tests** with zero failures
+- **274+ automated tests** with zero failures
 - **Comprehensive edge case coverage** including network failures,
   timeouts, invalid data, Tasks error scenarios
 - **Isolated unit tests** using strategic mocking for external
@@ -47,3 +46,5 @@
 
 For background information, see the project [Architecture](doc/architecture.md)
 and [Overview](doc/overview.md) documents.
+
+- [ ] Persist external ICS calendar URLs with aliases to avoid re-passing the full URL
