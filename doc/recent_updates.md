@@ -36,7 +36,7 @@ Este documento reúne as melhorias mais significativas adicionadas ao Google Cal
 
 ### Cobertura Total Alcançada
 
-- **274 testes** passando sem falhas (crescimento de 235 → 274)
+- **250 testes** passando sem falhas (cobertura mantida)
 - **100% cobertura** em todos os módulos (1054 statements, 298 branches)
 - **Metodologia TDD** rigorosamente aplicada: red-green-refactor
 - **Casos edge** cobertos: URLs inválidas, parsing ICS, erro de parâmetros
@@ -46,7 +46,7 @@ Este documento reúne as melhorias mais significativas adicionadas ao Google Cal
 - Mocking estratégico para dependências externas (requests, Google APIs)
 - Testes de threading para registry thread-safe
 - Cobertura de branches condicionais complexas sem pragmas desnecessários
-- Performance otimizada: suite completa em ~3.1s
+- Performance otimizada: suite completa em ~1.6s
 
 ## Regras de Qualidade Consolidadas
 
@@ -55,6 +55,14 @@ Este documento reúne as melhorias mais significativas adicionadas ao Google Cal
 - **Limite de 10 itens** por diretório com sub-pastas quando excedido
 - **Máximo 100 linhas** por arquivo com refactoring automático
 - **Zero comments policy** para código auto-explicativo
+
+## Modularização dos Tool Handlers
+
+- `src/mcp/other_tool_handlers.py` reduzido a um despachador central com < 100 linhas.  
+- Novos módulos: `src/mcp/tool_echo.py`, `src/mcp/tool_calendar.py`, `src/mcp/tool_tasks.py`, `src/mcp/tool_ics.py`.  
+- Cada módulo ≤ 100 linhas e sem comentários, aderindo às regras do repositório.  
+- Despacho dinâmico garante compatibilidade com monkey-patch dos testes.  
+- Nenhuma regressão: toda a suíte (250 testes) continua verde.
 
 ---
 

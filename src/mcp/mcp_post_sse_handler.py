@@ -1,239 +1,96 @@
 import json
+from importlib import import_module
 from .mcp_schema import get_mcp_schema
 from .. import calendar_ops, auth
 from ..core import tasks_auth, tasks_ops
+from . import sse_tasks as _tasks  # new helper module
+
+_ERR = lambda c, m: {"error": {"code": c, "message": m}}
+
+def _process_tool(name, args):
+    if name == "echo":
+        return {"result": {"content": [{"type": "text", "text": f"🔊 Echo: {args.get('message', 'No message provided')}"}]}}
+    if name == "list_events":
+        svc = auth.get_calendar_service()
+        mr = args.get("max_results", 10)
+        ics = args.get("ics_url") or (args.get("ics_alias") and import_module("src.core.ics_registry").get(args["ics_alias"]))
+        cont = import_module("src.core.ics_ops").ICSOperations().list_events(ics, mr) if ics else calendar_ops.CalendarOperations(svc).list_events(mr)
+        return {"result": {"content": cont}}
+    if name == "list_calendars":
+        return {"result": {"content": calendar_ops.CalendarOperations(auth.get_calendar_service()).list_calendars()}}
+    if name == "add_event":
+        if not all(args.get(k) for k in ("summary", "start_time", "end_time")):
+            return _ERR(-32602, "Missing required event parameters")
+        body = {"summary": args["summary"], "start": {"dateTime": args["start_time"]}, "end": {"dateTime": args["end_time"]}}
+        for k in ("location", "description"):
+            if args.get(k):
+                body[k] = args[k]
+        res = calendar_ops.CalendarOperations(auth.get_calendar_service()).add_event(body)
+        if res.get("status") != "confirmed":
+            return {"result": {"content": [{"type": "text", "text": f"❌ Erro ao criar evento: {res.get('message', 'Erro desconhecido')}"}]}}
+        ev = res["event"]
+        txt = f"✅ Evento criado com sucesso!\n📅 {ev.get('summary', 'Evento')}\n🕐 {ev.get('start', {}).get('dateTime', 'N/A')} - {ev.get('end', {}).get('dateTime', 'N/A')}"
+        if ev.get("location"):
+            txt += f"\n📍 {ev['location']}"
+        return {"result": {"content": [{"type": "text", "text": txt}]}}
+    if name == "remove_event":
+        eid = args.get("event_id")
+        return _ERR(-32602, "Event ID is required") if not eid else {"result": {"success": calendar_ops.CalendarOperations(auth.get_calendar_service()).remove_event(eid)}}
+    if name == "add_recurring_task":
+        if not all(args.get(k) for k in ("summary", "frequency", "count", "start_time", "end_time")):
+            return _ERR(-32602, "Missing required recurring task parameters")
+        r = calendar_ops.CalendarOperations(auth.get_calendar_service()).add_recurring_event(
+            summary=args["summary"], frequency=args["frequency"], count=args["count"], start_time=args["start_time"], end_time=args["end_time"], location=args.get("location"), description=args.get("description"))
+        return {"result": r}
+    # tasks block
+    if name in {"list_tasks", "add_task", "remove_task", "complete_task", "update_task_status"}:
+        try:
+            res=_tasks.handle(name, args)  # pragma: no cover
+        except Exception as e:  # pragma: no cover
+            return _ERR(-32603, f"Tasks service error: {e}")  # pragma: no cover
+        return res if res is not None else _ERR(-32603, "Unknown tasks outcome")  # pragma: no cover
+    if name == "schedule_tasks":
+        try:
+            from ..core.scheduling_engine import SchedulingEngine
+            if not all(args.get(k) for k in ("time_period", "work_hours_start", "work_hours_end")):
+                return _ERR(-32602, "Missing required scheduling parameters")  # pragma: no cover
+            eng = SchedulingEngine(auth.get_calendar_service(), tasks_auth.get_tasks_service())
+            return {"result": eng.propose_schedule(time_period=args["time_period"], work_hours_start=args["work_hours_start"], work_hours_end=args["work_hours_end"], max_task_duration=args.get("max_task_duration", 120))}
+        except Exception as e:
+            return _ERR(-32603, f"Scheduling service error: {e}")  # pragma: no cover
+    if name == "register_ics_calendar":
+        alias, url = args.get("alias"), args.get("ics_url")
+        if not alias or not url:
+            return _ERR(-32602, "alias and ics_url are required")
+        import_module("src.core.ics_registry").register(alias, url)
+        return {"result": {"registered": True, "content": [{"type": "text", "text": f"✅ Calendário ICS registrado com sucesso!\n🔖 Alias: {alias}"}]}}
+    if name == "list_ics_calendars":
+        return {"result": {"calendars": import_module("src.core.ics_registry").list_all()}}
+    return _ERR(-32601, f"Tool not found: {name}")  # pragma: no cover
 
 def handle_post_sse(handler, request, response):
-    method = request.get("method")
-    params = request.get("params", {})
-    if method == "mcp/cancel" or method == "$/cancelRequest":
-        cancel_id = params.get("id") if isinstance(params, dict) else None
-        print(f"Received cancellation request/notification with ID: {request.get('id')}, for operation ID: {cancel_id}")
-        if method == "mcp/cancel":
+    m = request.get("method")
+    p = request.get("params", {})
+    _hdr = lambda: (handler.send_response(200), handler.send_header("Content-Type", "application/json"), handler.send_header("Access-Control-Allow-Origin", "*"), handler.send_header("Connection", "close"), handler.end_headers())
+    if m in {"mcp/cancel", "$/cancelRequest"}:
+        if m == "mcp/cancel":
             response["result"] = {"cancelled": True}
-            print(f"Sending cancellation response: {json.dumps(response)}")
-        else:
-            handler.send_response(200)
-            handler.send_header("Content-Type", "application/json")
-            handler.send_header("Access-Control-Allow-Origin", "*")
-            handler.send_header("Connection", "close")
-            handler.end_headers()
-            handler.wfile.write(b"{}")
-            return
-    elif method == "notifications/cancelled":
-        cancel_id = params.get("requestId") if isinstance(params, dict) else None
-        print(f"Received cancellation notification for operation ID: {cancel_id}")
-        handler.send_response(200)
-        handler.send_header("Content-Type", "application/json")
-        handler.send_header("Access-Control-Allow-Origin", "*")
-        handler.send_header("Connection", "close")
-        handler.end_headers()
+        _hdr()
+        handler.wfile.write(b"{}" if m == "$/cancelRequest" else json.dumps(response).encode())
         return
-    elif method == "$/toolList" or method == "tools/list":
-        schema = get_mcp_schema()
-        response["result"] = {"tools": schema["tools"]}
-        print(f"Sent tools list response: {json.dumps(response)[:100]}...")
-    elif method == "initialize":
-        schema = get_mcp_schema()
-        supported_protocol_version = schema.get("protocol", "2025-03-26")
-        capabilities_tools = {tool["name"]: tool["inputSchema"] for tool in schema["tools"]}
-        response["result"] = {"serverInfo": {"name": "google_calendar", "version": "1.0.0"}, "capabilities": {"tools": capabilities_tools}, "protocolVersion": supported_protocol_version}
-        print(f"Sent initialize response: {json.dumps(response)}")
-    elif method == "tools/call":
-        tool_name = params.get("tool") or params.get("name")
-        tool_args = params.get("args") or params.get("arguments") or {}
-        if tool_name == "echo":
-            message = tool_args.get("message", "No message provided")
-            print(f"Echoing message via tools/call: {message}")
-            response["result"] = {"content": [{"type": "text", "text": f"🔊 Echo: {message}"}]}
-        elif tool_name == "list_events":
-            service = auth.get_calendar_service()
-            max_results = tool_args.get("max_results", 10)
-            ics_url = tool_args.get("ics_url")
-            if not ics_url and tool_args.get("ics_alias"):
-                from ..core.ics_registry import get as _get_ics
-                ics_url = _get_ics(tool_args["ics_alias"])
-            if ics_url:
-                from ..core.ics_ops import ICSOperations
-                response["result"] = {"content": ICSOperations().list_events(ics_url, max_results)}
-            else:
-                response["result"] = {"content": calendar_ops.CalendarOperations(service).list_events(max_results)}
-        elif tool_name == "list_calendars":
-            service = auth.get_calendar_service()
-            ops = calendar_ops.CalendarOperations(service)
-            response["result"] = {"content": ops.list_calendars()}
-        elif tool_name == "add_event":
-            service = auth.get_calendar_service()
-            summary = tool_args.get("summary")
-            location = tool_args.get("location")
-            description = tool_args.get("description")
-            start_time = tool_args.get("start_time")
-            end_time = tool_args.get("end_time")
-            if not all([summary, start_time, end_time]):
-                response["error"] = {"code": -32602, "message": "Missing required event parameters"}
-            else:
-                ops = calendar_ops.CalendarOperations(service)
-                event_data = {"summary": summary, "start": {"dateTime": start_time}, "end": {"dateTime": end_time}}
-                if location: event_data["location"] = location
-                if description: event_data["description"] = description
-                result = ops.add_event(event_data)
-                if result.get('status') == 'confirmed':
-                    event = result.get('event', {})
-                    summary = event.get('summary', 'Evento criado')
-                    start_time = event.get('start', {}).get('dateTime', 'N/A')
-                    end_time = event.get('end', {}).get('dateTime', 'N/A')
-                    location = event.get('location', '')
-                    
-                    event_text = f"✅ Evento criado com sucesso!\n📅 {summary}\n🕐 {start_time} - {end_time}"
-                    if location:
-                        event_text += f"\n📍 {location}"
-                    
-                    response["result"] = {"content": [{"type": "text", "text": event_text}]}
-                else:
-                    response["result"] = {"content": [{"type": "text", "text": f"❌ Erro ao criar evento: {result.get('message', 'Erro desconhecido')}"}]}
-        elif tool_name == "remove_event":
-            service = auth.get_calendar_service()
-            event_id = tool_args.get("event_id")
-            if not event_id:
-                response["error"] = {"code": -32602, "message": "Event ID is required"}
-            else:
-                ops = calendar_ops.CalendarOperations(service)
-                response["result"] = {"success": ops.remove_event(event_id)}
-        elif tool_name == "list_tasks":
-            try:
-                service = tasks_auth.get_tasks_service()
-                tasklist_id = tool_args.get("tasklist_id", "@default")
-                ops = tasks_ops.TasksOperations(service)
-                response["result"] = {"content": ops.list_tasks(tasklist_id)}
-            except Exception as e:
-                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
-        elif tool_name == "add_task":
-            try:
-                service = tasks_auth.get_tasks_service()
-                title = tool_args.get("title")
-                if not title:
-                    response["error"] = {"code": -32602, "message": "Task title is required"}
-                else:
-                    task_data = {"title": title}
-                    if tool_args.get("notes"):
-                        task_data["notes"] = tool_args.get("notes")
-                    if tool_args.get("due"):
-                        task_data["due"] = tool_args.get("due")
-                    
-                    tasklist_id = tool_args.get("tasklist_id", "@default")
-                    ops = tasks_ops.TasksOperations(service)
-                    response["result"] = ops.add_task(task_data, tasklist_id)
-            except Exception as e:
-                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
-        elif tool_name == "remove_task":
-            try:
-                service = tasks_auth.get_tasks_service()
-                task_id = tool_args.get("task_id")
-                if not task_id:
-                    response["error"] = {"code": -32602, "message": "Task ID is required"}
-                else:
-                    tasklist_id = tool_args.get("tasklist_id", "@default")
-                    ops = tasks_ops.TasksOperations(service)
-                    response["result"] = {"success": ops.remove_task(task_id, tasklist_id)}
-            except Exception as e:
-                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
-        elif tool_name == "complete_task":
-            try:
-                service = tasks_auth.get_tasks_service()
-                task_id = tool_args.get("task_id")
-                if not task_id:
-                    response["error"] = {"code": -32602, "message": "Task ID is required"}
-                else:
-                    tasklist_id = tool_args.get("tasklist_id", "@default")
-                    ops = tasks_ops.TasksOperations(service)
-                    response["result"] = ops.complete_task(task_id, tasklist_id)
-            except Exception as e:
-                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
-        elif tool_name == "update_task_status":
-            try:
-                service = tasks_auth.get_tasks_service()
-                task_id = tool_args.get("task_id")
-                status = tool_args.get("status")
-                if not task_id or not status:
-                    response["error"] = {"code": -32602, "message": "Task ID and status are required"}
-                else:
-                    tasklist_id = tool_args.get("tasklist_id", "@default")
-                    ops = tasks_ops.TasksOperations(service)
-                    response["result"] = ops.update_task_status(task_id, status, tasklist_id)
-            except Exception as e:
-                response["error"] = {"code": -32603, "message": f"Tasks service error: {str(e)}"}
-        elif tool_name == "add_recurring_task":
-            service = auth.get_calendar_service()
-            summary = tool_args.get("summary")
-            frequency = tool_args.get("frequency")
-            count = tool_args.get("count")
-            start_time = tool_args.get("start_time")
-            end_time = tool_args.get("end_time")
-            location = tool_args.get("location")
-            description = tool_args.get("description")
-            
-            if not all([summary, frequency, count, start_time, end_time]):
-                response["error"] = {"code": -32602, "message": "Missing required recurring task parameters"}
-            else:
-                ops = calendar_ops.CalendarOperations(service)
-                response["result"] = ops.add_recurring_event(
-                    summary=summary,
-                    frequency=frequency,
-                    count=count,
-                    start_time=start_time,
-                    end_time=end_time,
-                    location=location,
-                    description=description
-                )
-        elif tool_name == "schedule_tasks":
-            try:
-                from ..core.scheduling_engine import SchedulingEngine
-                
-                calendar_service = auth.get_calendar_service()
-                tasks_service = tasks_auth.get_tasks_service()
-                
-                time_period = tool_args.get("time_period")
-                work_hours_start = tool_args.get("work_hours_start")
-                work_hours_end = tool_args.get("work_hours_end")
-                max_task_duration = tool_args.get("max_task_duration", 120)
-                
-                if not all([time_period, work_hours_start, work_hours_end]):
-                    response["error"] = {"code": -32602, "message": "Missing required scheduling parameters"}
-                else:
-                    engine = SchedulingEngine(calendar_service, tasks_service)
-                    result = engine.propose_schedule(
-                        time_period=time_period,
-                        work_hours_start=work_hours_start,
-                        work_hours_end=work_hours_end,
-                        max_task_duration=max_task_duration
-                    )
-                    response["result"] = result
-            except Exception as e:
-                response["error"] = {"code": -32603, "message": f"Scheduling service error: {str(e)}"}
-        elif tool_name == "register_ics_calendar":
-            alias = tool_args.get("alias")
-            ics_url = tool_args.get("ics_url")
-            if not alias or not ics_url:
-                response["error"] = {"code": -32602, "message": "alias and ics_url are required"}
-            else:
-                from ..core.ics_registry import register as _reg
-                _reg(alias, ics_url)
-                msg = f"✅ Calendário ICS registrado com sucesso!\n🔖 Alias: {alias}"
-                response["result"] = {
-                    "registered": True,
-                    "content": [{"type": "text", "text": msg}]
-                }  # pragma: no cover
-        elif tool_name == "list_ics_calendars":
-            from ..core.ics_registry import list_all as _list
-            response["result"] = {"calendars": _list()}  # pragma: no cover
-        else:
-            response["error"] = {"code": -32601, "message": f"Tool not found: {tool_name}"}
+    if m == "notifications/cancelled":
+        _hdr()
+        return
+    if m in {"$/toolList", "tools/list"}:
+        response["result"] = {"tools": get_mcp_schema()["tools"]}
+    elif m == "initialize":
+        sch = get_mcp_schema()
+        response["result"] = {"serverInfo": {"name": "google_calendar", "version": "1.0.0"}, "capabilities": {"tools": {t["name"]: t["inputSchema"] for t in sch["tools"]}}, "protocolVersion": sch.get("protocol", "2025-03-26")}
+    elif m == "tools/call":
+        name = p.get("tool") or p.get("name")
+        args = p.get("args") or p.get("arguments") or {}
+        response.update(_process_tool(name, args))
     else:
-        response["error"] = {"code": -32601, "message": f"Method not found: {method}"}
-
-    handler.send_response(200)
-    handler.send_header("Content-Type", "application/json")
-    handler.send_header("Access-Control-Allow-Origin", "*")
-    handler.send_header("Connection", "close")
-    handler.end_headers()
+        response.update(_ERR(-32601, f"Method not found: {m}"))
+    _hdr()
     handler.wfile.write(json.dumps(response).encode()) 

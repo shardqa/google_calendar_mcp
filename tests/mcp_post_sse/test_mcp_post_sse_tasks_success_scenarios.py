@@ -54,6 +54,7 @@ class TestMcpPostSseTasksSuccessScenarios(unittest.TestCase):
         handle_post_sse(self.handler, request, response)
         
         self.assertIn("result", response)
+        self.assertIn("content", response["result"])
         mock_ops.add_task.assert_called_once_with({"title": "Test Task"}, "@default")
 
     @patch('src.mcp.mcp_post_sse_handler.tasks_ops.TasksOperations')
@@ -79,14 +80,15 @@ class TestMcpPostSseTasksSuccessScenarios(unittest.TestCase):
         }
         response = {}
         
+        expected_task_data = {
+            "title": "Test Task",
+            "notes": "Task notes",
+            "due": "2024-12-31T23:59:59Z"
+        }
         handle_post_sse(self.handler, request, response)
         
         self.assertIn("result", response)
-        expected_task_data = {
-            "title": "Test Task",
-            "notes": "Task notes", 
-            "due": "2024-12-31T23:59:59Z"
-        }
+        self.assertIn("content", response["result"])
         mock_ops.add_task.assert_called_once_with(expected_task_data, "custom_list")
 
     @patch('src.mcp.mcp_post_sse_handler.tasks_ops.TasksOperations')

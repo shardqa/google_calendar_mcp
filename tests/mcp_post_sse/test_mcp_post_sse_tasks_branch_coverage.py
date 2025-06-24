@@ -126,5 +126,29 @@ class TestMcpPostSseTasksBranchCoverage(unittest.TestCase):
         expected_task_data = {"title": "Task with Empty Fields"}
         mock_ops.add_task.assert_called_once_with(expected_task_data, "@default")
 
+    @patch('src.mcp.mcp_post_sse_handler.tasks_ops.TasksOperations')
+    @patch('src.mcp.mcp_post_sse_handler.tasks_auth.get_tasks_service')
+    def test_add_task_error_status(self, mock_get_service, mock_ops_class):
+        mock_service = Mock()
+        mock_get_service.return_value = mock_service
+        mock_ops = Mock()
+        mock_ops_class.return_value = mock_ops
+        mock_ops.add_task.return_value = {"status": "error", "message": "API failure"}
+
+        request = {
+            "method": "tools/call",
+            "params": {
+                "name": "add_task",
+                "arguments": {"title": "Broken Task"}
+            }
+        }
+        response = {}
+
+        handle_post_sse(self.handler, request, response)
+
+        self.assertIn("result", response)
+        self.assertEqual(response["result"]["status"], "error")
+        mock_ops.add_task.assert_called_once()
+
 if __name__ == '__main__':
     unittest.main() 

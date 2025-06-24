@@ -4,9 +4,8 @@
 
 ### High Priority
 
-- [ ] Fix ICS registration to return confirmation response when successfully
+- [x] Fix ICS registration to return confirmation response when successfully
   registering an external calendar
-- [ ]  Colocar retorno de mensagem ao adicionar tarefa. Tá funcionando, mas não tem retorno
 - [ ] Fix time display issue when listing ICS calendar events (events show
   but times are incorrect) - ensure fix doesn't break existing calendar
   listing functionality
