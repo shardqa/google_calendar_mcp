@@ -114,6 +114,7 @@
 - [x] **Sync tasks with calendar events when due dates are present**: Implementada integração completa entre Google Tasks e Google Calendar. Tarefas com due dates são sincronizadas automaticamente como eventos no calendário.
 - [x] **Integrate read-only work calendar to display its events in listings**: Sistema ICS implementado permitindo integração de calendários externos (como Office 365) via URLs ICS para exibição read-only de eventos.
 - [x] **Support viewing events from external ICS calendars**: Funcionalidade completa para parsing e exibição de eventos de calendários ICS externos com sistema de aliases persistente.
+- [x] **Add SSE support for tasks operations to enable real-time updates**: Implementada integração completa de operações de tarefas via SSE, permitindo atualizações em tempo real com testes de sucesso e tratamento de erros abrangente.
 
 ## Histórico de Desenvolvimento
 

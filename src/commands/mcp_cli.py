@@ -58,8 +58,9 @@ def main():
     
     args = parser.parse_args()
     
-    # Setup MCP configuration
-    setup_mcp_config(args.port)
+    # Only set up configuration when explicitly requested via --setup-only
+    if args.setup_only:
+        setup_mcp_config(args.port)
     
     if not args.setup_only:
         print(f"Starting Google Calendar MCP server at http://{args.host}:{args.port}/")

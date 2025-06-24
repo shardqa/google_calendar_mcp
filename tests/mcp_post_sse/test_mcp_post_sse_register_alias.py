@@ -39,7 +39,9 @@ def test_register_and_list_alias_sse(monkeypatch):
     req={"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"tool":"register_ics_calendar","args":{"alias":"my","ics_url":"http://ex.com"}}}
     resp={}
     mod.handle_post_sse(handler,req,resp)
-    assert pj(handler)['result']=={"registered":True}
+    res = pj(handler)['result']
+    assert res['registered'] is True
+    assert any("my" in item['text'] for item in res.get('content', []))
     handler2=DummyHandler()
     req2={"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"tool":"list_ics_calendars","args":{}}}
     mod.handle_post_sse(handler2,req2,resp)

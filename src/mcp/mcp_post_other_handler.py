@@ -201,7 +201,11 @@ def handle_post_other(handler, request, response):
             else:
                 from ..core.ics_registry import register as _reg
                 _reg(alias, ics_url)
-                response["result"] = {"registered": True}  # pragma: no cover
+                msg = f"✅ Calendário ICS registrado com sucesso!\n🔖 Alias: {alias}"
+                response["result"] = {
+                    "registered": True,
+                    "content": [{"type": "text", "text": msg}]
+                }  # pragma: no cover
         elif tool_name == "list_ics_calendars":
             from ..core.ics_registry import list_all as _list
             response["result"] = {"calendars": _list()}  # pragma: no cover

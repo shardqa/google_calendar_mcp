@@ -58,10 +58,15 @@ def test_mcp_cli_script_execution(tmp_path):
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     rc_path = os.path.join(project_root, '.coveragerc')
 
-    cmd = [
-        sys.executable, "-m", "coverage", "run", f"--rcfile={rc_path}",
-        script_path, '--setup-only'
-    ]
+    # Prefer running under coverage to maintain branch/statement metrics, but fall back to
+    # a direct execution path when the coverage module is unavailable in the environment.
+    if importlib.util.find_spec("coverage") is not None:
+        cmd = [
+            sys.executable, "-m", "coverage", "run", f"--rcfile={rc_path}",
+            script_path, '--setup-only'
+        ]
+    else:
+        cmd = [sys.executable, script_path, '--setup-only']
 
     result = subprocess.run(
         cmd, env=env, capture_output=True, text=True, cwd=project_root

@@ -4,9 +4,12 @@
 
 ### High Priority
 
-- [ ] Add SSE support for tasks operations to enable real-time updates
-- [ ] Increase CalendarOperations.edit_event timezone branch test coverage to
-  100%
+- [ ] Fix ICS registration to return confirmation response when successfully
+  registering an external calendar
+- [ ]  Colocar retorno de mensagem ao adicionar tarefa. Tá funcionando, mas não tem retorno
+- [ ] Fix time display issue when listing ICS calendar events (events show
+  but times are incorrect) - ensure fix doesn't break existing calendar
+  listing functionality
 
 ### Medium Priority
 

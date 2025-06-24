@@ -39,7 +39,9 @@ def test_register_and_use_alias(monkeypatch):
     req = {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"tool":"register_ics_calendar","args":{"alias":"work","ics_url":"http://ex.com/a.ics"}}}
     resp = {"jsonrpc":"2.0","id":1}
     mod.handle_post_other(handler, req, resp)
-    assert parse(handler)['result']=={"registered":True}
+    res = parse(handler)['result']
+    assert res['registered'] is True
+    assert any("work" in item['text'] for item in res.get('content', []))
     # reset handler
     handler2 = DummyHandler()
     class FakeICSOps:

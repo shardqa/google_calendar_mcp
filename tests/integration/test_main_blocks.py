@@ -17,7 +17,7 @@ class TestMainBlockExecution:
         # Test that the script can be executed directly
         try:
             result = subprocess.run([
-                'python', script_path, '--help'
+                sys.executable, script_path, '--help'
             ], capture_output=True, text=True, timeout=10)
             
             # Should show help message without error
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 def test_mcp_cli_py_script_execution():
     """Test that src/commands/mcp_cli.py can be executed as a script"""
     result = subprocess.run([
-        'python3', 'src/commands/mcp_cli.py', '--setup-only'
+        sys.executable, 'src/commands/mcp_cli.py', '--setup-only'
     ], capture_output=True, text=True, timeout=10, cwd=os.getcwd())
     
     # Should exit cleanly
