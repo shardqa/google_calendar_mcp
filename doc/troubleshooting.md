@@ -232,6 +232,6 @@ Alcançar 100% de cobertura é importante, mas às vezes o relatório não refle
   2. **Configuração do `coverage`**: Verifique o arquivo `pytest.ini` ou `.coveragerc` para garantir que o `source` está configurado para o diretório `src`, focando a análise apenas no código da aplicação.
 
 ---
-Para instruções de uso, veja [Uso](usage.md).
+Para instruções de uso, veja [Uso](guides/usage.md).
 Para melhorias planejadas, veja [Desenvolvimento Futuro](future.md).
 Voltar para o [Sumário](README.md).

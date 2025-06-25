@@ -4,26 +4,26 @@
 
 ### Documentação Essencial
 
-- [**Visão Geral**](overview.md) - Introdução e funcionalidades principais
-- [**Instalação**](installation.md) - Guia de configuração inicial
-- [**Uso**](usage.md) - Como usar as funcionalidades
+- [**Visão Geral**](guides/overview.md) - Introdução e funcionalidades principais
+- [**Instalação**](guides/installation.md) - Guia de configuração inicial
+- [**Uso**](guides/usage.md) - Como usar as funcionalidades
 
 ### Configuração e Setup
 
-- [**Arquitetura**](architecture.md) - Estrutura do sistema
-- [**Configuração MCP**](mcp_configuration.md) - Setup do protocolo MCP
-- [**Setup Remoto**](mcp_remote_setup.md) - Configuração de servidor remoto
-- [**Operações e Deployment**](operations.md) - Procedimentos operacionais e CI/CD
+- [**Arquitetura**](guides/architecture.md) - Estrutura do sistema
+- [**Configuração MCP**](guides/mcp_configuration.md) - Setup do protocolo MCP
+- [**Setup Remoto**](guides/mcp_remote_setup.md) - Configuração de servidor remoto
+- [**Operações e Deployment**](guides/operations.md) - Procedimentos operacionais e CI/CD
 
 ### Desenvolvimento
 
-- [**Melhores Práticas**](development_best_practices.md) - Metodologias e padrões
+- [**Melhores Práticas**](guides/development_best_practices.md) - Metodologias e padrões
 - [**Desenvolvimento Futuro**](future.md) - Roadmap e melhorias planejadas
 
 ### Funcionalidades Específicas
 
-- [**Integração Tasks**](tasks_integration.md) - Google Tasks
-- [**Agendamento Inteligente**](intelligent_scheduling.md) - Recursos avançados
+- [**Integração Tasks**](guides/tasks_integration.md) - Google Tasks
+- [**Agendamento Inteligente**](guides/intelligent_scheduling.md) - Recursos avançados
 
 ### Suporte e Resolução de Problemas
 

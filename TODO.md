@@ -4,8 +4,6 @@
 
 ### High Priority
 
-- [ ] Merge ICS calendar events with Google Calendar events in `list_events` output
-
 ### Medium Priority
 
 - [ ] Refactor any directory exceeding ten items into logical sub-folders
@@ -38,7 +36,7 @@
 - **Performance optimized** test suite execution (~2.8s)
 - **TDD methodology** maintained throughout development
 
-For background information, see the project [Architecture](doc/architecture.md)
-and [Overview](doc/overview.md) documents.
+For background information, see the project [Architecture](doc/guides/architecture.md)
+and [Overview](doc/guides/overview.md) documents.
 
 - [ ] Persist external ICS calendar URLs with aliases to avoid re-passing the full URL

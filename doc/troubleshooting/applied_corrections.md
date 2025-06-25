@@ -77,5 +77,5 @@
 - [Problemas Iniciais](initial_problems.md)
 - [Passos de Diagnóstico](diagnostic_steps.md)
 - [Testes Realizados](tests_performed.md)
-- [Visão Geral](../../overview.md)
-- [Arquitetura](../../architecture.md)
+- [Visão Geral](../../guides/overview.md)
+- [Arquitetura](../../guides/architecture.md)

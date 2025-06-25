@@ -88,6 +88,6 @@ tanto via linha de comando quanto através de assistentes de IA.
 Para instalação, veja [Instalação](installation.md).
 Para arquitetura, veja [Arquitetura](architecture.md).
 Para uso, veja [Uso](usage.md).
-Para resolução de problemas, veja [Resolução de Problemas](troubleshooting.md).
-Para desenvolvimento futuro, veja [Desenvolvimento Futuro](future.md).
-Voltar para o [Sumário](README.md).
+Para resolução de problemas, veja [Resolução de Problemas](../troubleshooting.md).
+Para desenvolvimento futuro, veja [Desenvolvimento Futuro](../future.md).
+Voltar para o [Sumário](../README.md).

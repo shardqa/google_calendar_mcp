@@ -14,6 +14,7 @@ Este arquivo lista apenas os marcos mais recentes. Para o histórico completo, v
 - **Return user confirmation message when adding tasks**
 - **Fix ICS registration to return confirmation response when successfully registering an external calendar**
 - **Fix incorrect time display when listing ICS calendar events**
+- **Merge ICS calendar events with Google Calendar events in `list_events` output**
 
 ---
 
@@ -23,5 +24,5 @@ Este arquivo documenta as funcionalidades e melhorias mais recentes. Para ativid
 
 Links úteis:
 
-- [Architecture](doc/architecture.md)
-- [Overview](doc/overview.md)
+- [Architecture](doc/guides/architecture.md)
+- [Overview](doc/guides/overview.md)

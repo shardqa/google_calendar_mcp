@@ -15,4 +15,4 @@ Calendar MCP.
 ## Referências
 
 - [Práticas de Desenvolvimento](doc/development_best_practices.md)
-- [Arquitetura do Projeto](doc/architecture.md)
+- [Arquitetura do Projeto](doc/guides/architecture.md)

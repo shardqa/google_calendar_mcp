@@ -3,10 +3,10 @@
 ## Documentação Interna
 
 - [Sumário da Documentação](README.md)
-- [Visão Geral](overview.md)
-- [Instalação](installation.md)
-- [Uso](usage.md)
-- [Arquitetura](architecture.md)
+- [Visão Geral](guides/overview.md)
+- [Instalação](guides/installation.md)
+- [Uso](guides/usage.md)
+- [Arquitetura](guides/architecture.md)
 - [Planejamento Futuro](future.md)
 - [README Principal](../README.md)
 

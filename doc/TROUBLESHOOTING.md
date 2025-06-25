@@ -12,9 +12,9 @@ Este documento serve como um índice para os problemas comuns e suas soluções 
 
 ### Documentação Interna
 
-- [Visão Geral](../overview.md)
-- [Instalação](../installation.md)
-- [Arquitetura](../architecture.md)
-- [Uso](../usage.md)
+- [Visão Geral](../guides/overview.md)
+- [Instalação](../guides/installation.md)
+- [Arquitetura](../guides/architecture.md)
+- [Uso](../guides/usage.md)
 - [Desenvolvimento Futuro](../future.md)
 - [Sumário da Documentação](../README.md)

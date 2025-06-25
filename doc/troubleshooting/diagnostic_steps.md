@@ -32,5 +32,5 @@
 - [Índice de Resolução de Problemas](../TROUBLESHOOTING.md)
 - [Problemas Iniciais](initial_problems.md)
 - [Correções Aplicadas](applied_corrections.md)
-- [Visão Geral](../../overview.md)
-- [Arquitetura](../../architecture.md)
+- [Visão Geral](../../guides/overview.md)
+- [Arquitetura](../../guides/architecture.md)

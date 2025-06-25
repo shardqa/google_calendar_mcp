@@ -17,11 +17,11 @@ gerenciamento de eventos e tarefas, com suporte a execução local e remota.
 
 ## Documentação
 
-- [Visão Geral](doc/overview.md)
-- [Instalação](doc/installation.md)
-- [Arquitetura](doc/architecture.md)
-- [Uso](doc/usage.md)
-- [Configuração Remota](doc/mcp_remote_setup.md)
+- [Visão Geral](doc/guides/overview.md)
+- [Instalação](doc/guides/installation.md)
+- [Arquitetura](doc/guides/architecture.md)
+- [Uso](doc/guides/usage.md)
+- [Configuração Remota](doc/guides/mcp_remote_setup.md)
 - [Resolução de Problemas](doc/troubleshooting.md)
 - [Desenvolvimento Futuro](doc/future.md)
 - [Índice Completo](doc/README.md)

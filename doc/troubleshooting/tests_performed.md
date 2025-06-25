@@ -31,5 +31,5 @@
 - [Passos de Diagnóstico](diagnostic_steps.md)
 - [Correções Aplicadas](applied_corrections.md)
 - [Próximos Passos](next_steps.md)
-- [Visão Geral](../../overview.md)
-- [Arquitetura](../../architecture.md)
+- [Visão Geral](../../guides/overview.md)
+- [Arquitetura](../../guides/architecture.md)
