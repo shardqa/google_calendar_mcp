@@ -10,7 +10,6 @@ def _cal_ops():
 
 
 def _list_events(args):
-    svc = auth.get_calendar_service()
     mr = args.get("max_results", 10)
     ics_url = args.get("ics_url")
     if not ics_url and args.get("ics_alias"):
@@ -20,6 +19,7 @@ def _list_events(args):
         from src.core.ics_ops import ICSOperations
         content = ICSOperations().list_events(ics_url, mr)
     else:
+        svc = auth.get_calendar_service()
         cid = args.get("calendar_id", "primary")
         content = _cal_ops().CalendarOperations(svc).list_events(mr, cid)
         if args.get("with_ics"):
