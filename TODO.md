@@ -4,11 +4,7 @@
 
 ### High Priority
 
-- [x] Fix ICS registration to return confirmation response when successfully
-  registering an external calendar
-- [ ] Fix time display issue when listing ICS calendar events (events show
-  but times are incorrect) - ensure fix doesn't break existing calendar
-  listing functionality
+- [ ] Merge ICS calendar events with Google Calendar events in `list_events` output
 
 ### Medium Priority
 

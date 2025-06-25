@@ -12,6 +12,8 @@ Este arquivo lista apenas os marcos mais recentes. Para o histórico completo, v
 - **Support viewing events from external ICS calendars**
 - **Add SSE support for tasks operations to enable real-time updates**
 - **Return user confirmation message when adding tasks**
+- **Fix ICS registration to return confirmation response when successfully registering an external calendar**
+- **Fix incorrect time display when listing ICS calendar events**
 
 ---
 

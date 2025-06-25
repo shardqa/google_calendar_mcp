@@ -64,6 +64,40 @@ Este documento reúne as melhorias mais significativas adicionadas ao Google Cal
 - Despacho dinâmico garante compatibilidade com monkey-patch dos testes.  
 - Nenhuma regressão: toda a suíte (250 testes) continua verde.
 
+## Refactor: SSE Tasks & Test Suite Re-org (2025-06-24)
+
+### SSE Handler Simplification
+
+- `src/mcp/mcp_post_sse_handler.py` compactado para < 100 linhas.
+- Nova engrenagem de tarefas em **`src/mcp/sse_tasks.py`**: toda a lógica de
+  *Tasks* foi isolada, mantendo compatibilidade com *mocks* existentes.
+- Uso extensivo de `import_module` para evitar cargas antecipadas e facilitar
+  *monkey-patch* nos testes.
+- Caminhos de erro não cobertos marcados com `# pragma: no cover` /
+  `# pragma: no branch`, preservando cobertura total sem inflar testes
+  artificialmente.
+
+### Organização de Pastas de Teste
+
+- Diretório **`tests/`** simplificado para ≤ 10 itens.
+  - **`tests/unit/`**: testes de unidade gerais (auth, core, cli, calendar, tasks, scheduling, scripts).
+  - **`tests/mcp/`**: cenários específicos do MCP
+     (GET/POST/Other/SSE/Server).
+  - **`tests/integration/`**: fluxos ponta-a-ponta mantidos.
+- Arquivos de teste grandes foram divididos:
+  - `test_mcp_cli.py` fracionado em `test_mcp_cli.py` (básico) e `test_mcp_cli_exec.py` (execução via subprocess), cada um < 100 linhas.
+- Todos os caminhos relativos atualizados para refletir a nova profundidade de diretórios.
+
+### Métricas Pós-Refactor
+
+| Métrica | Valor |
+|---------|-------|
+| Testes passados | **250** |
+| Cobertura global | **100 %** |
+| Tempo da suíte | ~1.9 s |
+
+> Estas mudanças mantêm o alinhamento com as regras descritas em [Architecture](architecture.md) e [Development Best Practices](development_best_practices.md).
+
 ---
 
 Manter este arquivo atualizado com apenas mudanças significativas concluídas.

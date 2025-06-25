@@ -25,6 +25,7 @@ class ICSOperations:
                 if ':' not in line:
                     continue
                 key, val = line.split(':', 1)
+                key = key.split(';', 1)[0]  # Ignore any parameters like TZID=...
                 current[key] = val
         if max_results is not None:
             events = events[:max_results]
