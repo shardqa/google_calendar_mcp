@@ -55,14 +55,26 @@ def main():
         action="store_true", 
         help="Only setup MCP configuration without starting the server"
     )
-    
+    parser.add_argument(
+        "--stdio",
+        action="store_true",
+        help="Run server in stdio mode (default: False)"
+    )
     args = parser.parse_args()
     
     # Only set up configuration when explicitly requested via --setup-only
     if args.setup_only:
         setup_mcp_config(args.port)
     
-    if not args.setup_only:
+    if args.stdio:
+        print(f"Starting Google Calendar MCP server in stdio mode.", file=sys.stderr)
+        try:
+            from ..mcp.mcp_stdio_server import run_stdio_server
+        except ImportError:
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+            from src.mcp.mcp_stdio_server import run_stdio_server
+        run_stdio_server()
+    elif not args.setup_only:
         print(f"Starting Google Calendar MCP server at http://{args.host}:{args.port}/")
         run_server(args.host, args.port)
 
