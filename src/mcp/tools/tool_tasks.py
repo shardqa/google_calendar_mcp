@@ -1,21 +1,24 @@
 from typing import Dict, Any
 from importlib import import_module
-from ..core import auth as auth
-from .mcp_post_other_handler import tasks_auth, tasks_ops
+from src.core import auth as auth
+from src.mcp.mcp_post_other_handler import tasks_auth, tasks_ops
 
 __all__ = ["handle"]
 
 _ERR = lambda code, msg: {"error": {"code": code, "message": msg}}
 
+
 def _sync(calendar_service, tasks_service):
     mph = import_module("src.mcp.mcp_post_other_handler")
     mph.sync_tasks_with_calendar(calendar_service, tasks_service)
 
+
 def _build_confirm(task: Dict[str, Any]):
     txt = f"✅ Tarefa criada com sucesso!\n🆔 ID: {task.get('id','N/A')}\n✏️ {task.get('title','Tarefa')}"
-    if task.get("due"):  # pragma: no branch
-        txt += f"\n📅 Due: {task['due']}"  # pragma: no cover
+    if task.get("due"):
+        txt += f"\n📅 Due: {task['due']}"
     return {"content": [{"type": "text", "text": txt}]}
+
 
 def _list_tasks(args):
     try:
@@ -26,6 +29,7 @@ def _list_tasks(args):
         return {"result": {"content": content}}
     except Exception as e:
         return _ERR(-32603, f"Tasks service error: {e}")
+
 
 def _add_task(args):
     title = args.get("title")
@@ -45,6 +49,7 @@ def _add_task(args):
     except Exception as e:
         return _ERR(-32603, f"Tasks service error: {e}")
 
+
 def _remove_task(args):
     tid = args.get("task_id")
     if not tid:
@@ -56,6 +61,7 @@ def _remove_task(args):
     except Exception as e:
         return _ERR(-32603, f"Tasks service error: {e}")
 
+
 def _complete_task(args):
     tid = args.get("task_id")
     if not tid:
@@ -66,6 +72,7 @@ def _complete_task(args):
         return {"result": res}
     except Exception as e:
         return _ERR(-32603, f"Tasks service error: {e}")
+
 
 def _update_status(args):
     tid = args.get("task_id")
@@ -87,6 +94,7 @@ _mapping = {
     "update_task_status": _update_status,
 }
 
+
 def handle(tool: str, args: Dict[str, Any]):
     func = _mapping.get(tool)
-    return func(args) if func else None  # pragma: no cover 
+    return func(args) if func else None 

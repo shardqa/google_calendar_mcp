@@ -1,30 +1,42 @@
 from typing import Dict, Any
 from importlib import import_module
-from ..core import auth as auth
+from src.core import auth as auth
 
 __all__ = ["handle"]
 
+
 def _cal_ops():
     return getattr(import_module("src.mcp.mcp_post_other_handler"), "calendar_ops")
+
 
 def _list_events(args):
     svc = auth.get_calendar_service()
     mr = args.get("max_results", 10)
     ics_url = args.get("ics_url")
     if not ics_url and args.get("ics_alias"):
-        from ..core.ics_registry import get as _get_ics
+        from src.core.ics_registry import get as _get_ics
         ics_url = _get_ics(args["ics_alias"])
     if ics_url:
-        from ..core.ics_ops import ICSOperations
+        from src.core.ics_ops import ICSOperations
         content = ICSOperations().list_events(ics_url, mr)
     else:
         cid = args.get("calendar_id", "primary")
         content = _cal_ops().CalendarOperations(svc).list_events(mr, cid)
+        if args.get("with_ics"):
+            try:
+                from src.core.ics_registry import list_all as _ics_list
+                from src.core.ics_ops import ICSOperations
+                for _url in _ics_list().values():
+                    content.extend(ICSOperations().list_events(_url, mr))
+            except Exception:
+                pass
     return {"result": {"content": content}}
+
 
 def _list_calendars():
     svc = auth.get_calendar_service()
     return {"result": {"content": _cal_ops().CalendarOperations(svc).list_calendars()}}
+
 
 def _add_event(args):
     svc = auth.get_calendar_service()
@@ -45,6 +57,7 @@ def _add_event(args):
         txt += f"\n📍 {ev['location']}"
     return {"result": {"content": [{"type": "text", "text": txt}]}}
 
+
 def _remove_event(args):
     eid = args.get("event_id")
     if not eid:
@@ -52,6 +65,7 @@ def _remove_event(args):
     ok = _cal_ops().CalendarOperations(auth.get_calendar_service()).remove_event(eid)
     txt = f"✅ Evento removido com sucesso!\n🆔 ID: {eid}" if ok else f"❌ Erro ao remover evento {eid}"
     return {"result": {"content": [{"type": "text", "text": txt}]}}
+
 
 def _add_recurring(args):
     if not all(args.get(k) for k in ["summary", "frequency", "count", "start_time", "end_time"]):
@@ -67,6 +81,7 @@ def _add_recurring(args):
         description=args.get("description"),
     )}
 
+
 def _edit_event(args):
     eid, details = args.get("event_id"), args.get("updated_details")
     if not eid or not details:
@@ -78,6 +93,7 @@ def _edit_event(args):
     if updated.get("location"):
         txt += f"\n📍 {updated['location']}"
     return {"result": {"content": [{"type": "text", "text": txt}]}}
+
 
 def handle(name: str, args: Dict[str, Any]):
     mp = {

@@ -2,7 +2,6 @@ from datetime import datetime
 import re
 from typing import List, Dict
 
-
 ISO_Z_RE = re.compile(r"Z$")
 IMPORTANCE_RE = re.compile(r"^\[(\d)\]\s*")
 

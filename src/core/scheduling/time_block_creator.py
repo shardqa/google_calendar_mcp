@@ -27,7 +27,6 @@ def create_task_events(calendar_service, available_slots: List[Dict], tasks: Lis
 
         proposed_events.append(event_payload)
 
-        # Auto-create calendar event for high-priority tasks
         if _parse_importance(task.get('title', '')) == 3:
             try:
                 calendar_service.events().insert(
@@ -35,7 +34,6 @@ def create_task_events(calendar_service, available_slots: List[Dict], tasks: Lis
                     body=event_payload
                 ).execute()
             except Exception:
-                # Falha não é crítica para a geração de proposta
                 pass
 
     return proposed_events
@@ -61,5 +59,4 @@ def calculate_gaps_between_events(events: List[Dict], start_hour: str, end_hour:
                         'end_time': event_start,
                         'duration_minutes': duration
                     })
-
     return slots 

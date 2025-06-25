@@ -4,10 +4,10 @@ from typing import Any, Dict
 from .. import calendar_ops
 from ..core import auth as auth
 
-from . import tool_echo as _echo
-from . import tool_calendar as _cal
-from . import tool_tasks as _tasks
-from . import tool_ics as _ics
+from .tools import tool_echo as _echo
+from .tools import tool_calendar as _cal
+from .tools import tool_tasks as _tasks
+from .tools import tool_ics as _ics
 
 _modules = [_echo, _cal, _tasks, _ics]
 
