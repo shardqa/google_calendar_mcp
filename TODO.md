@@ -46,8 +46,9 @@ and [Overview](doc/guides/overview.md) documents.
 
 - [x] Establish internal certificate authority (CA) and issue server and client certificates ✅
 - [x] Configure Nginx reverse-proxy front-end with HTTPS (self-signed) + mutual TLS enforcement ✅
-- [ ] Update MCP client to call server over HTTPS with client certificate authentication
+- [x] Update MCP client to call server over HTTPS with client certificate authentication ✅
 - [x] Restrict firewall: expose only 443 to ZeroTier interface and close 3001 externally ✅
+- [ ] Debug Cursor MCP client certificate compatibility with port 8443 (currently using ZeroTier direct access)
 - [ ] Enable Nginx rate-limiting and fail2ban for brute-force protection
 - [ ] Ship access/error logs to local file (debug-level) with logrotate policy
 - [ ] Run dependency vulnerability scan (pip-audit) as CI step

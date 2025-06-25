@@ -2,6 +2,7 @@ import json
 from http.server import BaseHTTPRequestHandler
 from .mcp_get_handler import handle_get
 from .mcp_post_handler import handle_post
+from .auth_middleware import auth_middleware
 
 class CalendarMCPHandler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
@@ -10,12 +11,14 @@ class CalendarMCPHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         self.end_headers()
 
+    @auth_middleware.require_auth
     def do_GET(self):
         handle_get(self)
 
+    @auth_middleware.require_auth
     def do_POST(self):
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length).decode('utf-8')
