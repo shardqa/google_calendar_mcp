@@ -6,12 +6,33 @@ echo "=== Deploy das Configurações para Servidor Remoto ==="
 echo
 
 if [[ "$1" == "--help" || "$1" == "-h" ]]; then
-    echo "Usage: $0 [SERVER_IP] [SSH_USER]"
+    echo "Usage: $0 [SERVER_IP] [SSH_USER] [--skip-nginx]"
     echo
-    echo "Exemplo: $0 10.243.215.33 richard"
+    echo "Exemplo: $0 10.243.215.33 richard --skip-nginx"
     echo
     exit 0
 fi
+
+# Detect optional flag --skip-nginx
+SKIP_NGINX=0
+for arg in "$@"; do
+  if [[ "$arg" == "--skip-nginx" ]]; then
+    SKIP_NGINX=1
+  fi
+done
+
+# Remove flags from positional params
+POSITIONAL=()
+for arg in "$@"; do
+  case $arg in
+    --skip-nginx)
+      ;;
+    *)
+      POSITIONAL+=("$arg")
+      ;;
+  esac
+done
+set -- "${POSITIONAL[@]}"
 
 SERVER_IP="${1:-10.243.215.33}"
 SSH_USER="${2:-richard}"
@@ -23,8 +44,10 @@ echo
 
 echo "1. Copiando arquivos para o servidor..."
 
-# Copiar nginx.conf
-scp "$PROJECT_ROOT/config/nginx.conf" "$SSH_USER@$SERVER_IP:/tmp/nginx.conf"
+if [[ "$SKIP_NGINX" -eq 0 ]]; then
+  # Copiar nginx.conf
+  scp "$PROJECT_ROOT/config/nginx.conf" "$SSH_USER@$SERVER_IP:/tmp/nginx.conf"
+fi
 
 # Copiar auth middleware
 scp "$PROJECT_ROOT/src/mcp/auth_middleware.py" "$SSH_USER@$SERVER_IP:/tmp/auth_middleware.py"
@@ -40,21 +63,28 @@ echo "   ✅ Arquivos copiados"
 echo
 echo "2. Aplicando configurações no servidor..."
 
-ssh "$SSH_USER@$SERVER_IP" << 'ENDSSH'
+ssh "$SSH_USER@$SERVER_IP" "SKIP_NGINX=$SKIP_NGINX" << 'ENDSSH'
 set -e
 
-echo "   - Backup das configurações atuais..."
-sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup.$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
+if [ "$SKIP_NGINX" -eq 0 ]; then
+  echo "   - Backup das configurações atuais..."
+  sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.backup.$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
 
-echo "   - Instalando nova configuração do nginx..."
-sudo cp /tmp/nginx.conf /etc/nginx/sites-available/default
+  echo "   - Instalando nova configuração do nginx..."
+  SITE_CONF="/etc/nginx/sites-available/mcp-google-calendar"
+  sudo cp /tmp/nginx.conf "$SITE_CONF"
+  if [ ! -f /etc/nginx/sites-enabled/mcp-google-calendar ]; then
+      sudo ln -s "$SITE_CONF" /etc/nginx/sites-enabled/mcp-google-calendar
+  fi
 
-echo "   - Testando configuração do nginx..."
-sudo nginx -t
+  echo "   - Testando configuração do nginx..."
+  sudo nginx -t
+fi
 
 echo "   - Atualizando código do MCP..."
-# Assumindo que o código está em /opt/google-calendar-mcp ou similar
-MCP_PATH="/opt/google-calendar-mcp"
+# Descobre o caminho do projeto (checkout do git) no servidor
+# Ex.: /home/<user>/git/google_calendar_mcp
+MCP_PATH="$(eval echo ~$USER)/git/google_calendar_mcp"
 if [ -d "$MCP_PATH" ]; then
     sudo cp /tmp/auth_middleware.py "$MCP_PATH/src/mcp/"
     sudo cp /tmp/mcp_handler.py "$MCP_PATH/src/mcp/"
@@ -68,13 +98,14 @@ echo "   - Configurando variáveis de ambiente..."
 sudo mkdir -p /etc/systemd/system/google-calendar-mcp.service.d/
 
 # Gerar chave secreta se não existir
-if [ ! -f ***REMOVED***/.mcp_secret ]; then
+SECRET_FILE="$HOME/.mcp_secret"
+if [ ! -f "$SECRET_FILE" ]; then
     SECRET_KEY=$(python3 -c "import secrets; print(secrets.token_urlsafe(64))")
-    echo "$SECRET_KEY" > ***REMOVED***/.mcp_secret
-    chmod 600 ***REMOVED***/.mcp_secret
+    echo "$SECRET_KEY" > "$SECRET_FILE"
+    chmod 600 "$SECRET_FILE"
 fi
 
-SECRET_KEY=$(cat ***REMOVED***/.mcp_secret)
+SECRET_KEY=$(cat "$SECRET_FILE")
 
 sudo tee /etc/systemd/system/google-calendar-mcp.service.d/override.conf << EOF
 [Service]
@@ -89,7 +120,9 @@ sudo ufw allow 8443/tcp || true
 echo "   - Reiniciando serviços..."
 sudo systemctl daemon-reload
 sudo systemctl restart google-calendar-mcp
-sudo systemctl restart nginx
+if [ "$SKIP_NGINX" -eq 0 ]; then
+  sudo systemctl restart nginx
+fi
 
 echo "   ✅ Configuração aplicada com sucesso!"
 ENDSSH
@@ -97,8 +130,8 @@ ENDSSH
 echo
 echo "3. Gerando token seguro..."
 
-# Gerar token no servidor remoto
-TOKEN_OUTPUT=$(ssh "$SSH_USER@$SERVER_IP" "cd /tmp && python3 generate_secure_token.py --client-ip $(curl -s ifconfig.me) --expiry-hours 168")
+# Gerar token no servidor remoto no diretório correto do projeto
+TOKEN_OUTPUT=$(ssh "$SSH_USER@$SERVER_IP" "MCP_SECRET_KEY=\$(cat ~/.mcp_secret) python3 ~/git/google_calendar_mcp/scripts/generate_secure_token.py --client-ip $(curl -s ifconfig.me) --expiry-hours 168")
 
 echo "$TOKEN_OUTPUT"
 

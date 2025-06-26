@@ -1,10 +1,15 @@
 import json
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from .mcp_schema import get_mcp_schema
-from .. import calendar_ops
-from ..core import auth as auth
-from ..core import tasks_ops  # legacy import for compatibility with tests
-from ..core import tasks_auth  # legacy import for compatibility with tests
-from ..core.tasks_calendar_sync import sync_tasks_with_calendar  # legacy alias
+import calendar_ops
+from core import auth as auth
+from core import tasks_ops
+from core import tasks_auth
+from core.tasks_calendar_sync import sync_tasks_with_calendar
 from .other_tool_handlers import process as _process_tool
 
 def handle_post_other(handler, request, response):

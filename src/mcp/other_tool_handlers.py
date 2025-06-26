@@ -1,8 +1,12 @@
 from __future__ import annotations
 from typing import Any, Dict
+import sys
+import os
 
-from .. import calendar_ops
-from ..core import auth as auth
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import calendar_ops
+from core import auth as auth
 
 from .tools import tool_echo as _echo
 from .tools import tool_calendar as _cal

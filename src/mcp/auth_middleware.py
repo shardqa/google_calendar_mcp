@@ -18,6 +18,7 @@ class RobustAuthMiddleware:
         self.allowed_clients = self._load_allowed_clients()
         self.rate_limits = {}
         self.failed_attempts = {}
+        self.fixed_token = self._get_fixed_token()
         
     def _get_or_generate_secret(self) -> str:
         secret = os.environ.get('MCP_SECRET_KEY')
@@ -26,6 +27,10 @@ class RobustAuthMiddleware:
             print(f"WARNING: No MCP_SECRET_KEY found. Generated temporary key: {secret}")
             print("For production, set MCP_SECRET_KEY environment variable!")
         return secret
+
+    def _get_fixed_token(self) -> Optional[str]:
+        """Get fixed token from environment variable MCP_FIXED_TOKEN"""
+        return os.environ.get('MCP_FIXED_TOKEN')
         
     def _load_allowed_ips(self) -> Set[str]:
         ips_env = os.environ.get('MCP_ALLOWED_IPS', '')
@@ -36,6 +41,25 @@ class RobustAuthMiddleware:
     def _load_allowed_clients(self) -> Set[str]:
         clients_env = os.environ.get('MCP_ALLOWED_CLIENTS', 'cursor-ide')
         return set(client.strip() for client in clients_env.split(','))
+
+    def verify_fixed_token(self, token: str) -> Tuple[bool, Optional[Dict], Optional[str]]:
+        """Verify a fixed token for permanent access"""
+        if not self.fixed_token:
+            return False, None, "No fixed token configured"
+        
+        if not hmac.compare_digest(token, self.fixed_token):
+            return False, None, "Invalid fixed token"
+        
+        # Create a mock payload for fixed tokens
+        payload = {
+            'client_id': 'cursor-ide',
+            'token_type': 'fixed',
+            'iat': int(time.time()),
+            'exp': int(time.time()) + 86400 * 365,  # 1 year
+            'version': 'fixed-1.0'
+        }
+        
+        return True, payload, None
     
     def _check_rate_limit(self, client_ip: str, max_requests: int = 100, window: int = 3600) -> bool:
         now = time.time()
@@ -116,6 +140,10 @@ class RobustAuthMiddleware:
     
     def verify_bearer_token(self, token: str, client_ip: Optional[str] = None) -> Tuple[bool, Optional[Dict], Optional[str]]:
         try:
+            # First try to verify as a fixed token
+            if self.fixed_token and not token.startswith('mcp2.'):
+                return self.verify_fixed_token(token)
+            
             if not token.startswith('mcp2.'):
                 return False, None, "Invalid token format"
             
@@ -155,7 +183,10 @@ class RobustAuthMiddleware:
             if self.allowed_clients and client_id not in self.allowed_clients:
                 return False, None, f"Client not allowed: {client_id}"
             
-            if client_ip and 'client_ip' in payload:
+            # Allow tokens with allow_any_ip claim to bypass IP check
+            if payload.get('allow_any_ip'):
+                pass  # Skip IP verification for universal tokens
+            elif client_ip and 'client_ip' in payload:
                 if payload['client_ip'] != client_ip:
                     return False, None, "IP mismatch"
             
@@ -187,28 +218,36 @@ class RobustAuthMiddleware:
     
     def authenticate_request(self, handler) -> Tuple[bool, Optional[str]]:
         client_ip = self._get_client_ip(handler)
-        
-        if not self.check_ip_whitelist(client_ip):
-            return False, f"IP not allowed: {client_ip}"
-        
+
+        auth_header = handler.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            self._record_failed_attempt(client_ip)
+            return False, "Missing or invalid Authorization header"
+
+        token = auth_header[7:].strip()
+        is_valid, payload, error_msg = self.verify_bearer_token(token, client_ip)
+
+        if not is_valid:
+            self._record_failed_attempt(client_ip)
+            return False, error_msg or "Invalid token"
+
+        # IP Whitelist check should happen after token verification
+        # and only if the token isn't a type that bypasses IP checks (like our fixed token)
+        is_fixed_token = payload.get('token_type') == 'fixed'
+        allow_any_ip = payload.get('allow_any_ip', False)
+
+        if not is_fixed_token and not allow_any_ip:
+            if not self.check_ip_whitelist(client_ip):
+                return False, f"IP not allowed: {client_ip}"
+
         if self._is_ip_blocked(client_ip):
             return False, f"IP blocked due to too many failed attempts: {client_ip}"
             
         if not self._check_rate_limit(client_ip):
             return False, f"Rate limit exceeded for IP: {client_ip}"
         
-        auth_header = handler.headers.get('Authorization', '')
-        if not auth_header.startswith('Bearer '):
-            self._record_failed_attempt(client_ip)
-            return False, "Missing or invalid Authorization header"
-        
-        token = auth_header[7:].strip()
-        is_valid, payload, error_msg = self.verify_bearer_token(token, client_ip)
-        
-        if not is_valid:
-            self._record_failed_attempt(client_ip)
-            return False, error_msg or "Invalid token"
-        
+        # All checks passed
+        handler.auth_payload = payload
         return True, None
     
     def _get_client_ip(self, handler) -> str:
@@ -254,7 +293,8 @@ class RobustAuthMiddleware:
         stats = {
             'active_rate_limits': len(self.rate_limits),
             'blocked_ips': 0,
-            'recent_failed_attempts': 0
+            'recent_failed_attempts': 0,
+            'fixed_token_enabled': bool(self.fixed_token)
         }
         
         for ip, attempts in self.failed_attempts.items():
