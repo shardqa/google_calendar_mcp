@@ -31,3 +31,5 @@ config/mcp_cursor_fixed.json
 config/mcp_token_local.txt
 config/mcp_token_universal.txt
 config/mcp_token.txt
+.env.mcp
+mcp_config.json
