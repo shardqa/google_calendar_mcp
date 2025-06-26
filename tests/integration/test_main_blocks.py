@@ -13,11 +13,12 @@ class TestMainBlockExecution:
     def test_mcp_cli_main_block(self):
         """Test mcp_cli.py __main__ block execution"""
         script_path = os.path.join(os.path.dirname(__file__), '..', '..', 'src', 'commands', 'mcp_cli.py')
+        python_exe = '.venv/bin/python'
         
         # Test that the script can be executed directly
         try:
             result = subprocess.run([
-                sys.executable, script_path, '--help'
+                python_exe, script_path, '--help'
             ], capture_output=True, text=True, timeout=10)
             
             # Should show help message without error
@@ -64,8 +65,9 @@ if __name__ == "__main__":
 
 def test_mcp_cli_py_script_execution():
     """Test that src/commands/mcp_cli.py can be executed as a script"""
+    python_exe = '.venv/bin/python'
     result = subprocess.run([
-        sys.executable, 'src/commands/mcp_cli.py', '--setup-only'
+        python_exe, 'src/commands/mcp_cli.py', '--setup-only'
     ], capture_output=True, text=True, timeout=10, cwd=os.getcwd())
     
     # Should exit cleanly

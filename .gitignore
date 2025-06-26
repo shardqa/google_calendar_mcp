@@ -33,3 +33,4 @@ config/mcp_token_universal.txt
 config/mcp_token.txt
 .env.mcp
 mcp_config.json
+config/ics_urls.json

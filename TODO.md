@@ -3,7 +3,9 @@
 ## Development Tasks
 
 ### High Priority
-- [x] Modificar seu servidor MCP para suportar stdio além de SSE ✅
+- [ ] Limpar arquivos desnecessários sobre o mcp-remote, já que agora já estamos usando o SSE com token
+- [ ] Aumentar cobertura para 100%
+- [ ] Refatorar arquivos maiores de 100 linhas
 
 ### Medium Priority
 

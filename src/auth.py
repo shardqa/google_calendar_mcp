@@ -1,4 +1,4 @@
-from core.auth import load_credentials, get_credentials
+from src.core.auth import load_credentials, get_credentials
 from googleapiclient.discovery import build
 
 def get_calendar_service():

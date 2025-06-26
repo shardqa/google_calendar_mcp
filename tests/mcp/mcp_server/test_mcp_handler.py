@@ -7,8 +7,11 @@ from http.client import HTTPMessage
 
 class TestCalendarMCPHandler(unittest.TestCase):
 
+    @patch('src.mcp.mcp_handler.auth_middleware.authenticate_request')
     @patch('http.server.BaseHTTPRequestHandler.__init__')
-    def setUp(self, mock_base_init):
+    def setUp(self, mock_base_init, mock_authenticate):
+        # Mock auth to always return success
+        mock_authenticate.return_value = (True, None)
         # Mock the __init__ of the base class to do nothing
         mock_base_init.return_value = None
 
@@ -35,10 +38,12 @@ class TestCalendarMCPHandler(unittest.TestCase):
         self.handler.send_header = MagicMock()
         self.handler.end_headers = MagicMock()
 
-        # Mock the headers attribute
-        # mock_headers = HTTPMessage()
-        # mock_headers['Content-Length'] = '0' # Default Content-Length
-        self.handler.headers = MagicMock() # Use MagicMock for more control
+        # Mock the headers attribute with proper Authorization header
+        self.handler.headers = MagicMock()
+        self.handler.headers.get.side_effect = lambda key, default=None: {
+            'Content-Length': '0',
+            'Authorization': 'Bearer valid_test_token'
+        }.get(key, default)
 
         # Simulate request line attributes normally set by parse_request
         self.handler.command = 'GET' # Default command
@@ -58,11 +63,15 @@ class TestCalendarMCPHandler(unittest.TestCase):
         self.handler.send_response.assert_called_once_with(200)
         self.handler.send_header.assert_any_call('Access-Control-Allow-Origin', '*')
         self.handler.send_header.assert_any_call('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.handler.send_header.assert_any_call('Access-Control-Allow-Headers', 'Content-Type')
+        self.handler.send_header.assert_any_call('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         self.handler.end_headers.assert_called_once()
 
     @patch('src.mcp.mcp_handler.handle_get')
-    def test_do_GET(self, mock_handle_get):
+    @patch('src.mcp.mcp_handler.auth_middleware.authenticate_request')
+    def test_do_GET(self, mock_authenticate, mock_handle_get):
+        # Mock auth to always return success
+        mock_authenticate.return_value = (True, None)
+        
         # Call do_GET on the handler instance created in setUp
         self.handler.do_GET()
 
@@ -70,14 +79,25 @@ class TestCalendarMCPHandler(unittest.TestCase):
         mock_handle_get.assert_called_once_with(self.handler)
 
     @patch('src.mcp.mcp_handler.handle_post')
+    @patch('src.mcp.mcp_handler.auth_middleware.authenticate_request')
     @patch('json.loads')
-    def test_do_POST_success(self, mock_json_loads, mock_handle_post):
+    def test_do_POST_success(self, mock_json_loads, mock_authenticate, mock_handle_post):
+        # Mock auth to always return success
+        mock_authenticate.return_value = (True, None)
+        
         # Specific setup for this POST test on the handler instance from setUp
         request_body = {"jsonrpc": "2.0", "method": "test_method", "id": "1"}
         request_body_bytes = json.dumps(request_body).encode('utf-8')
 
         # Update headers and rfile for this specific request just before calling do_POST
-        self.handler.headers.get.return_value = str(len(request_body_bytes))
+        def headers_get_side_effect(key, default=None):
+            headers_map = {
+                'Content-Length': str(len(request_body_bytes)),
+                'Authorization': 'Bearer valid_test_token'
+            }
+            return headers_map.get(key, default)
+        
+        self.handler.headers.get.side_effect = headers_get_side_effect
         self.handler.rfile.read.return_value = request_body_bytes
 
         mock_json_loads.return_value = request_body
@@ -98,13 +118,24 @@ class TestCalendarMCPHandler(unittest.TestCase):
         self.assertEqual(args[2]["id"], request_body["id"])
 
     @patch('src.mcp.mcp_handler.handle_post')
+    @patch('src.mcp.mcp_handler.auth_middleware.authenticate_request')
     @patch('json.loads')
-    def test_do_POST_json_decode_error(self, mock_json_loads, mock_handle_post):
+    def test_do_POST_json_decode_error(self, mock_json_loads, mock_authenticate, mock_handle_post):
+        # Mock auth to always return success
+        mock_authenticate.return_value = (True, None)
+        
         # Specific setup for this POST error test on the handler instance from setUp
         invalid_json_body_bytes = b'invalid json'
 
         # Update headers and rfile for this specific request just before calling do_POST
-        self.handler.headers.get.return_value = str(len(invalid_json_body_bytes))
+        def headers_get_side_effect(key, default=None):
+            headers_map = {
+                'Content-Length': str(len(invalid_json_body_bytes)),
+                'Authorization': 'Bearer valid_test_token'
+            }
+            return headers_map.get(key, default)
+        
+        self.handler.headers.get.side_effect = headers_get_side_effect
         self.handler.rfile.read.return_value = invalid_json_body_bytes
 
         mock_json_loads.side_effect = json.JSONDecodeError("Invalid JSON", "{}", 0)
@@ -127,14 +158,25 @@ class TestCalendarMCPHandler(unittest.TestCase):
         self.handler.wfile.write.assert_called_once_with(json.dumps(expected_error_response).encode())
 
     @patch('src.mcp.mcp_handler.handle_post')
+    @patch('src.mcp.mcp_handler.auth_middleware.authenticate_request')
     @patch('json.loads')
-    def test_do_POST_general_exception(self, mock_json_loads, mock_handle_post):
+    def test_do_POST_general_exception(self, mock_json_loads, mock_authenticate, mock_handle_post):
+        # Mock auth to always return success
+        mock_authenticate.return_value = (True, None)
+        
         # Specific setup for this general exception POST test on the handler instance from setUp
         request_body = {"jsonrpc": "2.0", "method": "test_method", "id": "1"}
         request_body_bytes = json.dumps(request_body).encode('utf-8')
 
         # Update headers and rfile for this specific request just before calling do_POST
-        self.handler.headers.get.return_value = str(len(request_body_bytes))
+        def headers_get_side_effect(key, default=None):
+            headers_map = {
+                'Content-Length': str(len(request_body_bytes)),
+                'Authorization': 'Bearer valid_test_token'
+            }
+            return headers_map.get(key, default)
+        
+        self.handler.headers.get.side_effect = headers_get_side_effect
         self.handler.rfile.read.return_value = request_body_bytes
 
         mock_json_loads.return_value = request_body

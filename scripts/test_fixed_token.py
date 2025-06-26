@@ -5,6 +5,7 @@ import sys
 import requests
 import json
 from pathlib import Path
+import pytest
 
 def test_fixed_token():
     """Test if the fixed token authentication is working"""
@@ -27,7 +28,7 @@ def test_fixed_token():
     if not fixed_token:
         print("❌ Token fixo não encontrado!")
         print("Execute: python3 scripts/setup_fixed_token.py")
-        return False
+        pytest.skip("Token fixo não encontrado - execute setup_fixed_token.py")
     
     print(f"🔑 Token fixo encontrado: {fixed_token[:20]}...")
     
@@ -93,7 +94,7 @@ def test_fixed_token():
                 
         except requests.exceptions.ConnectionError:
             print(f"   ❌ Conexão recusada - servidor não está rodando")
-            all_passed = False
+            pytest.skip("Servidor MCP não está rodando")
         except requests.exceptions.Timeout:
             print(f"   ❌ Timeout - servidor não respondeu")
             all_passed = False
@@ -113,8 +114,7 @@ def test_fixed_token():
         print("❌ Alguns testes falharam")
         print("🔧 Verifique se o servidor MCP está rodando:")
         print("   sudo systemctl status google-calendar-mcp.service")
-    
-    return all_passed
+        assert all_passed, "Alguns testes de autenticação falharam"
 
 if __name__ == "__main__":
     # Load environment

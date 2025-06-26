@@ -1,19 +1,42 @@
 from src.core.ics_ops import ICSOperations
 import textwrap
+from datetime import datetime, timezone, timedelta
 
-SAMPLE_ICS = textwrap.dedent("""
+# Use current and future dates for testing
+today = datetime.now(timezone.utc)
+tomorrow = today + timedelta(days=1)
+today_str = today.strftime('%Y%m%dT%H%M%S')
+tomorrow_str = tomorrow.strftime('%Y%m%dT%H%M%S')
+
+SAMPLE_ICS = textwrap.dedent(f"""
 BEGIN:VCALENDAR
 BEGIN:VEVENT
 SUMMARY:Team Meeting
-DTSTART:20250624T100000Z
-DTEND:20250624T110000Z
+DTSTART:{today_str}Z
+DTEND:{today_str}Z
 LOCATION:Conference Room
 DESCRIPTION:Weekly sync
 END:VEVENT
 BEGIN:VEVENT
 SUMMARY:Lunch Break
-DTSTART:20250624T120000Z
-DTEND:20250624T123000Z
+DTSTART:{tomorrow_str}Z
+DTEND:{tomorrow_str}Z
+END:VEVENT
+END:VCALENDAR
+""")
+
+# Sample with past dates for filtering test
+SAMPLE_ICS_WITH_PAST = textwrap.dedent("""
+BEGIN:VCALENDAR
+BEGIN:VEVENT
+SUMMARY:Past Meeting
+DTSTART:20250624T100000Z
+DTEND:20250624T110000Z
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Future Meeting
+DTSTART:20250627T100000Z
+DTEND:20250627T110000Z
 END:VEVENT
 END:VCALENDAR
 """)
@@ -52,7 +75,9 @@ def test_empty_event_branch(monkeypatch):
     assert events == [] 
 
 def test_timezone_param_parsing(monkeypatch):
-    sample = """\nBEGIN:VCALENDAR\nBEGIN:VEVENT\nSUMMARY:Breakfast Meeting\nDTSTART;TZID=America/New_York:20250624T080000\nDTEND;TZID=America/New_York:20250624T090000\nEND:VEVENT\nEND:VCALENDAR\n"""
+    # Use today's date for timezone test
+    today_tz = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')
+    sample = f"""\nBEGIN:VCALENDAR\nBEGIN:VEVENT\nSUMMARY:Breakfast Meeting\nDTSTART;TZID=America/New_York:{today_tz}\nDTEND;TZID=America/New_York:{today_tz}\nEND:VEVENT\nEND:VCALENDAR\n"""
 
     def fake_download(self, url):
         return sample
@@ -63,4 +88,17 @@ def test_timezone_param_parsing(monkeypatch):
     assert len(events) == 1
     text = events[0]["text"]
     assert "No start time" not in text
-    assert "2025-06-24T08:00:00" in text 
+
+def test_date_filtering_excludes_past_events(monkeypatch):
+    """Test that past events are filtered out while future events are included."""
+    def fake_download(self, url):
+        return SAMPLE_ICS_WITH_PAST
+
+    monkeypatch.setattr(ICSOperations, "_download_ics", fake_download)
+    ops = ICSOperations()
+    events = ops.list_events("http://example.com/calendar.ics")
+    
+    # Should only include the future event (June 27), not the past one (June 24)
+    assert len(events) == 1
+    assert "Future Meeting" in events[0]['text']
+    assert "Past Meeting" not in str(events) 

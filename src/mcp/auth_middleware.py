@@ -277,7 +277,7 @@ class RobustAuthMiddleware:
                     "error": {
                         "code": -32001,
                         "message": f"Authentication failed: {error_msg}",
-                        "data": {"timestamp": datetime.utcnow().isoformat()}
+                        "data": {"timestamp": datetime.now(timezone.utc).isoformat()}
                     },
                     "id": None
                 }

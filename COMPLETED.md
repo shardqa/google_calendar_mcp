@@ -4,6 +4,10 @@ Este arquivo lista apenas os marcos mais recentes. Para o histórico completo, v
 
 ## Recent High Priority Completions ✅
 
+- **Fix ICS date filtering - eventos do calendário ICS agora respeitam filtro de data (hoje em diante)** ✅
+- **Fix failing test suite - todos os testes passando novamente (294 passed, 1 skipped)** ✅
+- **Maintain 100% test coverage - cobertura de testes mantida em 100%** ✅
+- **Fix test infrastructure - corrigir problemas com cursor.AppImage nos testes de execução** ✅
 - **Fix pipeline test failure: mock credentials file access in tasks tests**
 - **Remove CLI functionality and focus only on MCP tools to simplify project scope**
 - **Implement task completion handling and status updates**

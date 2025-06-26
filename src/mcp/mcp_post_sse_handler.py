@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from .mcp_schema import get_mcp_schema
 import calendar_ops
 import auth
-from core import tasks_auth, tasks_ops
+from src.core import tasks_auth, tasks_ops
 from . import sse_tasks as _tasks
 
 _ERR = lambda c, m: {"error": {"code": c, "message": m}}
@@ -19,8 +19,8 @@ def _process_tool(name, args):
     if name == "list_events":
         svc = auth.get_calendar_service()
         mr = args.get("max_results", 10)
-        ics = args.get("ics_url") or (args.get("ics_alias") and import_module("core.ics_registry").get(args["ics_alias"]))
-        cont = import_module("core.ics_ops").ICSOperations().list_events(ics, mr) if ics else calendar_ops.CalendarOperations(svc).list_events(mr)
+        ics = args.get("ics_url") or (args.get("ics_alias") and import_module("src.core.ics_registry").get(args["ics_alias"]))
+        cont = import_module("src.core.ics_ops").ICSOperations().list_events(ics, mr) if ics else calendar_ops.CalendarOperations(svc).list_events(mr)
         return {"result": {"content": cont}}
     if name == "list_calendars":
         return {"result": {"content": calendar_ops.CalendarOperations(auth.get_calendar_service()).list_calendars()}}
@@ -57,7 +57,7 @@ def _process_tool(name, args):
         return res if res is not None else _ERR(-32603, "Unknown tasks outcome")  # pragma: no cover
     if name == "schedule_tasks":
         try:
-            from core.scheduling_engine import SchedulingEngine
+            from src.core.scheduling.scheduling_engine import SchedulingEngine
             if not all(args.get(k) for k in ("time_period", "work_hours_start", "work_hours_end")):
                 return _ERR(-32602, "Missing required scheduling parameters")  # pragma: no cover
             eng = SchedulingEngine(auth.get_calendar_service(), tasks_auth.get_tasks_service())
@@ -68,10 +68,10 @@ def _process_tool(name, args):
         alias, url = args.get("alias"), args.get("ics_url")
         if not alias or not url:
             return _ERR(-32602, "alias and ics_url are required")
-        import_module("core.ics_registry").register(alias, url)
+        import_module("src.core.ics_registry").register(alias, url)
         return {"result": {"registered": True, "content": [{"type": "text", "text": f"✅ Calendário ICS registrado com sucesso!\n🔖 Alias: {alias}"}]}}
     if name == "list_ics_calendars":
-        return {"result": {"calendars": import_module("core.ics_registry").list_all()}}
+        return {"result": {"calendars": import_module("src.core.ics_registry").list_all()}}
     return _ERR(-32601, f"Tool not found: {name}")  # pragma: no cover
 
 def handle_post_sse(handler, request, response):
