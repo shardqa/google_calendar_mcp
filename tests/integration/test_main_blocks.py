@@ -7,13 +7,38 @@ from unittest.mock import patch, MagicMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
+def get_python_executable():
+    """Get appropriate Python executable for current environment"""
+    # In CI environments, use sys.executable only if it's not cursor.AppImage
+    if os.environ.get('CI') or os.environ.get('GITHUB_ACTIONS'):
+        if 'cursor' not in sys.executable.lower():
+            return sys.executable
+    
+    # Prefer .venv/bin/python if it exists
+    venv_python = '.venv/bin/python'
+    if os.path.exists(venv_python):
+        return venv_python
+    
+    # Try common python executables
+    for python_cmd in ['python3', 'python']:
+        try:
+            result = subprocess.run([python_cmd, '--version'], 
+                                  capture_output=True, text=True, timeout=5)
+            if result.returncode == 0:
+                return python_cmd
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            continue
+    
+    # Final fallback
+    return 'python3'
+
 class TestMainBlockExecution:
     """Test direct execution of __main__ blocks in scripts"""
     
     def test_mcp_cli_main_block(self):
         """Test mcp_cli.py __main__ block execution"""
         script_path = os.path.join(os.path.dirname(__file__), '..', '..', 'src', 'commands', 'mcp_cli.py')
-        python_exe = '.venv/bin/python'
+        python_exe = get_python_executable()
         
         # Test that the script can be executed directly
         try:
@@ -65,7 +90,7 @@ if __name__ == "__main__":
 
 def test_mcp_cli_py_script_execution():
     """Test that src/commands/mcp_cli.py can be executed as a script"""
-    python_exe = '.venv/bin/python'
+    python_exe = get_python_executable()
     result = subprocess.run([
         python_exe, 'src/commands/mcp_cli.py', '--setup-only'
     ], capture_output=True, text=True, timeout=10, cwd=os.getcwd())
