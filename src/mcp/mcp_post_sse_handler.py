@@ -19,8 +19,13 @@ def _process_tool(name, args):
     if name == "list_events":
         svc = auth.get_calendar_service()
         mr = args.get("max_results", 10)
-        ics = args.get("ics_url") or (args.get("ics_alias") and import_module("src.core.ics_registry").get(args["ics_alias"]))
-        cont = import_module("src.core.ics_ops").ICSOperations().list_events(ics, mr) if ics else calendar_ops.CalendarOperations(svc).list_events(mr)
+        ics_url = args.get("ics_url")
+        if not ics_url and args.get("ics_alias"):
+            ics_url = import_module("src.core.ics_registry").get(args["ics_alias"])
+        if ics_url:
+            cont = import_module("src.core.ics_ops").ICSOperations().list_events(ics_url, mr)
+        else:
+            cont = calendar_ops.CalendarOperations(svc).list_events(mr, args.get("calendar_id", "primary"))
         return {"result": {"content": cont}}
     if name == "list_calendars":
         return {"result": {"content": calendar_ops.CalendarOperations(auth.get_calendar_service()).list_calendars()}}

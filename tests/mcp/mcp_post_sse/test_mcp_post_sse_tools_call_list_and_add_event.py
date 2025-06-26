@@ -44,8 +44,9 @@ def test_tools_call_list_events(monkeypatch):
     class Fake:
         def __init__(self, svc):
             called["service"] = svc
-        def list_events(self, max_results=None):
+        def list_events(self, max_results=None, calendar_id="primary"):
             called["max_results"] = max_results
+            called["calendar_id"] = calendar_id
             return ["e"]
     monkeypatch.setattr(mod.auth, "get_calendar_service", lambda: "svc")
     monkeypatch.setattr(mod.calendar_ops, "CalendarOperations", Fake)
