@@ -1,6 +1,6 @@
 import json
 import pytest
-import src.mcp_post_other_handler as mod
+from src.mcp import mcp_post_other_handler as mod
 from unittest.mock import Mock
 
 class DummyHandler:
@@ -28,15 +28,14 @@ def parse_response(handler):
 def test_list_events(monkeypatch):
     handler = DummyHandler()
     called = {}
-    class FakeOps:
-        def __init__(self, service):
-            called['service'] = service
-        def list_events(self, max_results=None, calendar_id='primary'):
-            called['max_results'] = max_results
-            called['cal'] = calendar_id
-            return ['e1', 'e2']
+    def fake_list_events(service, max_results=None, calendar_id='primary'):
+        called['service'] = service
+        called['max_results'] = max_results
+        called['cal'] = calendar_id
+        return ['e1', 'e2']
+
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc')
-    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
+    monkeypatch.setattr(mod, 'list_events', fake_list_events)
     request = {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"tool": "list_events", "args": {"max_results": 5, "calendar_id": "globalsys"}}}
     response = {"jsonrpc": "2.0", "id": 3}
     mod.handle_post_other(handler, request, response)

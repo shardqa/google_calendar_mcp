@@ -7,7 +7,10 @@ import json
 import secrets
 import ipaddress
 from typing import Optional, Tuple, Dict, Set
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from .auth.token_verifier import TokenVerifier
+from .auth.token_generator import TokenGenerator
+from .auth.rate_limiter import RateLimiter
 
 class RobustAuthMiddleware:
     
@@ -16,9 +19,10 @@ class RobustAuthMiddleware:
         self.token_expiry = int(os.environ.get('MCP_TOKEN_EXPIRY', '3600'))
         self.allowed_ips = self._load_allowed_ips()
         self.allowed_clients = self._load_allowed_clients()
-        self.rate_limits = {}
-        self.failed_attempts = {}
         self.fixed_token = self._get_fixed_token()
+        self.token_verifier = TokenVerifier(self.secret_key, self.allowed_clients)
+        self.token_generator = TokenGenerator(self.secret_key, self.token_expiry)
+        self.rate_limiter = RateLimiter()
         
     def _get_or_generate_secret(self) -> str:
         secret = os.environ.get('MCP_SECRET_KEY')
@@ -62,142 +66,25 @@ class RobustAuthMiddleware:
         return True, payload, None
     
     def _check_rate_limit(self, client_ip: str, max_requests: int = 100, window: int = 3600) -> bool:
-        now = time.time()
-        
-        if client_ip not in self.rate_limits:
-            self.rate_limits[client_ip] = []
-        
-        requests = self.rate_limits[client_ip]
-        requests = [req_time for req_time in requests if now - req_time < window]
-        self.rate_limits[client_ip] = requests
-        
-        if len(requests) >= max_requests:
-            return False
-            
-        requests.append(now)
-        return True
+        return self.rate_limiter.check_rate_limit(client_ip)
     
     def _record_failed_attempt(self, client_ip: str) -> None:
-        now = time.time()
-        if client_ip not in self.failed_attempts:
-            self.failed_attempts[client_ip] = []
-        
-        attempts = self.failed_attempts[client_ip]
-        attempts = [attempt for attempt in attempts if now - attempt < 3600]
-        attempts.append(now)
-        self.failed_attempts[client_ip] = attempts
+        self.rate_limiter.record_failed_attempt(client_ip)
     
     def _is_ip_blocked(self, client_ip: str, max_failed: int = 10) -> bool:
-        if client_ip not in self.failed_attempts:
-            return False
-        
-        now = time.time()
-        recent_attempts = [
-            attempt for attempt in self.failed_attempts[client_ip] 
-            if now - attempt < 3600
-        ]
-        
-        return len(recent_attempts) >= max_failed
+        return self.rate_limiter.is_ip_blocked(client_ip)
     
     def generate_secure_token(self, client_id: str = 'cursor-ide', 
                             client_ip: Optional[str] = None,
                             extra_claims: Optional[Dict] = None) -> str:
-        now = int(time.time())
-        
-        payload = {
-            'client_id': client_id,
-            'iat': now,
-            'exp': now + self.token_expiry,
-            'jti': secrets.token_urlsafe(32),
-            'nonce': secrets.token_urlsafe(16),
-            'version': '2.0'
-        }
-        
-        if client_ip:
-            payload['client_ip'] = client_ip
-            
-        if extra_claims:
-            payload.update(extra_claims)
-            
-        payload_json = json.dumps(payload, sort_keys=True, separators=(',', ':'))
-        
-        signature = hmac.new(
-            self.secret_key.encode('utf-8'),
-            payload_json.encode('utf-8'),
-            hashlib.sha512
-        ).hexdigest()
-        
-        token_data = {
-            'p': payload,
-            's': signature,
-            'alg': 'HS512'
-        }
-        
-        token_json = json.dumps(token_data, separators=(',', ':'))
-        encoded_token = base64.urlsafe_b64encode(token_json.encode('utf-8')).decode('ascii').rstrip('=')
-        
-        return f"mcp2.{encoded_token}"
+        return self.token_generator.generate_secure_token(client_id, client_ip, extra_claims)
     
     def verify_bearer_token(self, token: str, client_ip: Optional[str] = None) -> Tuple[bool, Optional[Dict], Optional[str]]:
-        try:
-            # First try to verify as a fixed token
-            if self.fixed_token and not token.startswith('mcp2.'):
-                return self.verify_fixed_token(token)
-            
-            if not token.startswith('mcp2.'):
-                return False, None, "Invalid token format"
-            
-            token_data = token[5:]
-            padding = '=' * (4 - len(token_data) % 4)
-            
-            try:
-                decoded_bytes = base64.urlsafe_b64decode(token_data + padding)
-                token_obj = json.loads(decoded_bytes.decode('utf-8'))
-            except Exception:
-                return False, None, "Token decode error"
-            
-            if token_obj.get('alg') != 'HS512':
-                return False, None, "Invalid algorithm"
-                
-            payload = token_obj.get('p', {})
-            signature = token_obj.get('s', '')
-            
-            payload_json = json.dumps(payload, sort_keys=True, separators=(',', ':'))
-            expected_signature = hmac.new(
-                self.secret_key.encode('utf-8'),
-                payload_json.encode('utf-8'),
-                hashlib.sha512
-            ).hexdigest()
-            
-            if not hmac.compare_digest(signature, expected_signature):
-                return False, None, "Invalid signature"
-            
-            now = int(time.time())
-            if payload.get('exp', 0) < now:
-                return False, None, "Token expired"
-                
-            if payload.get('iat', 0) > now + 300:
-                return False, None, "Token from future"
-            
-            client_id = payload.get('client_id', '')
-            if self.allowed_clients and client_id not in self.allowed_clients:
-                return False, None, f"Client not allowed: {client_id}"
-            
-            # Allow tokens with allow_any_ip claim to bypass IP check
-            if payload.get('allow_any_ip'):
-                pass  # Skip IP verification for universal tokens
-            elif client_ip and 'client_ip' in payload:
-                if payload['client_ip'] != client_ip:
-                    return False, None, "IP mismatch"
-            
-            required_fields = ['client_id', 'iat', 'exp', 'jti', 'nonce']
-            if not all(field in payload for field in required_fields):
-                return False, None, "Missing required fields"
-                
-            return True, payload, None
-            
-        except Exception as e:
-            return False, None, f"Token verification error: {str(e)}"
+        # First try to verify as a fixed token
+        if self.fixed_token and not token.startswith('mcp2.'):
+            return self.verify_fixed_token(token)
+        
+        return self.token_verifier.verify_bearer_token(token, client_ip)
     
     def check_ip_whitelist(self, client_ip: str) -> bool:
         if not self.allowed_ips:

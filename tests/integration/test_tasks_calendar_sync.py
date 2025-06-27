@@ -74,14 +74,10 @@ def test_add_event_exception_handled(mock_calendar_service, mock_tasks_service):
     }
     mock_calendar_service.events.return_value.list.return_value.execute.return_value = {'items': []}
 
-    class FakeOps:
-        def __init__(self, svc):
-            pass
-        def add_event(self, data):
-            raise Exception('fail')
-    with patch('src.core.tasks_calendar_sync.CalendarOperations', FakeOps):
+    with patch('src.core.tasks_calendar_sync.add_event', side_effect=Exception('fail')) as mock_add_event:
         # Should not raise despite exception inside add_event
         sync_tasks_with_calendar(mock_calendar_service, mock_tasks_service)
+        mock_add_event.assert_called_once()
 
 
 def test_skip_tasks_without_due(mock_calendar_service, mock_tasks_service):

@@ -41,20 +41,18 @@ def parse_json(handler):
 def test_tools_call_list_events(monkeypatch):
     handler = DummyHandler()
     called = {}
-    class Fake:
-        def __init__(self, svc):
-            called["service"] = svc
-        def list_events(self, max_results=None, calendar_id="primary"):
-            called["max_results"] = max_results
-            called["calendar_id"] = calendar_id
-            return ["e"]
+    def fake_list_events(svc, max_results=None, calendar_id="primary"):
+        called["service"] = svc
+        called["max_results"] = max_results
+        called["calendar_id"] = calendar_id
+        return ["e"]
     monkeypatch.setattr(mod.auth, "get_calendar_service", lambda: "svc")
-    monkeypatch.setattr(mod.calendar_ops, "CalendarOperations", Fake)
+    monkeypatch.setattr(mod.calendar, "list_events", fake_list_events)
     request = {"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"tool":"list_events","args":{"max_results":3}}}
     response = {}
     mod.handle_post_sse(handler, request, response)
     body = parse_json(handler)
-    assert body["result"] == {"content": ["e"]} # Update assertion to expect {"content": [...]}
+    assert body["result"] == {"content": ["e"]}
     assert called["service"] == "svc"
     assert called["max_results"] == 3
 
@@ -74,14 +72,12 @@ def test_tools_call_add_event_missing(monkeypatch):
 def test_tools_call_add_event_success(monkeypatch):
     handler = DummyHandler()
     called = {}
-    class Fake:
-        def __init__(self, svc):
-            called["service"] = svc
-        def add_event(self, data):
-            called["data"] = data
-            return {'status': 'confirmed', 'event': {'summary': 'Test Event', 'start': {'dateTime': '2024-01-01T10:00:00'}, 'end': {'dateTime': '2024-01-01T11:00:00'}}}
+    def fake_add_event(svc, data):
+        called["service"] = svc
+        called["data"] = data
+        return {'status': 'confirmed', 'event': {'summary': 'Test Event', 'start': {'dateTime': '2024-01-01T10:00:00'}, 'end': {'dateTime': '2024-01-01T11:00:00'}}}
     monkeypatch.setattr(mod.auth, "get_calendar_service", lambda: "svc")
-    monkeypatch.setattr(mod.calendar_ops, "CalendarOperations", Fake)
+    monkeypatch.setattr(mod.calendar, "add_event", fake_add_event)
     args = {"summary":"t","start_time":"s","end_time":"e"}
     request = {"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"tool":"add_event","args":args}}
     response = {}
@@ -94,14 +90,12 @@ def test_tools_call_add_event_with_location_coverage(monkeypatch):
     """Test to cover line 77 - if location: condition in SSE handler"""
     handler = DummyHandler()
     called = {}
-    class Fake:
-        def __init__(self, svc):
-            called["service"] = svc
-        def add_event(self, data):
-            called["data"] = data
-            return {'status': 'confirmed', 'event': {'summary': 'Test Event', 'start': {'dateTime': '2024-01-01T10:00:00'}, 'end': {'dateTime': '2024-01-01T11:00:00'}, 'location': 'Test Location'}}
+    def fake_add_event(svc, data):
+        called["service"] = svc
+        called["data"] = data
+        return {'status': 'confirmed', 'event': {'summary': 'Test Event', 'start': {'dateTime': '2024-01-01T10:00:00'}, 'end': {'dateTime': '2024-01-01T11:00:00'}, 'location': 'Test Location'}}
     monkeypatch.setattr(mod.auth, "get_calendar_service", lambda: "svc")
-    monkeypatch.setattr(mod.calendar_ops, "CalendarOperations", Fake)
+    monkeypatch.setattr(mod.calendar, "add_event", fake_add_event)
     args = {"summary":"Test Event","start_time":"2024-01-01T10:00:00","end_time":"2024-01-01T11:00:00","location":"Test Location"}
     request = {"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"tool":"add_event","args":args}}
     response = {}
@@ -115,14 +109,12 @@ def test_tools_call_add_event_error_coverage(monkeypatch):
     """Test to cover line 81 - else: condition when add_event fails in SSE handler"""
     handler = DummyHandler()
     called = {}
-    class Fake:
-        def __init__(self, svc):
-            called["service"] = svc
-        def add_event(self, data):
-            called["data"] = data
-            return {'status': 'error', 'message': 'Test error from SSE'}
+    def fake_add_event(svc, data):
+        called["service"] = svc
+        called["data"] = data
+        return {'status': 'error', 'message': 'Test error from SSE'}
     monkeypatch.setattr(mod.auth, "get_calendar_service", lambda: "svc")
-    monkeypatch.setattr(mod.calendar_ops, "CalendarOperations", Fake)
+    monkeypatch.setattr(mod.calendar, "add_event", fake_add_event)
     args = {"summary":"Test Event","start_time":"2024-01-01T10:00:00","end_time":"2024-01-01T11:00:00"}
     request = {"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"tool":"add_event","args":args}}
     response = {}

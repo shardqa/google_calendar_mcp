@@ -37,7 +37,12 @@ class CalendarMCPServer:
         self.server_thread.join()
         print("Calendar MCP Server stopped")
 
-def run_server(host="localhost", port=3000):
+def run_server(host=None, port=None):
+    if host is None:
+        host = "localhost"
+    if port is None:
+        port = 3000
+
     server = CalendarMCPServer(host, port)
     try:
         server.start()
@@ -47,11 +52,12 @@ def run_server(host="localhost", port=3000):
         server.stop()
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Run the Calendar MCP Server.")
-    parser.add_argument("--host", default="localhost", help="Host to bind the server to.")
-    parser.add_argument("--port", type=int, default=3000, help="Port to listen on.")
+    parser = argparse.ArgumentParser(description="Google Calendar MCP Server")
+    parser.add_argument('--host', default='localhost', help='Host to bind the server to.')
+    parser.add_argument('--port', type=int, default=3000, help='Port to bind the server to.')
     args = parser.parse_args(argv)
-    run_server(host=args.host, port=args.port)
 
-if __name__ == "__main__":  # pragma: no cover
+    run_server(args.host, args.port)
+
+if __name__ == '__main__':
     main() 

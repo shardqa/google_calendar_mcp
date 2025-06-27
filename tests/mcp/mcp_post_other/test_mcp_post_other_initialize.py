@@ -1,7 +1,7 @@
 import json
 import pytest
-import src.mcp_post_other_handler as mod
-from src.mcp_schema import get_mcp_schema
+from src.mcp import mcp_post_other_handler as mod
+from src.mcp.mcp_schema import get_mcp_schema
 
 class DummyHandler:
     def __init__(self):

@@ -1,5 +1,5 @@
 import json
-import src.mcp_post_other_handler as mod
+from src.mcp import mcp_post_other_handler as mod
 from unittest.mock import Mock
 
 class DummyHandler:
@@ -30,14 +30,12 @@ def test_list_calendars(monkeypatch):
     handler = DummyHandler()
     called = {}
 
-    class FakeOps:
-        def __init__(self, service):
-            called['service'] = service
-        def list_calendars(self):
-            return ['c1', 'c2']
+    def fake_list_calendars(service):
+        called['service'] = service
+        return ['c1', 'c2']
 
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc')
-    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
+    monkeypatch.setattr(mod, 'list_calendars', fake_list_calendars)
 
     request = {"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"tool": "list_calendars", "args": {}}}
     response = {"jsonrpc": "2.0", "id": 7}

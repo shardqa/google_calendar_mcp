@@ -1,5 +1,5 @@
 import json
-import src.mcp_post_other_handler as mod
+from src.mcp import mcp_post_other_handler as mod
 
 class Dummy:
     def __init__(self):

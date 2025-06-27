@@ -1,5 +1,5 @@
 import json
-import src.mcp_post_sse_handler as mod
+from src.mcp import mcp_post_sse_handler as mod
 
 class DummyHandler:
     def __init__(self):
@@ -30,14 +30,12 @@ def parse_json(handler):
 def test_tools_call_list_calendars(monkeypatch):
     handler = DummyHandler()
 
-    class FakeOps:
-        def __init__(self, service):
-            pass
-        def list_calendars(self):
-            return ['c1', 'c2']
+    def fake_list_calendars(service):
+        assert service == 'svc'
+        return ['c1', 'c2']
 
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc')
-    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
+    monkeypatch.setattr(mod.calendar, 'list_calendars', fake_list_calendars)
 
     request = {"jsonrpc": "2.0", "id": 8, "method": "tools/call", "params": {"tool": "list_calendars", "args": {}}}
     response = {}

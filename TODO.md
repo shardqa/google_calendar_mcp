@@ -3,9 +3,8 @@
 ## Development Tasks
 
 ### High Priority
-- [ ] Limpar arquivos desnecessários sobre o mcp-remote, já que agora já estamos usando o SSE com token
-- [ ] Aumentar cobertura para 100%
-- [ ] Refatorar arquivos maiores de 100 linhas
+
+- [ ] Restore test coverage to 100% after large file refactoring
 
 ### Medium Priority
 
@@ -22,21 +21,21 @@
 
 ### Test Coverage by Component
 
-- **Core modules**: 100% (auth, calendar_ops, tasks_ops)
-- **CLI handlers**: 100% (main, mcp_cli, tasks_cli)
-- **MCP components**: 100% (handlers, server, schemas)
+- **Core modules**: ~95-100% (most calendar functions, auth, tasks_ops)
+- **CLI handlers**: 80% (mcp_cli coverage gaps)
+- **MCP components**: 25-98% (stdio server needs attention)
 - **Utility scripts**: 94-96% (connectivity, initialization,
   streaming)
-- **Overall project**: 100% 🏆 (246 tests passing) ✅
+- **Overall project**: 90% 🎯 (279 tests passing) ⚠️ (down from 100% due to refactoring)
 
 ### Test Quality Standards
 
-- **246+ automated tests** with zero failures
+- **279+ automated tests** with zero failures
 - **Comprehensive edge case coverage** including network failures,
   timeouts, invalid data, Tasks error scenarios
 - **Isolated unit tests** using strategic mocking for external
   dependencies
-- **Performance optimized** test suite execution (~2.8s)
+- **Performance optimized** test suite execution (~4.5s)
 - **TDD methodology** maintained throughout development
 
 For background information, see the project [Architecture](doc/guides/architecture.md)

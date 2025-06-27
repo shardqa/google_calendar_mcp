@@ -1,7 +1,7 @@
 import json, sys
 from unittest.mock import patch, MagicMock
 
-import src.mcp.mcp_post_other_handler as mod
+from src.mcp import mcp_post_other_handler as mod
 
 class Dummy:
     def __init__(self):
@@ -19,6 +19,7 @@ class Dummy:
 def parsed(handler):
     return json.loads(handler._data or b"{}")
 
+@patch("src.mcp.mcp_post_other_handler.auth.get_calendar_service", MagicMock())
 def test_unknown_tool_error():
     h = Dummy()
     req = {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"tool":"nonexistent","args":{}}}
@@ -26,13 +27,11 @@ def test_unknown_tool_error():
     body = parsed(h)
     assert body["error"]["code"] == -32601
 
-@patch("src.mcp.mcp_post_other_handler.calendar_ops.CalendarOperations")
+@patch("src.mcp.mcp_post_other_handler.add_recurring_event")
 @patch("src.mcp.mcp_post_other_handler.auth.get_calendar_service")
-def test_add_recurring_task_success(mock_get_service, mock_cal_ops):
+def test_add_recurring_task_success(mock_get_service, mock_add_recurring_event):
     mock_get_service.return_value = "svc"
-    mock_inst = MagicMock()
-    mock_inst.add_recurring_event.return_value = {"status":"confirmed"}
-    mock_cal_ops.return_value = mock_inst
+    mock_add_recurring_event.return_value = {"status":"confirmed"}
     h = Dummy()
     args = {
         "summary":"Daily standup",
@@ -44,4 +43,4 @@ def test_add_recurring_task_success(mock_get_service, mock_cal_ops):
     req = {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"tool":"add_recurring_task","args":args}}
     mod.handle_post_other(h, req, {"jsonrpc":"2.0","id":2})
     body = parsed(h)
-    assert body.get("result") == {"status":"confirmed"} 
+    assert body.get("result", {}).get('content') == {"status":"confirmed"} 

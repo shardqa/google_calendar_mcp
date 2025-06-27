@@ -5,7 +5,6 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import calendar_ops
 from core import auth as auth
 
 from .tools import tool_echo as _echo

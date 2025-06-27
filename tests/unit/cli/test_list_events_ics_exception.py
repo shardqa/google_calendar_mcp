@@ -1,18 +1,16 @@
 from src.mcp import tool_calendar as tc
-import importlib, types
+import importlib
+from unittest.mock import patch
 
 
 def test_list_events_with_ics_exception(monkeypatch):
-    # Stub calendar ops
-    class FakeCalOps:
-        def __init__(self, svc):
-            pass
-        def list_events(self, max_results=None, calendar_id="primary"):
-            return ["g"]
-    monkeypatch.setattr(tc, "_cal_ops", lambda: types.SimpleNamespace(CalendarOperations=FakeCalOps))
+    # Mock the Google Calendar list_events function to return ["g"]
     monkeypatch.setattr(tc.auth, "get_calendar_service", lambda: "svc")
-
-    # Make registry throw
+    
+    # Mock the calendar.list_events function to return ["g"]
+    monkeypatch.setattr("src.mcp.tools.tool_calendar.list_events", lambda svc, mr, cid: ["g"])
+    
+    # Make registry throw an exception when listing ICS calendars
     registry = importlib.import_module("src.core.ics_registry")
     monkeypatch.setattr(registry, "list_all", lambda: (_ for _ in ()).throw(RuntimeError("boom")))
 

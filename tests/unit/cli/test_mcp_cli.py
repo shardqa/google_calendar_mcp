@@ -30,7 +30,7 @@ def test_main_setup_only(tmp_path, monkeypatch, capsys):
 def test_main_start_server(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv('HOME', str(tmp_path))
     calls = []
-    monkeypatch.setattr(mcp_cli, 'run_server', lambda h, p: calls.append((h, p)))
+    monkeypatch.setattr(mcp_cli.mcp_server, 'run_server', lambda h, p: calls.append((h, p)))
     monkeypatch.setattr(sys, 'argv', ['prog', '--port', '8888', '--host', 'myhost'])
     mcp_cli.main()
     out = capsys.readouterr().out
@@ -70,7 +70,7 @@ def test_main_stdio_mode_import_error(monkeypatch, capsys):
 def test_main_with_default_args(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv('HOME', str(tmp_path))
     calls = []
-    monkeypatch.setattr(mcp_cli, 'run_server', lambda h, p: calls.append((h, p)))
+    monkeypatch.setattr(mcp_cli.mcp_server, 'run_server', lambda h, p: calls.append((h, p)))
     monkeypatch.setattr(sys, 'argv', ['prog'])
     mcp_cli.main()
     out = capsys.readouterr().out

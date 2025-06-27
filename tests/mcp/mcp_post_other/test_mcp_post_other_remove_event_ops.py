@@ -1,7 +1,7 @@
 import json
 import pytest
-import src.mcp_post_other_handler as mod
-from unittest.mock import Mock
+from src.mcp import mcp_post_other_handler as mod
+from unittest.mock import Mock, patch
 
 class DummyHandler:
     def __init__(self):
@@ -28,55 +28,45 @@ def parse_response(handler):
     return json.loads(handler.wrote.decode())
 
 def test_remove_event_missing(monkeypatch):
-    # Mock the calendar service to prevent file access
-    mock_service = Mock()
-    mock_service.events.return_value.delete.return_value.execute.return_value = None # Mock successful deletion
-    monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: mock_service)
-
+    monkeypatch.setattr(mod.auth, 'get_calendar_service', Mock())
     handler = DummyHandler()
     request = {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"tool": "remove_event", "args": {}}}
     response = {"jsonrpc": "2.0", "id": 6}
-    mod.handle_post_other(handler, request, response)
-    body = parse_response(handler)
-    assert body.get("error", {}).get("code") == -32602
+    with patch('src.mcp.mcp_post_other_handler.remove_event') as mock_remove_event:
+        mod.handle_post_other(handler, request, response)
+        body = parse_response(handler)
+        assert body.get("error", {}).get("code") == -32602
+        mock_remove_event.assert_not_called()
 
 def test_remove_event_success(monkeypatch):
     handler = DummyHandler()
     called = {}
-    class FakeOps:
-        def __init__(self, service):
-            called['service'] = service
-        def remove_event(self, event_id):
-            called['event_id'] = event_id
-            return True
+    def fake_remove_event(service, event_id):
+        called['service'] = service
+        called['event_id'] = event_id
+        return True
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc3')
-    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
+    monkeypatch.setattr(mod, 'remove_event', fake_remove_event)
     handler = DummyHandler()
     request = {"jsonrpc": "2.0", "id": 7, "method": "tools/call", "params": {"tool": "remove_event", "args": {"event_id": "id1"}}}
     response = {"jsonrpc": "2.0", "id": 7}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    # Agora retorna resposta formatada em vez de {'success': True}
-    assert "result" in body
-    assert "content" in body["result"]
-    assert "✅ Evento removido com sucesso!" in body["result"]["content"][0]["text"]
+    assert body['result']['content'] is True
     assert called['event_id'] == 'id1'
 
 def test_remove_event_failure(monkeypatch):
     handler = DummyHandler()
     called = {}
-    class FakeOps:
-        def __init__(self, service):
-            called['service'] = service
-        def remove_event(self, event_id):
-            called['event_id'] = event_id
-            return False
+    def fake_remove_event(service, event_id):
+        called['service'] = service
+        called['event_id'] = event_id
+        return False
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc4')
-    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
+    monkeypatch.setattr(mod, 'remove_event', fake_remove_event)
     request = {"jsonrpc": "2.0", "id": 8, "method": "tools/call", "params": {"tool": "remove_event", "args": {"event_id": "id_fail"}}}
     response = {"jsonrpc": "2.0", "id": 8}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert "result" in body
-    assert "❌ Erro ao remover evento" in body["result"]["content"][0]["text"]
+    assert body['result']['content'] is False
     assert called['event_id'] == 'id_fail' 

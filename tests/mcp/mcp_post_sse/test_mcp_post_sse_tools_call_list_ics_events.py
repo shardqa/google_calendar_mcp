@@ -1,6 +1,6 @@
 import json
 import sys
-import src.mcp_post_sse_handler as mod
+from src.mcp import mcp_post_sse_handler as mod
 from unittest.mock import Mock
 
 class DummyHandler:
@@ -37,8 +37,7 @@ def test_tools_call_list_ics_events(monkeypatch):
             assert max_results == 7
             return sample
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc')
-    monkeypatch.setattr(mod, 'calendar_ops', Mock())
-    monkeypatch.setitem(sys.modules, 'src.core.ics_ops', Mock(ICSOperations=FakeICSOps))
+    monkeypatch.setitem(sys.modules, 'src.core.ics_ops', Mock(ICSOperations=lambda: FakeICSOps()))
 
     handler = DummyHandler()
     request = {"jsonrpc": "2.0", "id": 11, "method": "tools/call", "params": {"tool": "list_events", "args": {"ics_url": "http://example.com/calendar.ics", "max_results": 7}}}

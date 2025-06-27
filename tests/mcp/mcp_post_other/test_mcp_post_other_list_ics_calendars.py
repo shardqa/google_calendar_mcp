@@ -1,5 +1,5 @@
 import json, sys
-import src.mcp_post_other_handler as mod
+from src.mcp import mcp_post_other_handler as mod
 from unittest.mock import Mock
 
 class H:

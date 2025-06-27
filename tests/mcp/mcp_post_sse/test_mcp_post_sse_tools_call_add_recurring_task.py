@@ -1,6 +1,6 @@
 import json
 from unittest.mock import Mock
-import src.mcp.mcp_post_sse_handler as mod
+from src.mcp import mcp_post_sse_handler as mod
 
 class DummyHandler:
     def __init__(self):
@@ -27,15 +27,14 @@ def parse_response(handler):
 def test_add_recurring_task_success(monkeypatch):
     """Test successful add_recurring_task via SSE handler."""
     mock_service = Mock()
-    mock_ops = Mock()
     mock_recurring_result = {
         'status': 'confirmed',
         'event': {'id': 'recurring_123', 'summary': 'Daily Medicine'}
     }
-    mock_ops.add_recurring_event.return_value = mock_recurring_result
+    mock_add_recurring_event = Mock(return_value=mock_recurring_result)
     
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: mock_service)
-    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', lambda service: mock_ops)
+    monkeypatch.setattr(mod.calendar, 'add_recurring_event', mock_add_recurring_event)
     
     handler = DummyHandler()
     request = {
@@ -60,7 +59,8 @@ def test_add_recurring_task_success(monkeypatch):
     response_data = parse_response(handler)
     assert "result" in response_data
     assert response_data["result"]["status"] == "confirmed"
-    mock_ops.add_recurring_event.assert_called_once_with(
+    mock_add_recurring_event.assert_called_once_with(
+        mock_service,
         summary="Take Medicine",
         frequency="daily", 
         count=30,
@@ -98,15 +98,14 @@ def test_add_recurring_task_missing_params(monkeypatch):
 def test_add_recurring_task_minimal_params(monkeypatch):
     """Test add_recurring_task with only required parameters."""
     mock_service = Mock()
-    mock_ops = Mock()
     mock_recurring_result = {
         'status': 'confirmed',
         'event': {'id': 'recurring_456', 'summary': 'Weekly Task'}
     }
-    mock_ops.add_recurring_event.return_value = mock_recurring_result
+    mock_add_recurring_event = Mock(return_value=mock_recurring_result)
     
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: mock_service)
-    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', lambda service: mock_ops)
+    monkeypatch.setattr(mod.calendar, 'add_recurring_event', mock_add_recurring_event)
     
     handler = DummyHandler()
     request = {
@@ -130,7 +129,8 @@ def test_add_recurring_task_minimal_params(monkeypatch):
     response_data = parse_response(handler)
     assert "result" in response_data
     assert response_data["result"]["status"] == "confirmed"
-    mock_ops.add_recurring_event.assert_called_once_with(
+    mock_add_recurring_event.assert_called_once_with(
+        mock_service,
         summary="Weekly Meeting",
         frequency="weekly",
         count=10,

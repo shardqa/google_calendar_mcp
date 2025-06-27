@@ -1,7 +1,7 @@
 import io
 import json
 import pytest
-from src import mcp_get_handler as handler_module
+from src.mcp import mcp_get_handler as handler_module
 
 class DummyHandler:
     def __init__(self, path):

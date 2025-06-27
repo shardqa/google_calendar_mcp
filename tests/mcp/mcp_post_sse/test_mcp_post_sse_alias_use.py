@@ -1,5 +1,5 @@
 import json, sys
-import src.mcp_post_sse_handler as mod
+from src.mcp import mcp_post_sse_handler as mod
 from unittest.mock import Mock
 
 class DummyHandler:
@@ -36,9 +36,8 @@ def test_list_events_with_alias(monkeypatch):
             assert max_results==3
             return ['x']
     monkeypatch.setitem(sys.modules,'src.core.ics_registry', FakeReg)
-    monkeypatch.setitem(sys.modules,'src.core.ics_ops', Mock(ICSOperations=FakeICSOps))
+    monkeypatch.setitem(sys.modules,'src.core.ics_ops', Mock(ICSOperations=lambda: FakeICSOps()))
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc')
-    monkeypatch.setattr(mod, 'calendar_ops', Mock())
     h=DummyHandler()
     req={"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"tool":"list_events","args":{"ics_alias":"work","max_results":3}}}
     mod.handle_post_sse(h, req, {})

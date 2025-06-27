@@ -1,6 +1,6 @@
 import json, sys
-import src.mcp_post_other_handler as mod
-from unittest.mock import Mock
+from src.mcp import mcp_post_other_handler as mod
+from unittest.mock import Mock, patch
 
 class DummyHandler:
     def __init__(self):
@@ -48,10 +48,9 @@ def test_register_and_use_alias(monkeypatch):
         def list_events(self, url, max_results):
             assert url=="http://ex.com/a.ics"
             return ['ok']
-    monkeypatch.setitem(sys.modules,'src.core.ics_ops', Mock(ICSOperations=FakeICSOps))
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc')
-    monkeypatch.setattr(mod, 'calendar_ops', Mock())
-    req2 = {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"tool":"list_events","args":{"ics_alias":"work","max_results":5}}}
-    resp2 = {"jsonrpc":"2.0","id":2}
-    mod.handle_post_other(handler2, req2, resp2)
-    assert parse(handler2)['result']=={'content':['ok']} 
+    with patch('src.core.ics_ops.ICSOperations', return_value=FakeICSOps()):
+        req2 = {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"tool":"list_events","args":{"ics_alias":"work","max_results":5}}}
+        resp2 = {"jsonrpc":"2.0","id":2}
+        mod.handle_post_other(handler2, req2, resp2)
+        assert parse(handler2)['result']=={'content':['ok']} 

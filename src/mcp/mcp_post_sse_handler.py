@@ -2,11 +2,11 @@ import json
 import sys
 import os
 from importlib import import_module
+from src.core import calendar
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from .mcp_schema import get_mcp_schema
-import calendar_ops
 import auth
 from src.core import tasks_auth, tasks_ops
 from . import sse_tasks as _tasks
@@ -25,10 +25,10 @@ def _process_tool(name, args):
         if ics_url:
             cont = import_module("src.core.ics_ops").ICSOperations().list_events(ics_url, mr)
         else:
-            cont = calendar_ops.CalendarOperations(svc).list_events(mr, args.get("calendar_id", "primary"))
+            cont = calendar.list_events(svc, mr, args.get("calendar_id", "primary"))
         return {"result": {"content": cont}}
     if name == "list_calendars":
-        return {"result": {"content": calendar_ops.CalendarOperations(auth.get_calendar_service()).list_calendars()}}
+        return {"result": {"content": calendar.list_calendars(auth.get_calendar_service())}}
     if name == "add_event":
         if not all(args.get(k) for k in ("summary", "start_time", "end_time")):
             return _ERR(-32602, "Missing required event parameters")
@@ -36,7 +36,7 @@ def _process_tool(name, args):
         for k in ("location", "description"):
             if args.get(k):
                 body[k] = args[k]
-        res = calendar_ops.CalendarOperations(auth.get_calendar_service()).add_event(body)
+        res = calendar.add_event(auth.get_calendar_service(), body)
         if res.get("status") != "confirmed":
             return {"result": {"content": [{"type": "text", "text": f"❌ Erro ao criar evento: {res.get('message', 'Erro desconhecido')}"}]}}
         ev = res["event"]
@@ -46,11 +46,12 @@ def _process_tool(name, args):
         return {"result": {"content": [{"type": "text", "text": txt}]}}
     if name == "remove_event":
         eid = args.get("event_id")
-        return _ERR(-32602, "Event ID is required") if not eid else {"result": {"success": calendar_ops.CalendarOperations(auth.get_calendar_service()).remove_event(eid)}}
+        return _ERR(-32602, "Event ID is required") if not eid else {"result": {"success": calendar.remove_event(auth.get_calendar_service(), eid)}}
     if name == "add_recurring_task":
         if not all(args.get(k) for k in ("summary", "frequency", "count", "start_time", "end_time")):
             return _ERR(-32602, "Missing required recurring task parameters")
-        r = calendar_ops.CalendarOperations(auth.get_calendar_service()).add_recurring_event(
+        r = calendar.add_recurring_event(
+            auth.get_calendar_service(),
             summary=args["summary"], frequency=args["frequency"], count=args["count"], start_time=args["start_time"], end_time=args["end_time"], location=args.get("location"), description=args.get("description"))
         return {"result": r}
     # tasks block

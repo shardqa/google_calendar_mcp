@@ -98,9 +98,9 @@ def test_run_server_keyboard_interrupt(mock_sleep, MockCalendarMCPServer):
 @patch('src.mcp.mcp_server.run_server')
 def test_main_function_with_args(mock_run_server):
     mcp_main(['--host', 'testhost', '--port', '1234'])
-    mock_run_server.assert_called_once_with(host='testhost', port=1234)
+    mock_run_server.assert_called_once_with('testhost', 1234)
 
 @patch('src.mcp.mcp_server.run_server')
 def test_main_function_default_args(mock_run_server):
     mcp_main([])
-    mock_run_server.assert_called_once_with(host='localhost', port=3000) 
+    mock_run_server.assert_called_once_with('localhost', 3000) 

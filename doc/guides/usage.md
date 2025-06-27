@@ -28,6 +28,18 @@ src/scripts/run_mcp.sh
 python -m src.commands.mcp_cli --port 3001
 ```
 
+### Para Gemini CLI
+
+Para usar com Google Gemini CLI:
+
+```bash
+# Servidor stdio (automático via configuração)
+python -m src.mcp.mcp_stdio_server
+
+# Teste direto
+echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python -m src.mcp.mcp_stdio_server
+```
+
 ### Gerenciamento do Servidor
 
 ```bash
@@ -48,23 +60,82 @@ O servidor estará disponível em `http://localhost:3001/sse` para conexões SSE
 
 ### Ferramentas Disponíveis
 
-O servidor MCP oferece 8 ferramentas:
+O servidor MCP oferece 15+ ferramentas:
 
 **Google Calendar:**
 
 - `echo` - Teste de conexão
 - `list_events` - Listar eventos do calendário com informações detalhadas
   (data/hora, localização, descrição)
+- `list_calendars` - Listar calendários disponíveis
 - `add_event` - Adicionar novos eventos
+- `edit_event` - Editar eventos existentes
+- `remove_event` - Remover eventos existentes
 - `add_recurring_task` - Criar tarefas recorrentes (diário, semanal, mensal)
   como lembretes de medicação
-- `remove_event` - Remover eventos existentes
 
 **Google Tasks:**
 
 - `list_tasks` - Listar tarefas pendentes
 - `add_task` - Adicionar novas tarefas
 - `remove_task` - Remover tarefas existentes
+- `complete_task` - Marcar tarefas como concluídas
+- `update_task_status` - Atualizar status de tarefas
+
+**Agendamento Inteligente:**
+
+- `schedule_tasks` - Agendamento inteligente baseado em disponibilidade
+
+**Calendários ICS Externos:**
+
+- `register_ics_calendar` - Registrar calendários ICS externos
+- `list_ics_calendars` - Listar calendários ICS registrados
+
+## Uso com Diferentes Clientes
+
+### Cursor
+
+```bash
+# Listar próximos eventos
+@mcp_google_calendar_list_events max_results=5
+
+# Adicionar evento
+@mcp_google_calendar_add_event summary="Reunião importante" \
+  start_time="2024-03-25T10:00:00" end_time="2024-03-25T11:00:00"
+
+# Agendamento inteligente
+@mcp_google_calendar_schedule_tasks time_period="day" \
+  work_hours_start="09:00" work_hours_end="18:00"
+```
+
+### Gemini CLI
+
+```bash
+# Configuração necessária (uma vez)
+export GEMINI_API_KEY="sua_chave_api"
+
+# Uso natural
+gemini "Liste meus próximos 5 eventos do calendário"
+gemini "Adicione uma reunião amanhã às 15h sobre projeto MCP"
+gemini "Quais tarefas tenho pendentes no Google Tasks?"
+gemini "Agende minhas tarefas pendentes para esta semana"
+
+# Exemplos específicos
+gemini "Use o echo tool para testar: funcionando!"
+gemini "Mostre meus calendários disponíveis"
+gemini "Crie um lembrete diário para tomar remédio às 8h por 30 dias"
+```
+
+### Claude Desktop
+
+```bash
+# Comandos naturais
+"List my upcoming calendar events"
+"Add a meeting tomorrow at 3pm about MCP project"
+"What tasks do I have pending in Google Tasks?"
+"Schedule my pending tasks for this week"
+"Use the echo tool to test: working!"
+```
 
 ### Tarefas Recorrentes
 
@@ -79,14 +150,20 @@ ideal para atividades repetitivas como:
 **Exemplo de uso:**
 
 ```bash
-# Criar lembrete diário para tomar remédio
-add_recurring_task:
-  summary: "Tomar medicação"
-  frequency: "daily"
-  count: 30
-  start_time: "2024-03-20T08:00:00Z"
-  end_time: "2024-03-20T08:30:00Z"
-  description: "Lembrete diário - medicação da manhã"
+# Cursor
+@mcp_google_calendar_add_recurring_task \
+  summary="Tomar medicação" \
+  frequency="daily" \
+  count=30 \
+  start_time="2024-03-20T08:00:00Z" \
+  end_time="2024-03-20T08:30:00Z" \
+  description="Lembrete diário - medicação da manhã"
+
+# Gemini CLI
+gemini "Crie um lembrete diário para tomar remédio às 8h por 30 dias"
+
+# Claude Desktop
+"Create a daily reminder to take medication at 8am for 30 days"
 ```
 
 **Frequências suportadas:**

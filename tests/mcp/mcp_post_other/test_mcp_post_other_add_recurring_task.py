@@ -1,6 +1,6 @@
 import json
 from unittest.mock import Mock
-import src.mcp.mcp_post_other_handler as mod
+from src.mcp import mcp_post_other_handler as mod
 
 class DummyHandler:
     def __init__(self):
@@ -56,22 +56,19 @@ def test_add_recurring_task_success(monkeypatch):
     handler = DummyHandler()
     called = {}
     
-    class FakeOps:
-        def __init__(self, service):
-            called['service'] = service
-            
-        def add_recurring_event(self, **kwargs):
-            called['kwargs'] = kwargs
-            return {
-                'status': 'confirmed',
-                'event': {
-                    'id': 'recurring_event_123',
-                    'summary': kwargs['summary']
-                }
+    def fake_add_recurring_event(service, **kwargs):
+        called['service'] = service
+        called['kwargs'] = kwargs
+        return {
+            'status': 'confirmed',
+            'event': {
+                'id': 'recurring_event_123',
+                'summary': kwargs['summary']
             }
+        }
     
     monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'mock_service')
-    monkeypatch.setattr(mod.calendar_ops, 'CalendarOperations', FakeOps)
+    monkeypatch.setattr(mod, 'add_recurring_event', fake_add_recurring_event)
     
     request = {
         "jsonrpc": "2.0",
@@ -96,8 +93,8 @@ def test_add_recurring_task_success(monkeypatch):
     body = parse_response(handler)
     
     # Verify successful response
-    assert body.get("result", {}).get("status") == "confirmed"
-    assert "recurring_event_123" in str(body.get("result", {}))
+    assert body['result']['content'].get("status") == "confirmed"
+    assert "recurring_event_123" in str(body['result']['content'])
     
     # Verify method was called with correct parameters
     assert called['service'] == 'mock_service'

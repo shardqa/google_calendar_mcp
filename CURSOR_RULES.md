@@ -16,3 +16,5 @@ Calendar MCP.
 
 - [Práticas de Desenvolvimento](doc/development_best_practices.md)
 - [Arquitetura do Projeto](doc/guides/architecture.md)
+
+- Excluded from auto-refactor/move checks (never move these): .cursor, .github, .venv, .coverage, .coveragerc, .cursorrules, .gitignore, Makefile, README.md, requirements.txt, TODO.md, src/mcp/mcp_schema.py from the root folder.

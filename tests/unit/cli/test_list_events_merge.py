@@ -1,18 +1,13 @@
 from src.mcp import tool_calendar as tc
 import importlib
-import types
+
 
 def test_list_events_merges_ics(monkeypatch):
     # Stub calendar service
     monkeypatch.setattr(tc.auth, "get_calendar_service", lambda: "svc")
 
-    class FakeCalOps:
-        def __init__(self, svc):
-            pass
-        def list_events(self, max_results=None, calendar_id="primary"):
-            return ["g1"]
-
-    monkeypatch.setattr(tc, "_cal_ops", lambda: types.SimpleNamespace(CalendarOperations=FakeCalOps))
+    # Mock the calendar.list_events function to return ["g1"]
+    monkeypatch.setattr("src.mcp.tools.tool_calendar.list_events", lambda svc, mr, cid: ["g1"])
 
     # Stub ICS registry
     registry = importlib.import_module("src.core.ics_registry")

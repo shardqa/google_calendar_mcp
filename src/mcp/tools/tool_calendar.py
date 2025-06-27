@@ -1,12 +1,16 @@
 from typing import Dict, Any
 from importlib import import_module
 from src.core import auth as auth
+from src.core.calendar import (
+    list_events,
+    list_calendars,
+    add_event,
+    remove_event,
+    add_recurring_event,
+    edit_event,
+)
 
 __all__ = ["handle"]
-
-
-def _cal_ops():
-    return getattr(import_module("src.mcp.mcp_post_other_handler"), "calendar_ops")
 
 
 def _list_events(args):
@@ -21,7 +25,7 @@ def _list_events(args):
     else:
         svc = auth.get_calendar_service()
         cid = args.get("calendar_id", "primary")
-        content = _cal_ops().CalendarOperations(svc).list_events(mr, cid)
+        content = list_events(svc, mr, cid)
         if args.get("with_ics"):
             try:
                 from src.core.ics_registry import list_all as _ics_list
@@ -35,7 +39,7 @@ def _list_events(args):
 
 def _list_calendars():
     svc = auth.get_calendar_service()
-    return {"result": {"content": _cal_ops().CalendarOperations(svc).list_calendars()}}
+    return {"result": {"content": list_calendars(svc)}}
 
 
 def _add_event(args):
@@ -46,7 +50,7 @@ def _add_event(args):
     for k in ("location", "description"):
         if args.get(k):
             body[k] = args[k]
-    res = _cal_ops().CalendarOperations(svc).add_event(body)
+    res = add_event(svc, body)
     if res.get("status") != "confirmed":
         msg = res.get("message", "Erro desconhecido")
         return {"result": {"content": [{"type": "text", "text": f"❌ Erro ao criar evento: {msg}"}]}}
@@ -62,7 +66,7 @@ def _remove_event(args):
     eid = args.get("event_id")
     if not eid:
         return {"error": {"code": -32602, "message": "Event ID is required"}}
-    ok = _cal_ops().CalendarOperations(auth.get_calendar_service()).remove_event(eid)
+    ok = remove_event(auth.get_calendar_service(), eid)
     txt = f"✅ Evento removido com sucesso!\n🆔 ID: {eid}" if ok else f"❌ Erro ao remover evento {eid}"
     return {"result": {"content": [{"type": "text", "text": txt}]}}
 
@@ -70,8 +74,9 @@ def _remove_event(args):
 def _add_recurring(args):
     if not all(args.get(k) for k in ["summary", "frequency", "count", "start_time", "end_time"]):
         return {"error": {"code": -32602, "message": "Missing required recurring task parameters"}}
-    ops = _cal_ops().CalendarOperations(auth.get_calendar_service())
-    return {"result": ops.add_recurring_event(
+    ops = auth.get_calendar_service()
+    return {"result": add_recurring_event(
+        service=ops,
         summary=args["summary"],
         frequency=args["frequency"],
         count=args["count"],
@@ -86,7 +91,7 @@ def _edit_event(args):
     eid, details = args.get("event_id"), args.get("updated_details")
     if not eid or not details:
         return {"error": {"code": -32602, "message": "event_id and updated_details are required."}}
-    updated = _cal_ops().CalendarOperations(auth.get_calendar_service()).edit_event(eid, details)
+    updated = edit_event(auth.get_calendar_service(), eid, details)
     if not updated:
         return {"error": {"code": -32603, "message": f"Failed to edit event {eid}."}}
     txt = f"✅ Evento editado com sucesso!\n🆔 ID: {eid}"

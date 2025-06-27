@@ -9,7 +9,7 @@ default: test
 # Full test suite with coverage report
 test:
 	@echo "Running tests with coverage..."
-	@.venv/bin/python -m coverage run -m pytest
+	@.venv/bin/python -m coverage run --parallel-mode --source=src -m pytest
 	@.venv/bin/python -m coverage combine
 	@.venv/bin/python -m coverage report
 

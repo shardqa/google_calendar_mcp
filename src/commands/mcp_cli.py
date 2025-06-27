@@ -11,31 +11,42 @@ except ImportError:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
     from src.mcp.mcp_server import run_server
 
+try:
+    from src.mcp import mcp_server
+except ImportError:
+    # Fallback for when running as a script
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+    from src.mcp import mcp_server
+
 def setup_mcp_config(port):
     """Setup MCP configuration in user's Cursor directory"""
-    cursor_dir = Path.home() / ".cursor"
-    cursor_dir.mkdir(exist_ok=True)
-    
-    mcp_config_path = cursor_dir / "mcp.json"
-    
-    # Create a new MCP config (overwrite instead of update)
-    config = {
-        "mcpServers": {
-            "google_calendar": {
-                "url": f"http://localhost:{port}/sse",
-                "type": "sse",
-                "enabled": True,
-                "description": "Google Calendar Integration"
+    try:
+        cursor_dir = Path.home() / ".cursor"
+        cursor_dir.mkdir(exist_ok=True)
+        
+        mcp_config_path = cursor_dir / "mcp.json"
+        
+        # Create a new MCP config (overwrite instead of update)
+        config = {
+            "mcpServers": {
+                "google_calendar": {
+                    "url": f"http://localhost:{port}/sse",
+                    "type": "sse",
+                    "enabled": True,
+                    "description": "Google Calendar Integration"
+                }
             }
         }
-    }
-    
-    # Write the config
-    with open(mcp_config_path, "w") as f:
-        json.dump(config, f, indent=2)
-    
-    print(f"MCP configuration created at {mcp_config_path}")
-    print(f"Google Calendar MCP server configured at http://localhost:{port}/sse")
+        
+        # Write the config
+        with open(mcp_config_path, "w") as f:
+            json.dump(config, f, indent=4)
+        
+        print(f"MCP configuration created at {mcp_config_path}")
+        print(f"Google Calendar MCP server configured at http://localhost:{port}/sse")
+    except (OSError, FileExistsError) as e:
+        print(f"Error: Could not write MCP configuration to {cursor_dir}: {e}", file=sys.stderr)
+        sys.exit(1)
 
 def main():
     parser = argparse.ArgumentParser(description="Google Calendar MCP Server")
@@ -76,7 +87,7 @@ def main():
         run_stdio_server()
     elif not args.setup_only:
         print(f"Starting Google Calendar MCP server at http://{args.host}:{args.port}/")
-        run_server(args.host, args.port)
+        mcp_server.run_server(args.host, args.port)
 
 if __name__ == "__main__":
     main() 

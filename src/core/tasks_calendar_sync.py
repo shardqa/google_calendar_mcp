@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List, Dict
 
-from src.core.calendar_ops import CalendarOperations
+from src.core.calendar import add_event
 
 
 def _one_hour_after(iso_str: str) -> str:
@@ -21,8 +21,6 @@ def sync_tasks_with_calendar(calendar_service, tasks_service):
         return
     tasks: List[Dict] = tasks_result.get('items', [])
 
-    ops = CalendarOperations(calendar_service)
-
     for task in tasks:
         due = task.get('due')
         if not due:
@@ -37,7 +35,7 @@ def sync_tasks_with_calendar(calendar_service, tasks_service):
             'description': f"Auto-synced for task {task.get('id', '')}"
         }
         try:
-            ops.add_event(event_data)
+            add_event(calendar_service, event_data)
         except Exception:
             # Log or silently ignore; sync should not break
             pass 
