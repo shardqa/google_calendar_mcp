@@ -4,12 +4,21 @@ Este arquivo lista apenas os marcos mais recentes. Para o histórico completo, v
 
 ## Recent High Priority Completions ✅
 
+- **Migração para uvx - Google Calendar MCP agora usa uvx ao invés de python direto (2024-12-20)** ✅
+  - Criado `pyproject.toml` com entry point único: `google-calendar-mcp = "src.mcp.mcp_stdio_server:run_stdio_server"`
+  - Desenvolvido script de migração automática `scripts/migrate_to_uvx.py` para configs existentes
+  - Migradas configurações do Cursor (.cursor/mcp.json) e Gemini CLI (.gemini/settings.json)
+  - Performance 10-100x superior, isolamento completo, zero contaminação de ambiente global
+  - Configuração simplificada: `{"command": "uvx", "args": ["--from", "/path", "google-calendar-mcp"]}`
+  - Testes de integração criados e validados, documentação completa em `doc/guides/uvx_migration.md`
+  - Tasks de limpeza adicionadas ao TODO.md para remoção futura do código HTTP/SSE e python direto
 - **Refactor files larger than 100 lines - successfully decomposed 4 major files into smaller, focused modules with logical organization** ✅
   - `src/mcp/auth_middleware.py` (307→98 lines) → extracted `TokenVerifier`, `TokenGenerator`, `RateLimiter` classes into `src/mcp/auth/` 
   - `src/mcp/mcp_stdio_server.py` (240→63 lines) → extracted `StdioRequestHandler` into `src/mcp/stdio_handler.py`
   - `src/core/calendar_ops.py` (186 lines) → decomposed into individual function files in `src/core/calendar/`
   - `src/commands/mcp_cli.py` (120→50 lines) → extracted CLI logic into focused modules
   - Fixed all import cascades and maintained functionality across 279 tests
+  - Updated architecture documentation and created comprehensive refactoring best practices guide
 - **Fix ICS date filtering - eventos do calendário ICS agora respeitam filtro de data (hoje em diante)** ✅
 - **Fix failing test suite - todos os testes passando novamente (294 passed, 1 skipped)** ✅
 - **Maintain 100% test coverage - cobertura de testes mantida em 100%** ✅

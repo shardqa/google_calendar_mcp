@@ -26,19 +26,30 @@ def setup_mcp_config(port):
         
         mcp_config_path = cursor_dir / "mcp.json"
         
-        # Create a new MCP config (overwrite instead of update)
-        config = {
-            "mcpServers": {
-                "google_calendar": {
-                    "url": f"http://localhost:{port}/sse",
-                    "type": "sse",
-                    "enabled": True,
-                    "description": "Google Calendar Integration"
-                }
-            }
+        # Read existing config if it exists, otherwise start with empty config
+        config = {"mcpServers": {}}
+        if mcp_config_path.exists():
+            try:
+                with open(mcp_config_path, "r") as f:
+                    existing_config = json.load(f)
+                    if isinstance(existing_config, dict) and "mcpServers" in existing_config:
+                        config = existing_config
+            except (json.JSONDecodeError, IOError):
+                # If file is corrupted, start fresh but keep a backup
+                backup_path = mcp_config_path.with_suffix('.json.backup')
+                if mcp_config_path.exists():
+                    mcp_config_path.rename(backup_path)
+                    print(f"Warning: Corrupted mcp.json backed up to {backup_path}")
+        
+        # Add/update the google_calendar server configuration
+        config["mcpServers"]["google_calendar"] = {
+            "url": f"http://localhost:{port}/sse",
+            "type": "sse",
+            "enabled": True,
+            "description": "Google Calendar Integration"
         }
         
-        # Write the config
+        # Write the updated config
         with open(mcp_config_path, "w") as f:
             json.dump(config, f, indent=4)
         

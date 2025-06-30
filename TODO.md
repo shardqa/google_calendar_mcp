@@ -4,7 +4,17 @@
 
 ### High Priority
 
+- [x] Analisar e ajustar google_calendar_mcp para usar uvx ao invés de python direto na configuração MCP ✅
 - [ ] Restore test coverage to 100% after large file refactoring
+- [x] Remover código HTTP/SSE server - manter apenas stdio mode ✅
+- [x] Remover src/mcp/mcp_server.py e dependências HTTP ✅ (stub criado)
+- [x] Remover partes não-stdio do src/commands/mcp_cli.py ✅
+- [x] Limpar handlers HTTP: mcp_handler.py, mcp_get_handler.py, mcp_post_*.py ✅
+- [x] Remover testes relacionados a HTTP/SSE endpoints ✅
+- [ ] Limpar método python direto (manter apenas uvx)
+  - [ ] Remover suporte a configuração python3 direto
+  - [ ] Atualizar scripts que ainda usam python direto
+  - [ ] Simplificar testes de configuração MCP
 
 ### Medium Priority
 

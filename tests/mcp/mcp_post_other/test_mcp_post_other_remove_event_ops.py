@@ -52,7 +52,8 @@ def test_remove_event_success(monkeypatch):
     response = {"jsonrpc": "2.0", "id": 7}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert body['result']['content'] is True
+    txt = body['result']['content'][0]['text']
+    assert '✅' in txt
     assert called['event_id'] == 'id1'
 
 def test_remove_event_failure(monkeypatch):
@@ -68,5 +69,6 @@ def test_remove_event_failure(monkeypatch):
     response = {"jsonrpc": "2.0", "id": 8}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert body['result']['content'] is False
+    txt = body['result']['content'][0]['text']
+    assert '❌' in txt
     assert called['event_id'] == 'id_fail' 

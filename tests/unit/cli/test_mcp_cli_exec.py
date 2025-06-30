@@ -35,20 +35,24 @@ def get_python_executable():
     return 'python3'
 
 
-def test_mcp_cli_script_execution():
-    """Test that src/commands/mcp_cli.py can be executed as a script"""
+def test_mcp_cli_script_execution(tmp_path):
+    """Test that src/commands/mcp_cli.py can be executed as a script without touching real HOME"""
     python_exe = get_python_executable()
+    env = os.environ.copy()
+    env['HOME'] = str(tmp_path)
     res = subprocess.run([python_exe, 'src/commands/mcp_cli.py', '--setup-only'], 
-                         capture_output=True, text=True)
+                         capture_output=True, text=True, env=env)
     assert res.returncode == 0
     assert "MCP configuration created" in res.stdout
 
 
-def test_mcp_cli_main_block_direct_execution():
+def test_mcp_cli_main_block_direct_execution(tmp_path):
     """Test direct execution with explicit main block"""
     python_exe = get_python_executable()
+    env = os.environ.copy()
+    env['HOME'] = str(tmp_path)
     res = subprocess.run([python_exe, 'src/commands/mcp_cli.py', '--help'], 
-                         capture_output=True, text=True)
+                         capture_output=True, text=True, env=env)
     assert res.returncode == 0
     assert "Google Calendar MCP Server" in res.stdout
 

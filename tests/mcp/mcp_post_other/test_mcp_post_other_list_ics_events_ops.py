@@ -49,5 +49,5 @@ def test_list_ics_events(monkeypatch):
         mod.handle_post_other(handler, request, response)
 
         body = parse_response(handler)
-        assert body.get("result") == {'content': sample_events}
+        assert body["result"]["content"] == sample_events
         mock_ics_ops.assert_called_once() 

@@ -1,7 +1,7 @@
 from typing import Dict, Any
 from importlib import import_module
 from src.core import auth as auth
-from src.mcp.mcp_post_other_handler import tasks_auth, tasks_ops
+from src.core import tasks_auth, tasks_ops
 
 __all__ = ["handle"]
 

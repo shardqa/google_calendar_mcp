@@ -55,7 +55,8 @@ def test_add_event_success(monkeypatch):
     response = {"jsonrpc": "2.0", "id": 5}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert body['result']['content']['status'] == 'confirmed'
+    txt = body['result']['content'][0]['text'] if isinstance(body['result']['content'], list) else ''
+    assert '✅ Evento criado' in txt
     assert called['service'] == 'svc2'
     assert called['event_data']["summary"] == "t"
     assert called['event_data']["location"] == "loc"
@@ -77,7 +78,9 @@ def test_add_event_with_location_coverage(monkeypatch):
     response = {"jsonrpc": "2.0", "id": 5}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert body['result']['content']['event']['location'] == 'Test Location'
+    txt = body['result']['content'][0]['text']
+    assert '✅ Evento criado' in txt
+    assert 'Test Location' in txt
     assert called['event_data']['location'] == 'Test Location'
     assert called['event_data']['description'] == 'desc'
 
@@ -98,4 +101,5 @@ def test_add_event_error_coverage(monkeypatch):
     response = {"jsonrpc": "2.0", "id": 5}
     mod.handle_post_other(handler, request, response)
     body = parse_response(handler)
-    assert body['result']['content']['status'] == 'error' 
+    txt = body['result']['content'][0]['text']
+    assert '❌' in txt 

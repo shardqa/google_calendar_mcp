@@ -27,7 +27,8 @@ class TestMcpPostOtherEditEvent(unittest.TestCase):
 
         self.assertIn("result", response)
         self.assertIn("content", response["result"])
-        self.assertEqual(response["result"]["content"]["summary"], "Updated Summary")
+        txt = response["result"]["content"][0]["text"]
+        self.assertIn("✅ Evento editado", txt)
         mock_edit_event.assert_called_once_with(mock_service, "test_event_id", {"summary": "Updated Summary"})
 
     @patch("src.mcp.mcp_post_other_handler.auth.get_calendar_service")
@@ -101,7 +102,8 @@ class TestMcpPostOtherEditEvent(unittest.TestCase):
         mock_handler = MagicMock()
         mod.handle_post_other(mock_handler, request, response)
         self.assertIn("result", response)
-        self.assertEqual(response["result"]["content"]["location"], "Office")
+        txt = response["result"]["content"][0]["text"]
+        self.assertIn("📍 Office", txt)
 
 if __name__ == '__main__':
     unittest.main() 

@@ -15,6 +15,86 @@ def test_setup_mcp_config(tmp_path, monkeypatch, capsys):
     assert f'MCP configuration created at {cfg}' in out
 
 
+def test_setup_mcp_config_preserves_existing_servers(tmp_path, monkeypatch, capsys):
+    """Test that setup_mcp_config preserves existing MCP server configurations."""
+    monkeypatch.setenv('HOME', str(tmp_path))
+    
+    # Create .cursor directory and existing mcp.json with other servers
+    cursor_dir = tmp_path / '.cursor'
+    cursor_dir.mkdir()
+    cfg = cursor_dir / 'mcp.json'
+    
+    existing_config = {
+        "mcpServers": {
+            "other_server": {
+                "command": "python",
+                "args": ["-m", "other_mcp"],
+                "env": {"KEY": "value"}
+            },
+            "another_server": {
+                "url": "http://localhost:4000/sse",
+                "type": "sse",
+                "enabled": True
+            }
+        }
+    }
+    
+    cfg.write_text(json.dumps(existing_config, indent=4))
+    
+    # Run setup_mcp_config
+    port = 12345
+    mcp_cli.setup_mcp_config(port)
+    
+    # Verify existing servers are preserved and new one is added
+    content = json.loads(cfg.read_text())
+    
+    # Check that existing servers are still there
+    assert 'other_server' in content['mcpServers']
+    assert content['mcpServers']['other_server']['command'] == 'python'
+    assert content['mcpServers']['other_server']['args'] == ['-m', 'other_mcp']
+    assert content['mcpServers']['other_server']['env'] == {'KEY': 'value'}
+    
+    assert 'another_server' in content['mcpServers']
+    assert content['mcpServers']['another_server']['url'] == 'http://localhost:4000/sse'
+    
+    # Check that new server was added/updated
+    assert 'google_calendar' in content['mcpServers']
+    assert content['mcpServers']['google_calendar']['url'] == f'http://localhost:{port}/sse'
+    assert content['mcpServers']['google_calendar']['type'] == 'sse'
+    assert content['mcpServers']['google_calendar']['enabled'] is True
+
+
+def test_setup_mcp_config_handles_corrupted_file(tmp_path, monkeypatch, capsys):
+    """Test that setup_mcp_config handles corrupted mcp.json file gracefully."""
+    monkeypatch.setenv('HOME', str(tmp_path))
+    
+    # Create .cursor directory and corrupted mcp.json
+    cursor_dir = tmp_path / '.cursor'
+    cursor_dir.mkdir()
+    cfg = cursor_dir / 'mcp.json'
+    backup_cfg = cursor_dir / 'mcp.json.backup'
+    
+    # Write invalid JSON
+    cfg.write_text('{ "invalid": json content }')
+    
+    # Run setup_mcp_config
+    port = 12345
+    mcp_cli.setup_mcp_config(port)
+    
+    # Check that backup was created
+    assert backup_cfg.exists()
+    assert backup_cfg.read_text() == '{ "invalid": json content }'
+    
+    # Check that new valid config was created
+    content = json.loads(cfg.read_text())
+    assert 'google_calendar' in content['mcpServers']
+    assert content['mcpServers']['google_calendar']['url'] == f'http://localhost:{port}/sse'
+    
+    # Check warning message
+    captured = capsys.readouterr()
+    assert 'Warning: Corrupted mcp.json backed up to' in captured.out
+
+
 def test_main_setup_only(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv('HOME', str(tmp_path))
     calls = []

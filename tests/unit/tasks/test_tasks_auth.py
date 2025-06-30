@@ -11,7 +11,7 @@ def test_get_tasks_service():
     with patch('src.core.tasks_auth.get_credentials', return_value=mock_creds) as mock_get_creds, \
          patch('src.core.tasks_auth.build', return_value=mock_service) as mock_build:
         service = tasks_auth.get_tasks_service()
-        mock_get_creds.assert_called_once_with('config/credentials.json')
+        mock_get_creds.assert_called_once_with()
         mock_build.assert_called_once_with('tasks', 'v1', credentials=mock_creds)
         assert service == mock_service
 

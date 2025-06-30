@@ -8,15 +8,15 @@ default: test
 
 # Full test suite with coverage report
 test:
-	@echo "Running tests with coverage..."
-	@.venv/bin/python -m coverage run --parallel-mode --source=src -m pytest
-	@.venv/bin/python -m coverage combine
-	@.venv/bin/python -m coverage report
+	@echo "Running tests with coverage via uvx..."
+	@uvx --with pytest --with coverage --with-editable . coverage run --parallel-mode --source=src -m pytest
+	@uvx --with pytest --with coverage --with-editable . coverage combine
+	@uvx --with pytest --with coverage --with-editable . coverage report
 
 # A faster test run without coverage
 test-fast:
-	@echo "Running tests (no coverage)..."
-	@.venv/bin/pytest
+	@echo "Running tests (no coverage) via uvx..."
+	@uvx --with pytest --with-editable . pytest
 
 # Clean up temporary Python and coverage files
 clean:

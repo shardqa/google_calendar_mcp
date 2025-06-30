@@ -26,17 +26,17 @@ END:VCALENDAR
 """)
 
 # Sample with past dates for filtering test
-SAMPLE_ICS_WITH_PAST = textwrap.dedent("""
+SAMPLE_ICS_WITH_PAST = textwrap.dedent(f"""
 BEGIN:VCALENDAR
 BEGIN:VEVENT
 SUMMARY:Past Meeting
-DTSTART:20250624T100000Z
-DTEND:20250624T110000Z
+DTSTART:{(today - timedelta(days=3)).strftime('%Y%m%dT%H%M%S')}Z
+DTEND:{(today - timedelta(days=3)).strftime('%Y%m%dT%H%M%S')}Z
 END:VEVENT
 BEGIN:VEVENT
 SUMMARY:Future Meeting
-DTSTART:20250627T100000Z
-DTEND:20250627T110000Z
+DTSTART:{(today + timedelta(days=3)).strftime('%Y%m%dT%H%M%S')}Z
+DTEND:{(today + timedelta(days=3)).strftime('%Y%m%dT%H%M%S')}Z
 END:VEVENT
 END:VCALENDAR
 """)

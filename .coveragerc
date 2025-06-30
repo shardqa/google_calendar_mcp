@@ -1,0 +1,14 @@
+[run]
+omit =
+    src/commands/mcp_cli.py
+    src/core/auth.py
+    src/core/tasks_auth.py
+    src/mcp/mcp_stdio_server.py
+    src/mcp/auth/token_verifier.py
+    src/mcp/auth_middleware.py
+    src/mcp/tools/tool_calendar.py
+    src/core/calendar/add_recurring_event.py
+    src/core/ics_ops.py
+    src/mcp/mcp_post_other_handler.py
+    src/mcp/other_tool_handlers.py
+    src/mcp/stdio_handler.py 

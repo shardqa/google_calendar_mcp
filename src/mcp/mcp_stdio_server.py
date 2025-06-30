@@ -92,19 +92,7 @@ class MCPStdioServer:
         
         self.running = True
         
-        # Send initial hello message to establish connection
-        hello_message = {
-            "jsonrpc": "2.0",
-            "method": "mcp/hello",
-            "params": {
-                "serverInfo": self.capabilities["serverInfo"],
-                "capabilities": {"tools": self.capabilities["tools"]},
-                "protocolVersion": self.capabilities["protocolVersion"]
-            }
-        }
-        self._send_response(hello_message)
-        
-        # Start reading from stdin
+        # Start reading from stdin and respond to client requests
         try:
             self._read_stdin()
         except Exception as e:

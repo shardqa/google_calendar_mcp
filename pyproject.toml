@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "google-calendar-mcp"
+version = "1.0.0"
+description = "Google Calendar MCP Server (stdio mode only)"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "google-api-python-client==2.118.0",
+    "google-auth-httplib2==0.2.0",
+    "google-auth-oauthlib==1.2.0",
+    "python-dateutil>=2.8.2",
+    "google-auth"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.0.2",
+    "pytest-mock",
+    "pytest-cov==4.1.0",
+    "coverage==7.4.3",
+    "pytest-timeout==2.2.0"
+]
+
+[project.scripts]
+google-calendar-mcp = "src.mcp.mcp_stdio_server:run_stdio_server"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.setuptools.package-dir]
+"" = "." 
