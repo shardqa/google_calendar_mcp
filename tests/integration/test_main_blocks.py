@@ -4,6 +4,7 @@ import pytest
 from pathlib import Path
 import os
 from unittest.mock import patch, MagicMock
+import tempfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -91,9 +92,12 @@ if __name__ == "__main__":
 def test_mcp_cli_py_script_execution():
     """Test that src/commands/mcp_cli.py can be executed as a script"""
     python_exe = get_python_executable()
-    result = subprocess.run([
-        python_exe, 'src/commands/mcp_cli.py', '--setup-only'
-    ], capture_output=True, text=True, timeout=10, cwd=os.getcwd())
+    with tempfile.TemporaryDirectory() as tmp:
+        env = dict(os.environ)
+        env['HOME'] = tmp  # Prevent writing to real ~/.cursor/mcp.json
+        result = subprocess.run([
+            python_exe, 'src/commands/mcp_cli.py', '--setup-only'
+        ], capture_output=True, text=True, timeout=10, cwd=os.getcwd(), env=env)
     
     # Should exit cleanly
     assert result.returncode == 0
