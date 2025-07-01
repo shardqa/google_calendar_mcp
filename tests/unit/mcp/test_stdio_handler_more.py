@@ -1,7 +1,7 @@
 import json
 from src.mcp.stdio_handler import StdioRequestHandler
 
-def test_tools_call_error():
+def test_tools_call_error(mock_credentials):
     caps = {"tools": {}, "serverInfo": {}, "protocolVersion": "v"}
     h = StdioRequestHandler(caps)
     # tools/call with unknown tool triggers error -32601 from inner process

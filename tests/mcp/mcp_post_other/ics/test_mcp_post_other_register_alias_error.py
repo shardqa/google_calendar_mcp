@@ -19,7 +19,7 @@ class Dummy:
 def body(h):
     return json.loads(h._data)
 
-def test_register_alias_missing_args(monkeypatch):
+def test_register_alias_missing_args(monkeypatch, mock_credentials):
     h=Dummy()
     req={"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"tool":"register_ics_calendar","args":{"ics_url":"http://ex.com"}}}
     mod.handle_post_other(h, req, {"jsonrpc":"2.0","id":6})

@@ -20,7 +20,7 @@ class DummyHandler:
 def parse(h):
     return json.loads(h._response_data.decode())
 
-def test_register_and_use_alias(monkeypatch):
+def test_register_and_use_alias(monkeypatch, mock_credentials):
     handler = DummyHandler()
     # patch registry to memory dict
     store = {}
@@ -48,7 +48,6 @@ def test_register_and_use_alias(monkeypatch):
         def list_events(self, url, max_results):
             assert url=="http://ex.com/a.ics"
             return ['ok']
-    monkeypatch.setattr(mod.auth, 'get_calendar_service', lambda: 'svc')
     with patch('src.core.ics_ops.ICSOperations', return_value=FakeICSOps()):
         req2 = {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"tool":"list_events","args":{"ics_alias":"work","max_results":5}}}
         resp2 = {"jsonrpc":"2.0","id":2}

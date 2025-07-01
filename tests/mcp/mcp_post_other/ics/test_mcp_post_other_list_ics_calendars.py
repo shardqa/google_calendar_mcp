@@ -15,7 +15,7 @@ class H:
 
 def j(h): return json.loads(h._data)
 
-def test_list_ics_calendars_other(monkeypatch):
+def test_list_ics_calendars_other(monkeypatch, mock_credentials):
     class FakeReg:
         @staticmethod
         def list_all():
