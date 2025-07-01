@@ -34,8 +34,9 @@ echo "5. Testando configuração do Nginx..."
 nginx -t
 
 echo "6. Configurando permissões do script..."
-chmod +x "$PROJECT_ROOT/scripts/start_mcp_remote.sh"
-chown richard:richard "$PROJECT_ROOT/scripts/start_mcp_remote.sh"
+# NOTE: start_mcp_remote.sh removed in favor of uvx
+# chmod +x "$PROJECT_ROOT/scripts/start_mcp_remote.sh"
+# chown richard:richard "$PROJECT_ROOT/scripts/start_mcp_remote.sh"
 
 echo "7. Configurando serviço systemd..."
 cp "$PROJECT_ROOT/config/google-calendar-mcp.service" /etc/systemd/system/

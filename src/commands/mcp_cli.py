@@ -4,21 +4,9 @@ import os
 import json
 import sys
 from pathlib import Path
+import shutil
 
-try:
-    from ..mcp.mcp_server import run_server
-except ImportError:
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-    from src.mcp.mcp_server import run_server
-
-try:
-    from src.mcp import mcp_server
-except ImportError:
-    # Fallback for when running as a script
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-    from src.mcp import mcp_server
-
-def setup_mcp_config(port):
+def setup_mcp_config():
     """Setup MCP configuration in user's Cursor directory"""
     try:
         cursor_dir = Path.home() / ".cursor"
@@ -26,27 +14,34 @@ def setup_mcp_config(port):
         
         mcp_config_path = cursor_dir / "mcp.json"
         
-        # Read existing config if it exists, otherwise start with empty config
-        config = {"mcpServers": {}}
+        # If config file exists, try to parse it. If corrupted, create backup
+        existing_config = {}
         if mcp_config_path.exists():
             try:
                 with open(mcp_config_path, "r") as f:
                     existing_config = json.load(f)
-                    if isinstance(existing_config, dict) and "mcpServers" in existing_config:
-                        config = existing_config
-            except (json.JSONDecodeError, IOError):
-                # If file is corrupted, start fresh but keep a backup
-                backup_path = mcp_config_path.with_suffix('.json.backup')
-                if mcp_config_path.exists():
-                    mcp_config_path.rename(backup_path)
-                    print(f"Warning: Corrupted mcp.json backed up to {backup_path}")
+            except json.JSONDecodeError:
+                # Create backup of corrupted file
+                backup_path = cursor_dir / "mcp.json.backup"
+                shutil.copy2(mcp_config_path, backup_path)
+                print(f"Warning: Corrupted mcp.json backed up to {backup_path}")
+                existing_config = {}
+        
+        # Preserve existing mcpServers if they exist and file was valid
+        config = {"mcpServers": existing_config.get("mcpServers", {})}
         
         # Add/update the google_calendar server configuration
+        uvx_cmd = shutil.which("uvx") or "uvx"
+        project_root = Path(__file__).parent.parent.parent.resolve()
         config["mcpServers"]["google_calendar"] = {
-            "url": f"http://localhost:{port}/sse",
-            "type": "sse",
-            "enabled": True,
-            "description": "Google Calendar Integration"
+            "command": uvx_cmd,
+            "args": [
+                "--from",
+                str(project_root),
+                "google-calendar-mcp"
+            ],
+            "timeout": 60000,
+            "description": "Google Calendar Integration (uvx)"
         }
         
         # Write the updated config
@@ -54,24 +49,13 @@ def setup_mcp_config(port):
             json.dump(config, f, indent=4)
         
         print(f"MCP configuration created at {mcp_config_path}")
-        print(f"Google Calendar MCP server configured at http://localhost:{port}/sse")
+        print(f"Google Calendar MCP server configured for uvx usage")
     except (OSError, FileExistsError) as e:
         print(f"Error: Could not write MCP configuration to {cursor_dir}: {e}", file=sys.stderr)
         sys.exit(1)
 
 def main():
     parser = argparse.ArgumentParser(description="Google Calendar MCP Server")
-    parser.add_argument(
-        "--port", 
-        type=int, 
-        default=3000, 
-        help="Port to run the server on (default: 3000)"
-    )
-    parser.add_argument(
-        "--host", 
-        default="localhost", 
-        help="Host to bind the server to (default: localhost)"
-    )
     parser.add_argument(
         "--setup-only", 
         action="store_true", 
@@ -86,7 +70,8 @@ def main():
     
     # Only set up configuration when explicitly requested via --setup-only
     if args.setup_only:
-        setup_mcp_config(args.port)
+        setup_mcp_config()
+        return
     
     if args.stdio:
         print(f"Starting Google Calendar MCP server in stdio mode.", file=sys.stderr)
@@ -96,9 +81,11 @@ def main():
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
             from src.mcp.mcp_stdio_server import run_stdio_server
         run_stdio_server()
-    elif not args.setup_only:
-        print(f"Starting Google Calendar MCP server at http://{args.host}:{args.port}/")
-        mcp_server.run_server(args.host, args.port)
+    else:
+        print("Error: This CLI only supports stdio mode or setup-only.", file=sys.stderr)
+        print("Use --stdio to run in stdio mode or --setup-only to configure MCP.", file=sys.stderr)
+        print("For regular usage, use: uvx --from . google-calendar-mcp", file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main() 

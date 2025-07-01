@@ -15,7 +15,7 @@ def test_mcp_cli_setup_only(monkeypatch, capsys):
     """Test that --setup-only creates the config and exits."""
     with tempfile.TemporaryDirectory() as tmp:
         monkeypatch.setattr(pathlib.Path, "home", lambda: pathlib.Path(tmp))
-        monkeypatch.setattr(sys, "argv", ["mcp_cli", "--port", "4321", "--setup-only"])
+        monkeypatch.setattr(sys, "argv", ["mcp_cli", "--setup-only"])
         
         # Ensure module is fresh for argv patching
         mod = importlib.reload(importlib.import_module(MODULE_PATH))
@@ -25,7 +25,7 @@ def test_mcp_cli_setup_only(monkeypatch, capsys):
         cfg_path = pathlib.Path(tmp) / ".cursor" / "mcp.json"
         assert cfg_path.exists()
         data = json.loads(cfg_path.read_text())
-        assert data["mcpServers"]["google_calendar"]["url"].endswith(":4321/sse")
+        assert "command" in data["mcpServers"]["google_calendar"]
         assert "MCP configuration created" in captured.out
 
 def test_mcp_cli_stdio_entry(monkeypatch, capsys):
@@ -40,6 +40,18 @@ def test_mcp_cli_stdio_entry(monkeypatch, capsys):
     mock_run_stdio.assert_called_once()
     captured = capsys.readouterr()
     assert "Starting Google Calendar MCP server in stdio mode" in captured.err
+
+def test_mcp_cli_no_args_error(monkeypatch, capsys):
+    """Test that running without --stdio or --setup-only shows error."""
+    monkeypatch.setattr(sys, "argv", ["mcp_cli"])
+    
+    mod = importlib.reload(importlib.import_module(MODULE_PATH))
+    with pytest.raises(SystemExit) as exc_info:
+        mod.main()
+    
+    assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "Error: This CLI only supports stdio mode or setup-only" in captured.err
 
 def test_import_error_fallback(monkeypatch):
     """Test the sys.path modification when src is not in the path."""
@@ -70,7 +82,7 @@ def test_setup_config_os_error(monkeypatch, tmp_path):
 
     with pytest.raises(SystemExit) as excinfo:
         mod = importlib.reload(importlib.import_module(MODULE_PATH))
-        mod.setup_mcp_config(9999)
+        mod.setup_mcp_config()
 
     assert excinfo.value.code == 1
 
@@ -84,6 +96,6 @@ def test_setup_config_mkdir_error(monkeypatch, tmp_path):
 
     with pytest.raises(SystemExit) as excinfo:
         mod = importlib.reload(importlib.import_module(MODULE_PATH))
-        mod.setup_mcp_config(9999)
+        mod.setup_mcp_config()
     
     assert excinfo.value.code == 1 

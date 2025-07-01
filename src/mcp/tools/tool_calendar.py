@@ -3,10 +3,8 @@ from importlib import import_module
 from src.core import auth as auth
 from src.core.calendar import (
     list_events,
-    list_calendars,
     add_event,
     remove_event,
-    add_recurring_event,
     edit_event,
 )
 
@@ -37,65 +35,54 @@ def _list_events(args):
     return {"result": {"content": content}}
 
 
-def _list_calendars():
-    svc = auth.get_calendar_service()
-    return {"result": {"content": list_calendars(svc)}}
-
-
 def _add_event(args):
-    svc = auth.get_calendar_service()
-    if not all([args.get("summary"), args.get("start_time"), args.get("end_time")]):
+    if not all(args.get(k) for k in ("summary", "start_time", "end_time")):
         return {"error": {"code": -32602, "message": "Missing required event parameters"}}
-    body = {"summary": args["summary"], "start": {"dateTime": args["start_time"]}, "end": {"dateTime": args["end_time"]}}
+    ops = auth.get_calendar_service()
+    body = {
+        "summary": args["summary"],
+        "start": {"dateTime": args["start_time"]},
+        "end": {"dateTime": args["end_time"]}
+    }
     for k in ("location", "description"):
         if args.get(k):
             body[k] = args[k]
-    res = add_event(svc, body)
+    res = add_event(ops, body)
     if res.get("status") != "confirmed":
-        msg = res.get("message", "Erro desconhecido")
-        return {"result": {"content": [{"type": "text", "text": f"❌ Erro ao criar evento: {msg}"}]}}
+        txt = f"❌ Erro ao criar evento: {res.get('message', 'Erro desconhecido')}"
+        return {"result": {"content": [{"type": "text", "text": txt}]}}
     ev = res["event"]
-    txt = (f"✅ Evento criado com sucesso!\n🆔 ID: {ev.get('id','N/A')}\n📅 {ev.get('summary','Evento')}\n"
-           f"🕐 {ev.get('start',{}).get('dateTime','')} - {ev.get('end',{}).get('dateTime','')}")
+    txt = f"✅ Evento criado com sucesso!\n🆔 ID: {ev.get('id','N/A')}\n📅 {ev.get('summary','Evento')}\n🕐 {ev.get('start',{}).get('dateTime','')} - {ev.get('end',{}).get('dateTime','')}"
     if ev.get("location"):
         txt += f"\n📍 {ev['location']}"
     return {"result": {"content": [{"type": "text", "text": txt}]}}
 
 
 def _remove_event(args):
-    eid = args.get("event_id")
-    if not eid:
-        return {"error": {"code": -32602, "message": "Event ID is required"}}
-    ok = remove_event(auth.get_calendar_service(), eid)
-    txt = f"✅ Evento removido com sucesso!\n🆔 ID: {eid}" if ok else f"❌ Erro ao remover evento {eid}"
+    if not args.get("event_id"):
+        return {"error": {"code": -32602, "message": "Missing required parameter: event_id"}}
+    svc = auth.get_calendar_service()
+    success = remove_event(svc, args["event_id"])
+    if success:
+        txt = f"✅ Evento removido com sucesso!\n🆔 ID: {args['event_id']}"
+    else:
+        txt = f"❌ Erro ao remover evento {args['event_id']}"
     return {"result": {"content": [{"type": "text", "text": txt}]}}
 
 
-def _add_recurring(args):
-    if not all(args.get(k) for k in ["summary", "frequency", "count", "start_time", "end_time"]):
-        return {"error": {"code": -32602, "message": "Missing required recurring task parameters"}}
-    ops = auth.get_calendar_service()
-    return {"result": add_recurring_event(
-        service=ops,
-        summary=args["summary"],
-        frequency=args["frequency"],
-        count=args["count"],
-        start_time=args["start_time"],
-        end_time=args["end_time"],
-        location=args.get("location"),
-        description=args.get("description"),
-    )}
-
-
 def _edit_event(args):
-    eid, details = args.get("event_id"), args.get("updated_details")
-    if not eid or not details:
-        return {"error": {"code": -32602, "message": "event_id and updated_details are required."}}
-    updated = edit_event(auth.get_calendar_service(), eid, details)
+    if not args.get("event_id"):
+        return {"error": {"code": -32602, "message": "Missing required parameter: event_id"}}
+    if not args.get("updated_details"):
+        return {"error": {"code": -32602, "message": "Missing required parameter: updated_details"}}
+    svc = auth.get_calendar_service()
+    updated = edit_event(svc, args["event_id"], args["updated_details"])
     if not updated:
-        return {"error": {"code": -32603, "message": f"Failed to edit event {eid}."}}
-    txt = f"✅ Evento editado com sucesso!\n🆔 ID: {eid}"
-    if updated.get("location"):
+        txt = f"❌ Falha ao editar evento {args['event_id']}"
+        return {"result": {"content": [{"type": "text", "text": txt}]}}
+    
+    txt = f"✅ Evento editado com sucesso!\n🆔 ID: {updated.get('id','N/A')}"
+    if updated.get('location'):
         txt += f"\n📍 {updated['location']}"
     return {"result": {"content": [{"type": "text", "text": txt}]}}
 
@@ -103,10 +90,8 @@ def _edit_event(args):
 def handle(name: str, args: Dict[str, Any]):
     mp = {
         "list_events": _list_events,
-        "list_calendars": lambda a: _list_calendars(),
         "add_event": _add_event,
         "remove_event": _remove_event,
-        "add_recurring_task": _add_recurring,
         "edit_event": _edit_event,
     }
     fn = mp.get(name)

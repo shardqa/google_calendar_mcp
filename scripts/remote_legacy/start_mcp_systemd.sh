@@ -34,7 +34,7 @@ Environment=MCP_SECRET_KEY=$SECRET_KEY
 Environment=MCP_ALLOWED_CLIENTS=cursor-ide,mcp-remote
 Environment=MCP_ALLOWED_IPS=127.0.0.1,::1,***REMOVED***
 Environment=MCP_TOKEN_EXPIRY=86400
-ExecStart=***REMOVED***/git/google_calendar_mcp/.venv/bin/python3 -m mcp.mcp_server --host 0.0.0.0 --port 3001
+ExecStart=/usr/bin/uvx --from ***REMOVED***/git/google_calendar_mcp google-calendar-mcp
 Restart=always
 RestartSec=5
 StandardOutput=journal

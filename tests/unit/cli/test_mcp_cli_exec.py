@@ -80,9 +80,10 @@ def test_import_error_path_insertion():
 
 
 def test_mcp_cli_import_error(monkeypatch):
-    with patch.dict('sys.modules', {'src.mcp.mcp_server': None}):
-        if 'src.mcp.mcp_server' in sys.modules:
-            del sys.modules['src.mcp.mcp_server']
+    """Test that module can be imported even with import errors"""
+    with patch.dict('sys.modules', {'src.mcp.mcp_stdio_server': None}):
+        if 'src.mcp.mcp_stdio_server' in sys.modules:
+            del sys.modules['src.mcp.mcp_stdio_server']
         original = sys.path[:]
         sys.path = [p for p in sys.path if 'google_calendar_mcp' not in p]
         try:
@@ -90,4 +91,6 @@ def test_mcp_cli_import_error(monkeypatch):
         finally:
             sys.path = original
             importlib.reload(mcp_cli)
-        assert hasattr(mcp_cli, 'run_server') 
+        # After cleanup, the module should have the basic functions
+        assert hasattr(mcp_cli, 'main')
+        assert hasattr(mcp_cli, 'setup_mcp_config') 

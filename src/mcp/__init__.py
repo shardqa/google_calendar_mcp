@@ -1,6 +1,6 @@
 import importlib as _il
 
-_TOOL_NAMES = {"tool_calendar", "tool_tasks", "tool_echo", "tool_ics"}
+_TOOL_NAMES = {"tool_calendar", "tool_ics"}
 _SERVER_NAMES = [
     "mcp_server",
     "mcp_handler",

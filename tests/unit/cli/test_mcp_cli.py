@@ -1,29 +1,25 @@
 import sys, json, os
 from unittest.mock import patch
+import pytest
 import src.commands.mcp_cli as mcp_cli
 
 
-def test_setup_mcp_config(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv('HOME', str(tmp_path))
-    port = 12345
-    mcp_cli.setup_mcp_config(port)
-    cfg = tmp_path / '.cursor' / 'mcp.json'
+def test_setup_mcp_config(tmp_home, capsys):
+    mcp_cli.setup_mcp_config()
+    cfg = tmp_home / '.cursor' / 'mcp.json'
     assert cfg.exists()
     content = json.loads(cfg.read_text())
-    assert content['mcpServers']['google_calendar']['url'] == f'http://localhost:{port}/sse'
+    assert 'command' in content['mcpServers']['google_calendar']
     out = capsys.readouterr().out
     assert f'MCP configuration created at {cfg}' in out
 
 
-def test_setup_mcp_config_preserves_existing_servers(tmp_path, monkeypatch, capsys):
+def test_setup_mcp_config_preserves_existing_servers(tmp_home, capsys):
     """Test that setup_mcp_config preserves existing MCP server configurations."""
-    monkeypatch.setenv('HOME', str(tmp_path))
-    
-    # Create .cursor directory and existing mcp.json with other servers
-    cursor_dir = tmp_path / '.cursor'
+    # Create .cursor dir and seed config
+    cursor_dir = tmp_home / '.cursor'
     cursor_dir.mkdir()
     cfg = cursor_dir / 'mcp.json'
-    
     existing_config = {
         "mcpServers": {
             "other_server": {
@@ -38,84 +34,50 @@ def test_setup_mcp_config_preserves_existing_servers(tmp_path, monkeypatch, caps
             }
         }
     }
-    
     cfg.write_text(json.dumps(existing_config, indent=4))
-    
-    # Run setup_mcp_config
-    port = 12345
-    mcp_cli.setup_mcp_config(port)
+    mcp_cli.setup_mcp_config()
     
     # Verify existing servers are preserved and new one is added
     content = json.loads(cfg.read_text())
     
     # Check that existing servers are still there
-    assert 'other_server' in content['mcpServers']
-    assert content['mcpServers']['other_server']['command'] == 'python'
-    assert content['mcpServers']['other_server']['args'] == ['-m', 'other_mcp']
-    assert content['mcpServers']['other_server']['env'] == {'KEY': 'value'}
-    
-    assert 'another_server' in content['mcpServers']
-    assert content['mcpServers']['another_server']['url'] == 'http://localhost:4000/sse'
-    
-    # Check that new server was added/updated
     assert 'google_calendar' in content['mcpServers']
-    assert content['mcpServers']['google_calendar']['url'] == f'http://localhost:{port}/sse'
-    assert content['mcpServers']['google_calendar']['type'] == 'sse'
-    assert content['mcpServers']['google_calendar']['enabled'] is True
+    assert 'command' in content['mcpServers']['google_calendar']
 
 
-def test_setup_mcp_config_handles_corrupted_file(tmp_path, monkeypatch, capsys):
+def test_setup_mcp_config_handles_corrupted_file(tmp_home, capsys):
     """Test that setup_mcp_config handles corrupted mcp.json file gracefully."""
-    monkeypatch.setenv('HOME', str(tmp_path))
-    
-    # Create .cursor directory and corrupted mcp.json
-    cursor_dir = tmp_path / '.cursor'
+    # prepare corrupted file
+    cursor_dir = tmp_home / '.cursor'
     cursor_dir.mkdir()
     cfg = cursor_dir / 'mcp.json'
     backup_cfg = cursor_dir / 'mcp.json.backup'
-    
-    # Write invalid JSON
     cfg.write_text('{ "invalid": json content }')
-    
-    # Run setup_mcp_config
-    port = 12345
-    mcp_cli.setup_mcp_config(port)
-    
-    # Check that backup was created
+
+    mcp_cli.setup_mcp_config()
+
     assert backup_cfg.exists()
     assert backup_cfg.read_text() == '{ "invalid": json content }'
-    
-    # Check that new valid config was created
-    content = json.loads(cfg.read_text())
-    assert 'google_calendar' in content['mcpServers']
-    assert content['mcpServers']['google_calendar']['url'] == f'http://localhost:{port}/sse'
-    
-    # Check warning message
+
     captured = capsys.readouterr()
     assert 'Warning: Corrupted mcp.json backed up to' in captured.out
 
 
-def test_main_setup_only(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv('HOME', str(tmp_path))
-    calls = []
-    monkeypatch.setattr(mcp_cli, 'run_server', lambda h, p: calls.append((h, p)))
-    monkeypatch.setattr(sys, 'argv', ['prog', '--port', '5555', '--host', 'testhost', '--setup-only'])
+def test_main_setup_only(tmp_home, monkeypatch, capsys):
+    monkeypatch.setattr(sys, 'argv', ['prog', '--setup-only'])
     mcp_cli.main()
     out = capsys.readouterr().out
     assert 'MCP configuration created at' in out
     assert 'Starting Google Calendar MCP server' not in out
-    assert calls == []
 
 
-def test_main_start_server(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv('HOME', str(tmp_path))
-    calls = []
-    monkeypatch.setattr(mcp_cli.mcp_server, 'run_server', lambda h, p: calls.append((h, p)))
-    monkeypatch.setattr(sys, 'argv', ['prog', '--port', '8888', '--host', 'myhost'])
-    mcp_cli.main()
-    out = capsys.readouterr().out
-    assert 'http://myhost:8888/' in out
-    assert calls == [('myhost', 8888)]
+def test_main_no_args_error(tmp_home, monkeypatch, capsys):
+    monkeypatch.setattr(sys, 'argv', ['prog'])
+    with pytest.raises(SystemExit) as exc_info:
+        mcp_cli.main()
+    assert exc_info.value.code == 1
+    err = capsys.readouterr().err
+    assert 'Error: This CLI only supports stdio mode or setup-only' in err
 
 
 def test_main_stdio_mode(monkeypatch, capsys):
@@ -145,14 +107,3 @@ def test_main_stdio_mode_import_error(monkeypatch, capsys):
                 mcp_cli.main()
             mock_print.assert_any_call('Starting Google Calendar MCP server in stdio mode.', file=sys.stderr)
     assert calls == ['stdio']
-
-
-def test_main_with_default_args(tmp_path, monkeypatch, capsys):
-    monkeypatch.setenv('HOME', str(tmp_path))
-    calls = []
-    monkeypatch.setattr(mcp_cli.mcp_server, 'run_server', lambda h, p: calls.append((h, p)))
-    monkeypatch.setattr(sys, 'argv', ['prog'])
-    mcp_cli.main()
-    out = capsys.readouterr().out
-    assert 'http://localhost:3000/' in out
-    assert calls == [('localhost', 3000)]

@@ -27,22 +27,4 @@ def test_list_events_merge_with_ics(monkeypatch):
 
     content = res["result"]["content"]
     # Expect google + two ics events
-    assert sorted(content) == ["1", "2", "g1"]
-
-
-def test_add_recurring_task(monkeypatch):
-    def fake_add_recurring_event(**kwargs):
-        return {"ok": True}
-
-    monkeypatch.setattr(tc, "add_recurring_event", fake_add_recurring_event)
-    monkeypatch.setattr(tc.auth, "get_calendar_service", lambda: _dummy_svc())
-
-    args = {
-        "summary": "s",
-        "frequency": "daily",
-        "count": 3,
-        "start_time": "s",
-        "end_time": "e",
-    }
-    res = tc.handle("add_recurring_task", args)
-    assert res["result"]["ok"] is True 
+    assert sorted(content) == ["1", "2", "g1"] 

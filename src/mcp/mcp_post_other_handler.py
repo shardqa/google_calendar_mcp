@@ -8,16 +8,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from .mcp_schema import get_mcp_schema
 from src.core import auth as auth
-from src.core import tasks_ops
-from src.core import tasks_auth
-from src.core.tasks_calendar_sync import sync_tasks_with_calendar
 from .other_tool_handlers import process as _process_tool
 from src.core.calendar import (
     add_event,
     list_events,
-    list_calendars,
     remove_event,
-    add_recurring_event,
     edit_event,
 )
 
@@ -61,8 +56,6 @@ def _call_tool(tool_name: str, args: Dict) -> Dict:
             content = ics_ops.ICSOperations().list_events(ics_url, mr)
             return {"result": {"content": content}}
         return {"result": {"content": list_events(svc, args.get("max_results", 10), args.get("calendar_id", "primary"))}}
-    if tool_name == "list_calendars":
-        return {"result": {"content": list_calendars(svc)}}
     if tool_name == "add_event":
         if not all(args.get(k) for k in ("summary", "start_time", "end_time")):
             return {"error": {"code": -32602, "message": "Missing required event parameters"}}
@@ -81,24 +74,22 @@ def _call_tool(tool_name: str, args: Dict) -> Dict:
         return {"result": {"content": [{"type": "text", "text": txt}]}}
     if tool_name == "remove_event":
         if not args.get("event_id"):
-            return {"error": {"code": -32602, "message": "Missing required event parameter: event_id"}}
-        ok = remove_event(svc, args["event_id"])
-        txt = "✅ Evento removido" if ok else "❌ Erro ao remover evento"
+            return {"error": {"code": -32602, "message": "Missing required parameter: event_id"}}
+        success = remove_event(svc, args["event_id"])
+        if success:
+            txt = f"✅ Evento removido com sucesso!\n🆔 ID: {args['event_id']}"
+        else:
+            txt = f"❌ Erro ao remover evento {args['event_id']}"
         return {"result": {"content": [{"type": "text", "text": txt}]}}
     if tool_name == "edit_event":
         if not args.get("event_id") or not args.get("updated_details"):
-            return {"error": {"code": -32602, "message": "Missing required event parameters: event_id, updated_details"}}
+            return {"error": {"code": -32602, "message": "Missing required parameters: event_id and updated_details"}}
         updated = edit_event(svc, args["event_id"], args["updated_details"])
         if not updated:
-            txt = f"❌ Falha ao editar {args['event_id']}"
+            txt = f"❌ Falha ao editar evento {args['event_id']}"
             return {"result": {"content": [{"type": "text", "text": txt}]}}
-
-        txt = f"✅ Evento editado\n🆔 ID: {updated.get('id','N/A')}"
+        txt = f"✅ Evento editado com sucesso!\n🆔 ID: {updated.get('id','N/A')}"
         if updated.get('location'):
             txt += f"\n📍 {updated['location']}"
         return {"result": {"content": [{"type": "text", "text": txt}]}}
-    if tool_name == "add_recurring_task":
-        if not all(args.get(k) for k in ("summary", "frequency", "count", "start_time", "end_time")):
-            return {"error": {"code": -32602, "message": "Missing required recurring task parameters"}}
-        return {"result": {"content": add_recurring_event(svc, **args)}}
     return _process_tool(tool_name, args) 

@@ -8,17 +8,12 @@ Type=simple
 User=richard
 Group=richard
 WorkingDirectory=***REMOVED***/git/google_calendar_mcp
-ExecStart=***REMOVED***/git/google_calendar_mcp/scripts/start_mcp_remote.sh
+ExecStart=***REMOVED***/.local/bin/uvx --from ***REMOVED***/git/google_calendar_mcp google-calendar-mcp
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=google-calendar-mcp
-
-Environment=PYTHONPATH=***REMOVED***/git/google_calendar_mcp/src
-Environment=MCP_SERVER_HOST=0.0.0.0
-Environment=MCP_SERVER_PORT=3001
-Environment=MCP_TRANSPORT=sse
 
 [Install]
 WantedBy=multi-user.target 
