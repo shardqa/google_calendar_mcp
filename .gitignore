@@ -24,8 +24,6 @@ token.pickle
 .DS_Store
 Thumbs.db
 .coverage
-.cursor
-.cursorrules
 config/fixed_token.env
 config/mcp_cursor_fixed.json
 config/mcp_token_local.txt
