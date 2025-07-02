@@ -4,8 +4,10 @@
 
 ### High Priority
 
-- [ ] **URGENT**: Fix failing test `tests/unit/cli/test_mcp_cli.py::test_setup_mcp_config_handles_corrupted_file`
-- [ ] **URGENT**: Fix MCP credentials.json path issue - MCP not finding credentials when running from different directories, likely using relative path instead of absolute path
+- [x] **URGENT**: Fix failing test `tests/unit/cli/test_mcp_cli.py::test_setup_mcp_config_handles_corrupted_file`
+- [x] **URGENT**: Fix MCP credentials.json path issue - MCP not finding credentials when running from different directories, likely using relative path instead of absolute path
+- [x] Criar comandos no Makefile para análise de arquivos e diretórios com base nas regras de refatoração
+- [ ] Remover comando do github pra reiniciar o serviço, já que agora já não uso mais o serviço.
 
 ### Medium Priority
 

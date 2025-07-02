@@ -5,6 +5,30 @@ e Google Tasks através do protocolo MCP (Model Context Protocol). O sistema
 oferece uma interface unificada para gerenciamento de eventos e tarefas,
 tanto via linha de comando quanto através de assistentes de IA.
 
+## Arquitetura do Sistema
+
+### Modo de Operação: Stdio-Only
+
+O projeto utiliza **exclusivamente o modo stdio** do protocolo MCP, proporcionando:
+
+- **Simplicidade**: Sem dependências de servidor HTTP, proxy ou autenticação complexa
+- **Confiabilidade**: Menos pontos de falha, comunicação direta via stdin/stdout
+- **Facilidade de manutenção**: Arquitetura linear sem infraestrutura de rede
+- **Compatibilidade universal**: Funciona nativamente com todos os clientes MCP
+
+**Migração HTTP → Stdio**: Projeto originalmente suportava ambos os modos,
+mas foi simplificado para stdio-only, removendo toda infraestrutura HTTP,
+tokens de autenticação, nginx, e serviços systemd obsoletos.
+
+### Calendários ICS Externos
+
+**Tratamento robusto de erros**:
+
+- Erros de rede retornam mensagens informativas em vez de exceções
+- Calendários vazios ou malformados fornecem feedback útil
+- Sistema de debug integrado para troubleshooting (`debug=True`)
+- Filtragem inteligente de eventos com explicações ao usuário
+
 ## Funcionalidades Principais
 
 ### Gerenciamento de Calendário

@@ -63,6 +63,58 @@ mcp_google_calendar_add_recurring_task \
   end_time="2024-03-20T08:15:00"
 ```
 
+## ICS External Calendars
+
+### Basic ICS Listing
+
+```python
+# List events from external ICS calendar
+events = list_events(ics_url="https://example.com/calendar.ics")
+```
+
+### Enhanced Error Handling
+
+```python
+# With debug information for troubleshooting
+events = list_events(
+    ics_url="https://example.com/calendar.ics", 
+    debug=True
+)
+
+# Example responses:
+# Success: Returns formatted events
+# Network error: "❌ Failed to fetch ICS calendar: Connection timeout"
+# Empty calendar: "📅 No events found in ICS calendar (may be empty or all events filtered)"
+# Debug mode: Shows processing details and filtering explanations
+```
+
+### Common ICS Issues and Solutions
+
+**Issue**: No events returned despite calendar having events
+
+```python
+# Solution: Enable debug mode to see what's happening
+events = list_events(ics_url="...", debug=True)
+# May show: "Events found but filtered (past dates)" or network issues
+```
+
+**Issue**: Network connectivity problems
+
+```python
+# Response now includes helpful error message instead of crash:
+# "❌ Failed to fetch ICS calendar from https://...:
+# Connection timeout"
+```
+
+**Issue**: Malformed calendar data
+
+```python
+# Response provides useful feedback:
+# "⚠️ ICS calendar has parsing issues but found X events"
+```
+
+## Advanced Usage
+
 ---
 Voltar para o [Guia de Uso](usage_examples.md).
-Ver os [Fluxos de Trabalho Típicos](workflows.md). 
+Ver os [Fluxos de Trabalho Típicos](workflows.md).

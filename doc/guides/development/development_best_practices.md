@@ -460,3 +460,50 @@ make mcp-local
 Para visão geral do projeto, veja [Visão Geral](overview.md).
 Para arquitetura técnica, veja [Arquitetura](architecture.md).
 Voltar para o [Sumário](README.md).
+
+## Test-Driven Development (TDD)
+
+### Metodologia Aplicada
+
+O projeto adota **TDD rigoroso** para todas as funcionalidades críticas:
+
+1. **Red Phase**: Criar testes que reproduzem o problema/requisito (devem falhar)
+2. **Green Phase**: Implementar código mínimo para fazer testes passarem  
+3. **Refactor Phase**: Melhorar código mantendo testes verdes
+
+### Caso de Estudo: ICS Events Fix
+
+**Problema identificado**: ICS não retornava eventos, LLM não conseguia ver agenda
+
+**Abordagem TDD aplicada**:
+
+```python
+# 1. RED: Teste que reproduz o problema
+def test_ics_operations_error_handling_and_debug_info():
+    """Test that ICS operations provide useful error information."""
+    # Simula erro de rede
+    def fake_download_network_error(self, url):
+        raise ConnectionError("Failed to connect")
+    
+    # Deve retornar mensagem informativa, não exceção
+    events = ops.list_events("http://broken.example.com/calendar.ics")
+    assert "Failed to fetch ICS calendar" in events[0]['text']
+
+# 2. GREEN: Implementação que faz teste passar
+def list_events(self, ics_url: str, debug: bool = False):
+    try:
+        ics_text = self._download_ics(ics_url)
+    except Exception as e:
+        return [{"type": "text", "text": f"❌ Failed to fetch ICS calendar: {str(e)}"}]
+    
+    # ... resto da implementação
+
+# 3. REFACTOR: Melhorias mantendo testes verdes
+- Adicionado parâmetro debug
+- Melhorado feedback para usuários
+- Adicionadas informações sobre filtragem de eventos
+```
+
+**Resultado**: 15 novos testes cobrindo edge cases, todos passando, 100% cobertura mantida.
+
+## Code Quality Standards

@@ -26,6 +26,38 @@ projeto, divididas por categoria para facilitar a consulta.
 - Issues específicos de CI/CD
 - Debugging de subprocess e mocks
 
+## Problemas Específicos
+
+### Calendários ICS Externos
+
+**Problema**: ICS não retorna eventos, LLM não consegue ver agenda
+
+**Sintomas**:
+
+- Comando retorna lista vazia mesmo com eventos
+- Erros de rede não são reportados adequadamente  
+- Calendários malformados quebram silenciosamente
+
+**Soluções**:
+
+- **Tratamento de erro gracioso**: Erros de rede agora retornam mensagens informativas
+- **Debug automático**: Use `debug=True` para ver detalhes de processamento
+- **Feedback melhorado**: Sistema explica quando eventos foram filtrados por data
+- **Validação de formato**: Calendários malformados retornam mensagens úteis
+
+**Comandos para diagnóstico**:
+
+```bash
+# Teste básico com debug
+python -m src.commands.mcp_cli list-events --ics-url="http://example.com/cal.ics" --debug
+
+# Teste de conectividade
+curl -I http://example.com/calendar.ics
+
+# Verificar formato ICS
+python -c "import requests; print(requests.get('URL').text[:500])"
+```
+
 ## Dicas Gerais
 
 ### Diagnóstico Rápido
