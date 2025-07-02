@@ -23,7 +23,7 @@ fi
 
 # 3. Configurar token fixo permanente
 echo "🔐 Configurando token fixo permanente..."
-python3 scripts/setup_fixed_token.py --show-config
+# Fixed token setup removed - project uses stdio-only mode
 
 if [ $? -eq 0 ]; then
     echo "✅ Token fixo configurado com sucesso"

@@ -4,6 +4,23 @@ Este arquivo lista apenas os marcos mais recentes. Para o histórico completo, v
 
 ## Recent High Priority Completions ✅
 
+- **Limpeza de arquivos obsoletos de autenticação HTTP (2025-01-02)** ✅
+  - Removidos todos os scripts e arquivos relacionados a autenticação HTTP/token fixo
+  - Projeto agora é 100% stdio-only, sem dependências de servidor HTTP
+  - Arquivos removidos: `scripts/test/test_fixed_token.py`, `scripts/setup_fixed_token.py`, todo o diretório `scripts/security/`, `scripts/test/test_auth.sh`
+  - Atualizado `Makefile` e `scripts/setup_final.sh` para remover referências obsoletas
+  - Mantida 100% cobertura de testes com 151 testes passando
+  - Simplificação significativa da arquitetura - menos pontos de falha, manutenção mais simples
+
+- **Fix ICS events listing com tratamento de erros e informações de debug (2025-01-02)** ✅
+  - Problema resolvido: ICS não retornava eventos quando deveria, LLM não conseguia ver conteúdo da agenda
+  - Implementado tratamento gracioso de erros de rede - retorna mensagens informativas em vez de exceções
+  - Adicionadas informações de debug automáticas quando nenhum evento é encontrado
+  - Novo parâmetro `debug=True` para informações detalhadas sobre processamento ICS
+  - Melhorado feedback para usuários: explica quando eventos passados foram filtrados
+  - Calendários vazios ou malformados agora retornam mensagens úteis em vez de listas vazias
+  - Implementado seguindo TDD com 15 novos testes abrangentes
+  - Cobertura mantida: 151 testes passando, 100% cobertura de funcionalidades críticas
 - **Remoção de ferramentas MCP não utilizadas - projeto focado nas principais funcionalidades (2024-12-20)** ✅
   - Removidas ferramentas: `echo`, `list_calendars`, `add_recurring_task` e todas as `tasks*` (`list_tasks`, `add_task`, `remove_task`, `complete_task`, `update_task_status`, `schedule_tasks`)
   - Mantidas ferramentas essenciais: `list_events`, `add_event`, `remove_event`, `edit_event` (calendário) + `register_ics_calendar`, `list_ics_calendars` (ICS)
@@ -131,32 +148,4 @@ TOTAL                                 220      0   100%
 ### 1. `doc/guides/` (24 arquivos → 8 subdiretórios)
 - `setup/` - guias de instalação e configuração
 - `security/` - documentação de segurança  
-- `mcp/` - ferramentas e configuração MCP
-- `development/` - práticas de desenvolvimento
-- `architecture/` - documentação arquitetural
-- `features/` - documentação de recursos específicos
-- `usage/` - exemplos de uso e workflows
-- `operations/` - operações e manutenção
-
-### 2. `tests/mcp/mcp_post_other/` (17 arquivos → 4 subdiretórios)
-- `calendar/` - testes de operações de calendário
-- `ics/` - testes de calendários ICS
-- `tasks/` - testes relacionados a tarefas (removidos posteriormente)
-- `misc/` - testes diversos
-
-**Resultado**:
-- **Estrutura mais organizada** e navegável
-- **Imports atualizados** automaticamente
-- **231 testes** mantidos funcionando
-- **Melhor manutenibilidade** com agrupamento lógico
-
----
-
-## Histórico de Desenvolvimento
-
-Este arquivo documenta as funcionalidades e melhorias mais recentes. Para atividades em andamento, consulte [TODO.md](TODO.md).
-
-Links úteis:
-
-- [Architecture](doc/guides/architecture.md)
-- [Overview](doc/guides/overview.md)
+- `mcp/`

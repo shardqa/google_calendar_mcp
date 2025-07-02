@@ -34,7 +34,6 @@ mcp-start:
 mcp-stop:
 	@echo "Stopping MCP server..."
 	@pkill -f "mcp_cli" || echo "No MCP server running"
-	@pkill -f "mcp_server.py" || echo "No local MCP server running"
 
 mcp-restart: mcp-stop
 	@sleep 2

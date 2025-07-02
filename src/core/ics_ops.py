@@ -10,19 +10,30 @@ class ICSOperations:
         with urlopen(ics_url, timeout=self.fetch_timeout) as resp:
             return resp.read().decode()
 
-    def list_events(self, ics_url: str, max_results: Optional[int] = None) -> List[Dict]:
-        ics_text = self._download_ics(ics_url)
+    def list_events(self, ics_url: str, max_results: Optional[int] = None, debug: bool = False) -> List[Dict]:
+        try:
+            ics_text = self._download_ics(ics_url)
+        except Exception as e:
+            error_msg = f"❌ Failed to fetch ICS calendar from {ics_url}: {str(e)}"
+            return [{"type": "text", "text": error_msg}]
+        
         events: List[Dict] = []
         current: Dict[str, str] = {}
         now = datetime.now(timezone.utc)
+        total_events_found = 0
+        past_events_filtered = 0
         
         for line in ics_text.splitlines():
             line = line.rstrip()
             if line == 'BEGIN:VEVENT':
                 current = {}
             elif line == 'END:VEVENT':
-                if current and self._is_future_event(current, now):
-                    events.append(self._format_event(current))
+                if current:
+                    total_events_found += 1
+                    if self._is_future_event(current, now):
+                        events.append(self._format_event(current))
+                    else:
+                        past_events_filtered += 1
             else:
                 if ':' not in line:
                     continue
@@ -33,7 +44,29 @@ class ICSOperations:
         events.sort(key=lambda e: self._extract_start_datetime(e))
         if max_results is not None:
             events = events[:max_results]
+        
+        # Add debug information if requested or if no events were found
+        if debug or (len(events) == 0 and total_events_found > 0):
+            debug_info = self._create_debug_info(ics_url, total_events_found, past_events_filtered, len(events))
+            events.append(debug_info)
+        elif len(events) == 0 and total_events_found == 0:
+            # No events found at all in the calendar
+            empty_msg = f"📅 No events found in ICS calendar: {ics_url}"
+            events.append({"type": "text", "text": empty_msg})
+        
         return events
+
+    def _create_debug_info(self, ics_url: str, total_found: int, filtered: int, returned: int) -> Dict:
+        """Create debug information about the ICS processing."""
+        debug_text = f"🔍 ICS Debug Info for {ics_url}:\n"
+        debug_text += f"📊 Total events found: {total_found}\n"
+        debug_text += f"🚫 Past events filtered: {filtered}\n"
+        debug_text += f"✅ Future events returned: {returned}"
+        
+        if filtered > 0:
+            debug_text += f"\n💡 Tip: {filtered} past events were filtered out (events must start today or later)"
+        
+        return {"type": "text", "text": debug_text}
 
     def _is_future_event(self, event_data: Dict[str, str], now: datetime) -> bool:
         """Check if event starts today or in the future."""

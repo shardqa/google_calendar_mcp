@@ -30,10 +30,10 @@ class TestUvxIntegration:
             ], capture_output=True, text=True, timeout=10)
             
             if result.returncode != 0:
-                pytest.skip("uvx not available in test environment")
+                pytest.skip("uvx not available or not working properly")
                 
         except (FileNotFoundError, subprocess.TimeoutExpired):
-            pytest.skip("uvx not available in test environment")
+            pytest.skip("uvx not found or timeout - skipping uvx integration test")
 
     def test_package_structure_for_uvx(self):
         """Test that package structure is compatible with uvx."""
