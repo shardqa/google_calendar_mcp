@@ -20,6 +20,6 @@ help:
 	@echo "  make mcp-stop   - Stop the MCP server"
 	@echo "  make mcp-restart - Restart the MCP server"
 	@echo "  make mcp-restart-local - Restart the local MCP server on port 3001"
-	@echo "  make help       - Show this help message"
+	@echo "  make help       - Show this help message" 
 
 .PHONY: help 

@@ -149,3 +149,5 @@ TOTAL                                 220      0   100%
 - `setup/` - guias de instalação e configuração
 - `security/` - documentação de segurança  
 - `mcp/`
+
+- [x] Remover comando do github pra reiniciar o serviço, já que agora já não uso mais o serviço.

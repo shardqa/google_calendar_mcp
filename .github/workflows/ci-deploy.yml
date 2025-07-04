@@ -33,23 +33,4 @@ jobs:
         
     - name: Run tests with coverage
       run: |
-        pytest --cov=src --cov-report xml --cov-report term --cov-fail-under=80
-        
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-    - name: Deploy to server
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_IP }}
-        username: richard
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd ***REMOVED***/git/google_calendar_mcp
-          git pull origin main
-          
-          source .venv/bin/activate # Assuming .venv is the virtual environment directory
-          pip install -r requirements.txt
-          
-          sudo systemctl restart google-calendar-mcp.service 
+        pytest --cov=src --cov-report xml --cov-report term --cov-fail-under=80 
