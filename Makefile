@@ -23,3 +23,8 @@ help:
 	@echo "  make help       - Show this help message" 
 
 .PHONY: help 
+
+auth:
+	@echo "Starting Google OAuth flow to refresh credentials..."
+	python3 -c 'from src.core.auth import get_credentials; get_credentials()'
+	@echo "If successful, your credentials have been refreshed." 

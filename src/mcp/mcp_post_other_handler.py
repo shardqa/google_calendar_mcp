@@ -17,31 +17,67 @@ from src.core.calendar import (
 )
 
 def handle_post_other(handler, request, response):
+    """Process an incoming HTTP-like request and populate *response*.
+
+    The *response* argument is expected to be a ``dict`` that the caller
+    passed in – most tests rely on this object being mutated in-place so
+    that they can make assertions after the function returns.  In the
+    actual stdio server code we don't use the returned value – the
+    response is serialised and written straight to *handler.wfile* – but
+    for unit-testing purposes we honour the contractual behaviour of
+    mutating the provided mapping.  If the caller passes ``None`` we fall
+    back to an internal temporary dictionary.
+    """
+
     method = request.get("method")
     params = request.get("params", {})
+
+    # Support the old calling style where tests pass an empty dict.
+    # If *response* is None we create a temporary object so the rest of
+    # this function works unchanged.
+    internal_resp = response if isinstance(response, dict) else {}
+    internal_resp.clear()  # ensure we start fresh but keep the object id
+
+    # Always set 'id' to a string or number. If missing, use empty string (Zod does not accept null).
+    req_id = request.get("id")
+    if req_id is None:
+        req_id = ""
+    internal_resp.update({
+        "jsonrpc": request.get("jsonrpc", "2.0"),
+        "id": req_id
+    })
+
     if method == "initialize":
         schema = get_mcp_schema()
         supported_protocol_version = schema.get("protocol", "2025-03-26")
         caps = {t["name"]: t["inputSchema"] for t in schema["tools"]}
-        response["result"] = {
+        internal_resp["result"] = {
             "serverInfo": {"name": "google_calendar", "version": "1.0.0"},
             "capabilities": {"tools": caps},
             "protocolVersion": supported_protocol_version,
         }
-        print(f"Sent initialize response: {json.dumps(response)}", file=sys.stderr)
+        print(f"Sent initialize response: {json.dumps(internal_resp)}", file=sys.stderr)
     elif method == "tools/call":
         tool_name = params.get("tool") or params.get("name")
         tool_args = params.get("args") or params.get("arguments") or {}
         print(f"DEBUG: Tool call received: {tool_name} with args: {tool_args}", file=sys.stderr)
-        response.update(_call_tool(tool_name, tool_args))
+        tool_result = _call_tool(tool_name, tool_args)
+        if "error" in tool_result:
+            internal_resp["error"] = tool_result["error"]
+        else:
+            internal_resp["result"] = tool_result.get("result")
     else:
-        response["error"] = {"code": -32601, "message": f"Method not found: {method}"}
+        internal_resp["error"] = {"code": -32601, "message": f"Method not found: {method}"}
     handler.send_response(200)
     handler.send_header("Content-Type", "application/json")
     handler.send_header("Access-Control-Allow-Origin", "*")
     handler.send_header("Connection", "close")
     handler.end_headers()
-    handler.wfile.write(json.dumps(response).encode())
+    handler.wfile.write(json.dumps(internal_resp).encode())
+
+    # For callers that need to inspect the response (unit-tests) we return
+    # the mutated object.  The stdio server ignores this return value.
+    return internal_resp
 
 def _call_tool(tool_name: str, args: Dict) -> Dict:
     svc = auth.get_calendar_service()

@@ -29,20 +29,24 @@ class MCPStdioServer:
         }
     
     def _send_response(self, response: Dict[str, Any]) -> None:
-        """Send JSON-RPC response to stdout."""
+        """Send JSON-RPC response to stdout. Always include 'id' (string/number, never null)."""
+        # Always include 'id' field, and never set it to null (Zod expects string/number).
+        if "id" not in response or response["id"] is None:
+            response["id"] = ""
         try:
             response_json = json.dumps(response)
             print(response_json, flush=True)
         except Exception as e:
-            error_response = {
+            # In case serialization itself fails, fall back to a minimal error message.
+            fallback_error = {
                 "jsonrpc": "2.0",
                 "error": {
                     "code": -32603,
                     "message": f"Internal error: {str(e)}"
                 },
-                "id": None
+                "id": ""
             }
-            print(json.dumps(error_response), flush=True)
+            print(json.dumps(fallback_error), flush=True)
     
     def _read_stdin(self):
         """Read and process JSON-RPC requests from stdin."""
@@ -51,24 +55,27 @@ class MCPStdioServer:
                 line = line.strip()
                 if not line:
                     continue
-                
+
                 try:
                     request = json.loads(line)
+                    # If this is a notification (no id), do not send any response
+                    if "id" not in request or request["id"] is None:
+                        continue
                     response = self.handler.handle_request(request)
                     if response:
                         self._send_response(response)
-                        
+
                 except json.JSONDecodeError:
+                    # Parse errors are always responded to, as per JSON-RPC spec
                     error_response = {
                         "jsonrpc": "2.0",
                         "error": {
                             "code": -32700,
                             "message": "Parse error"
                         },
-                        "id": None
+                        "id": ""
                     }
                     self._send_response(error_response)
-                    
                 except Exception as e:
                     error_response = {
                         "jsonrpc": "2.0",
@@ -76,10 +83,10 @@ class MCPStdioServer:
                             "code": -32603,
                             "message": f"Internal error: {str(e)}"
                         },
-                        "id": None
+                        "id": ""
                     }
                     self._send_response(error_response)
-                    
+
         except KeyboardInterrupt:
             pass
         finally:
@@ -102,7 +109,7 @@ class MCPStdioServer:
                     "code": -32603,
                     "message": f"Server error: {str(e)}"
                 },
-                "id": None
+                "id": ""
             }
             self._send_response(error_response)
     
