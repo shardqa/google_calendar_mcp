@@ -47,7 +47,7 @@ A integração com o Gemini CLI requer a configuração manual do arquivo `setti
 3.  **Teste a Configuração**:
     ```bash
     # Exporte sua chave de API
-    export GEMINI_API_KEY="sua_chave_api_aqui"
+    export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 
     # Verifique se o servidor é listado
     gemini mcp list

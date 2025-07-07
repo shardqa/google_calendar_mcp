@@ -33,3 +33,12 @@ config/mcp_token.txt
 mcp_config.json
 config/ics_urls.json
 .opencode
+
+# Local settings and sensitive configuration
+.claude/settings.local.json
+**/settings.local.json
+**/*_secret*
+**/*token*.txt
+**/*bearer*
+*.pem
+*.key

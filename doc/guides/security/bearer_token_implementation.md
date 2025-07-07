@@ -53,7 +53,7 @@ Copiar o arquivo `mcp_config.json` gerado para seu `mcp.json`:
       "type": "sse", 
       "enabled": true,
       "headers": {
-        "Authorization": "Bearer mcp2.eyJwIjp7ImNsaWVudF9pZCI6..."
+        "Authorization": "Bearer mcp2.YOUR_JWT_TOKEN_HERE..."
       },
       "description": "Google Calendar Integration (Secure)"
     }

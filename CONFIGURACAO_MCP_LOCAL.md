@@ -74,7 +74,7 @@ Agora você só precisa **configurar sua API key do Gemini** e pode começar a u
 
 ```bash
 # Configure a API key
-export GEMINI_API_KEY="YOUR_API_KEY_HERE"
+export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 
 # Teste o sistema
 echo "Liste meus próximos eventos do calendário" | gemini
@@ -104,7 +104,7 @@ google_calendar_mcp/
 https://aistudio.google.com/app/apikey
 
 ```bash
-export GEMINI_API_KEY="YOUR_API_KEY_HERE"
+export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 echo "Oi Gemini, liste meus eventos" | gemini
 ```
 

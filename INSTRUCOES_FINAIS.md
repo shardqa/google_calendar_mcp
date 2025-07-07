@@ -8,8 +8,8 @@ O seu MCP Google Calendar está funcionando perfeitamente! Só falta configurar 
 
 ### Opção 1: Variável de Ambiente (Recomendada)
 ```bash
-export GEMINI_API_KEY="YOUR_API_KEY_HERE"
-echo 'export GEMINI_API_KEY="YOUR_API_KEY_HERE"' >> ~/.bashrc
+export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+echo 'export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"' >> ~/.bashrc
 ```
 
 ### Opção 2: Arquivo de Configuração

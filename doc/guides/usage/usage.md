@@ -112,7 +112,7 @@ O servidor MCP oferece 15+ ferramentas:
 
 ```bash
 # Configuração necessária (uma vez)
-export GEMINI_API_KEY="sua_chave_api"
+export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 
 # Uso natural
 gemini "Liste meus próximos 5 eventos do calendário"

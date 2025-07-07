@@ -81,7 +81,7 @@ Para usar com Gemini CLI, configure `~/.gemini/settings.json`:
 
 ```bash
 # Definir chave da API
-export GEMINI_API_KEY="sua_chave_api_aqui"
+export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 
 # Testar configuração
 gemini mcp list

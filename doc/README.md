@@ -56,7 +56,7 @@
 make mcp-start
 
 # Para Gemini CLI
-export GEMINI_API_KEY="sua_chave"
+export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 python -m src.mcp.mcp_stdio_server
 
 # Para Claude Desktop

@@ -5,8 +5,8 @@ Wants=network.target
 
 [Service]
 Type=simple
-User=richard
-Group=richard
+User=your-username
+Group=your-username
 WorkingDirectory=***REMOVED***/git/google_calendar_mcp
 ExecStart=***REMOVED***/.local/bin/uvx --from ***REMOVED***/git/google_calendar_mcp google-calendar-mcp
 Restart=always

@@ -128,7 +128,7 @@ upstream mcp_backend {
       "type": "sse",
       "enabled": true,
       "headers": {
-        "Authorization": "Bearer mcp2.eyJwIjp7ImNsaWVudF9pZCI6ImN1cnNvci1pZGUiLCJpYXQiOjE3MDQwNjcyMDAsImV4cCI6MTcwNDY3MjAwMCwianRpIjoidW5pcXVlX3Rva2VuX2lkIiwibm9uY2UiOiJyYW5kb21fbm9uY2UiLCJ2ZXJzaW9uIjoiMi4wIn0sInMiOiJobWFjX3NoYTUxMl9zaWduYXR1cmUiLCJhbGciOiJIUzUxMiJ9"
+        "Authorization": "Bearer mcp2.YOUR_JWT_TOKEN_HERE"
       },
       "description": "Google Calendar Integration (Secure)"
     }

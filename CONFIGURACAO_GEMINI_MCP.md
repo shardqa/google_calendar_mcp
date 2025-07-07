@@ -27,7 +27,7 @@ Editar o arquivo `~/.gemini/settings.json`:
 ### 2. Variável de Ambiente
 
 ```bash
-export GEMINI_API_KEY="sua_chave_api_aqui"
+export GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 ```
 
 ### 3. Teste de Funcionamento

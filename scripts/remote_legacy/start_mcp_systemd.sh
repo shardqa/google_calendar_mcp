@@ -26,8 +26,8 @@ Wants=network.target
 
 [Service]
 Type=simple
-User=richard
-Group=richard
+User=your-username
+Group=your-username
 WorkingDirectory=***REMOVED***/git/google_calendar_mcp
 Environment=PYTHONPATH=***REMOVED***/git/google_calendar_mcp/src
 Environment=MCP_SECRET_KEY=$SECRET_KEY
