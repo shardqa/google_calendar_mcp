@@ -42,3 +42,8 @@ config/ics_urls.json
 **/*bearer*
 *.pem
 *.key
+CLAUDE.md
+CURSOR_RULES.md
+GEMINI.MD
+OpenCode.md
+TODO.md
