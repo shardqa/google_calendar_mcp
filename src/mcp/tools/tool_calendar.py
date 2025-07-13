@@ -70,6 +70,24 @@ def _remove_event(args):
     return {"result": {"content": [{"type": "text", "text": txt}]}}
 
 
+def _add_events(args):
+    events = args.get("events", [])
+    if not events:
+        return {"error": {"code": -32602, "message": "Missing required parameter: events"}}
+    
+    success_count = 0
+    failure_count = 0
+    for event_args in events:
+        res = _add_event(event_args)
+        if "result" in res:
+            success_count += 1
+        else:
+            failure_count += 1
+    
+    txt = f"{success_count} eventos criados com sucesso, {failure_count} falharam"
+    return {"result": {"content": [{"type": "text", "text": txt}]}}
+
+
 def _edit_event(args):
     if not args.get("event_id"):
         return {"error": {"code": -32602, "message": "Missing required parameter: event_id"}}
@@ -91,8 +109,9 @@ def handle(name: str, args: Dict[str, Any]):
     mp = {
         "list_events": _list_events,
         "add_event": _add_event,
+        "add_events": _add_events,
         "remove_event": _remove_event,
         "edit_event": _edit_event,
     }
     fn = mp.get(name)
-    return fn(args) if fn else None 
+    return fn(args) if fn else None

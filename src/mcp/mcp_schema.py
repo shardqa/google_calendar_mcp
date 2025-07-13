@@ -79,6 +79,45 @@ def get_mcp_schema():
                 }
             },
             {
+                "name": "add_events",
+                "description": "Add multiple events to Google Calendar in batch",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "events": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "summary": {
+                                        "type": "string",
+                                        "description": "Title of the event"
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "description": "Location of the event"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "description": "Description of the event"
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "description": "Start time (ISO format: YYYY-MM-DDTHH:MM:SS)"
+                                    },
+                                    "end_time": {
+                                        "type": "string",
+                                        "description": "End time (ISO format: YYYY-MM-DDTHH:MM:SS)"
+                                    }
+                                },
+                                "required": ["summary", "start_time", "end_time"]
+                            }
+                        }
+                    },
+                    "required": ["events"]
+                }
+            },
+            {
                 "name": "edit_event",
                 "description": "Edit an existing event in Google Calendar",
                 "inputSchema": {
@@ -146,4 +185,4 @@ def get_mcp_schema():
                 "inputSchema": {"type": "object", "properties": {}, "required": []}
             }
         ]
-    } 
+    }
