@@ -7,8 +7,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.core import auth as auth
 
-from .tools import tool_calendar as _cal
-from .tools import tool_ics as _ics
+from ..tools import tool_calendar as _cal
+from ..tools import tool_ics as _ics
 
 _modules = [_cal, _ics]
 

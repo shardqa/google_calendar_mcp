@@ -1,5 +1,5 @@
 import io, json
-from src.mcp.mcp_stdio_server import MCPStdioServer
+from src.mcp.servers.mcp_stdio_server import MCPStdioServer
 from unittest.mock import patch
 
 def test_send_response_and_error(monkeypatch, capsys):

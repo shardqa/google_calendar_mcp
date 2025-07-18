@@ -15,6 +15,8 @@ help:
 	@echo "  make check-directory-sizes - Analyze directories with more than 10 items"
 	@echo "  make check-directory-sizes-clean - Analyze directories (exclude __pycache__)"
 	@echo "  make check-directory-sizes-summary - Quick summary of large directories"
+	@echo "  make count-items - Complete item count for all directories"
+	@echo "  make count-items-quick - Quick overview with emojis"
 	@echo "  make mcp-start  - Start the Google Calendar MCP server"
 	@echo "  make mcp-local  - Start the MCP server locally on port 3001"
 	@echo "  make mcp-stop   - Stop the MCP server"

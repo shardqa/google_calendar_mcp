@@ -1,6 +1,6 @@
 import json
 from typing import Dict, Any, Optional
-from .mcp_schema import get_mcp_schema
+from ..mcp_schema import get_mcp_schema
 from .mcp_post_other_handler import handle_post_other
 
 class MockHandler:

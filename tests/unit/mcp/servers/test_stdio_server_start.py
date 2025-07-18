@@ -1,4 +1,4 @@
-from src.mcp.mcp_stdio_server import MCPStdioServer
+from src.mcp.servers.mcp_stdio_server import MCPStdioServer
 import builtins
 
 def test_stdio_server_start(monkeypatch):

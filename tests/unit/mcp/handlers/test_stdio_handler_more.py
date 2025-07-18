@@ -1,5 +1,5 @@
 import json
-from src.mcp.stdio_handler import StdioRequestHandler
+from src.mcp.handlers.stdio_handler import StdioRequestHandler
 
 def test_tools_call_error(mock_credentials):
     caps = {"tools": {}, "serverInfo": {}, "protocolVersion": "v"}

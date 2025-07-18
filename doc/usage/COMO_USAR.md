@@ -1,6 +1,7 @@
 # 🚀 Como Usar o Google Calendar MCP com Autenticação
 
 ## ✅ Status Atual
+
 - ✅ Servidor MCP rodando na porta 3001 com autenticação
 - ✅ Proxy Nginx na porta 8080
 - ✅ Token de autenticação gerado
@@ -24,25 +25,28 @@ Cole esta configuração no seu arquivo MCP do Cursor:
 
 ## 🔄 2. Passos para Usar
 
-### No Servidor (***REMOVED***):
+### No Servidor (***REMOVED***)
 
 1. **Verificar se está rodando:**
+
    ```bash
    ./scripts/test_connection.sh
    ```
 
 2. **Se não estiver funcionando, reiniciar:**
+
    ```bash
    sudo systemctl restart google-calendar-mcp.service
    sudo systemctl status google-calendar-mcp.service
    ```
 
 3. **Ver logs se houver problemas:**
+
    ```bash
    sudo journalctl -u google-calendar-mcp.service -f
    ```
 
-### No Cursor (PC Local):
+### No Cursor (PC Local)
 
 1. **Reiniciar o Cursor completamente**
 2. **Aguardar alguns segundos para conectar**
@@ -68,9 +72,10 @@ Depois que conectar, você pode usar estes comandos no Cursor:
 
 ## 🚨 5. Troubleshooting
 
-### Se não conectar:
+### Se não conectar
 
 1. **Verificar firewall:**
+
    ```bash
    sudo ufw status
    sudo ufw allow 8080
@@ -78,11 +83,13 @@ Depois que conectar, você pode usar estes comandos no Cursor:
    ```
 
 2. **Regenerar token (se expirou):**
+
    ```bash
    ./scripts/setup_mcp_auth.sh
    ```
 
 3. **Verificar se Nginx está rodando:**
+
    ```bash
    sudo systemctl status nginx
    ```
@@ -92,7 +99,7 @@ Depois que conectar, você pode usar estes comandos no Cursor:
    - Se não há outras extensões MCP conflitando
    - Se as configurações foram salvas corretamente
 
-### Logs importantes:
+### Logs importantes
 
 - **MCP Server:** `sudo journalctl -u google-calendar-mcp.service -f`
 - **Nginx:** `sudo tail -f /var/log/nginx/mcp_error.log`
@@ -111,4 +118,4 @@ Depois copie o novo token para a configuração do Cursor.
 
 ---
 
-**✨ Agora você tem um servidor MCP seguro rodando! Teste no Cursor e veja as ferramentas do Google Calendar aparecendo.** 
+**✨ Agora você tem um servidor MCP seguro rodando! Teste no Cursor e veja as ferramentas do Google Calendar aparecendo.**

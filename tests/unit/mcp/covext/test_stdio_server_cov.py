@@ -1,6 +1,6 @@
 from io import StringIO
 import json, sys
-from src.mcp.mcp_stdio_server import MCPStdioServer
+from src.mcp.servers.mcp_stdio_server import MCPStdioServer
 
 
 def test_stdio_loop(monkeypatch):

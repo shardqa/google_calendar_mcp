@@ -1,2 +1,0 @@
-[console_scripts]
-google-calendar-mcp = src.mcp.mcp_stdio_server:run_stdio_server

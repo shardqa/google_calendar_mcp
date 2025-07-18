@@ -79,7 +79,7 @@ def main():
             from ..mcp.mcp_stdio_server import run_stdio_server
         except ImportError:
             sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-            from src.mcp.mcp_stdio_server import run_stdio_server
+            from src.mcp.servers.mcp_stdio_server import run_stdio_server
         run_stdio_server()
     else:
         print("Error: This CLI only supports stdio mode or setup-only.", file=sys.stderr)

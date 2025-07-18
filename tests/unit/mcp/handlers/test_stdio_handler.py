@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from src.mcp.stdio_handler import StdioRequestHandler
+from src.mcp.handlers.stdio_handler import StdioRequestHandler
 
 @pytest.fixture
 def capabilities():

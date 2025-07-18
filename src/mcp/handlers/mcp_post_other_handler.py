@@ -6,7 +6,7 @@ import importlib
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from .mcp_schema import get_mcp_schema
+from ..mcp_schema import get_mcp_schema
 from src.core import auth as auth
 from .other_tool_handlers import process as _process_tool
 from src.core.calendar import (
